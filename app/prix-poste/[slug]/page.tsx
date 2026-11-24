@@ -83,6 +83,7 @@ export default async function PrixPostePage({ params }: { params: Promise<{ slug
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
+      <header className="lect-hero">
       <p className="fil">
         <Link href="/">Accueil</Link> <span aria-hidden="true">›</span>{" "}
         <Link href="/prix-poste">Prix par corps d&apos;état</Link>
@@ -93,6 +94,7 @@ export default async function PrixPostePage({ params }: { params: Promise<{ slug
       <p className="prixmaj">
         Prix mis à jour le {PRIX_MAJ_FR} · <Link href="/methodologie">d&apos;où viennent ces prix ?</Link>
       </p>
+      </header>
 
       {groupes.map((g) => (
         <section key={g.titre}>

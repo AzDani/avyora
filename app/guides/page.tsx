@@ -62,7 +62,7 @@ export default function GuidesHub() {
     <div className="av-hub mx-auto max-w-3xl">
       <style dangerouslySetInnerHTML={{ __html: HUB_CSS }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <header className="animate-rise">
+      <header className="lect-hero animate-rise">
         <p className="eyebrow">Guides des prix</p>
         <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-ink">
           Combien coûte une rénovation en {ANNEE_PRIX} ?

@@ -221,6 +221,8 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
       {/* Fil d'Ariane visible : le BreadcrumbList JSON-LD existait déjà juste au-dessus, mais ces
           400 pages étaient la seule famille sans fil visible — et sans aucun lien vers le hub
           /prix-travaux, soit 79 % du site qui n'alimentait pas son propre pilier. */}
+      {/* Le bloc du haut (globals.css, « pages de lecture »). */}
+      <header className="lect-hero">
       <p className="fil">
         <Link href="/">Accueil</Link> <span aria-hidden="true">›</span>{" "}
         <Link href="/prix-travaux">Prix des travaux</Link> <span aria-hidden="true">›</span>{" "}
@@ -250,6 +252,7 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
         Prix TTC indicatifs, finition standard, artisans, marge ±15&nbsp;%. Classement « {reg.zone} » : {coefPhrase} (barème interne).
         {ecart !== 0 ? ` Soit ${ecart > 0 ? "environ " + euro(Math.abs(ecart)) + " de plus" : "environ " + euro(Math.abs(ecart)) + " de moins"} qu'en moyenne nationale.` : ""}
       </p>
+      </header>
 
       <h2>Le détail du budget à {v.nom}, poste par poste</h2>
       <div className="tw">
@@ -262,7 +265,7 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
             <Fragment key={lot.corps}>
               <tr className="lot">
                 <td>{catT("fr", "corps", lot.corps)}</td>
-                <td></td>
+                <td><span className="part" aria-hidden="true"><i style={{ width: `${Math.max(2, (lot.ttc / est.ttc) * 100)}%` }} /></span><span className="pc">{Math.round((lot.ttc / est.ttc) * 100)}&nbsp;%</span></td>
                 <td className="num">{euro(lot.ttc)}</td>
               </tr>
               {lot.lignes.map((li, i) => (
@@ -334,7 +337,7 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
           if (!rp) return null;
           // Lien vers la page ville si le projet est décliné par ville, sinon vers sa page nationale.
           const href = MATRIX_SLUGS.has(slug) ? `/prix-travaux/${slug}/${v.slug}` : `/prix-travaux/${slug}`;
-          return <Link key={slug} href={href}>{rp.emoji} {rp.titre}</Link>;
+          return <Link key={slug} href={href}>{rp.titre.charAt(0).toUpperCase() + rp.titre.slice(1)}</Link>;
         })}
         <Link href={`/prix-renovation/${v.slug}`}>Prix rénovation à {v.nom} →</Link>
       </div>

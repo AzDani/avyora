@@ -62,7 +62,7 @@ export default function PrixRenovationHub() {
     <div className="av-hub mx-auto max-w-3xl">
       <style dangerouslySetInnerHTML={{ __html: HUB_CSS }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <header className="animate-rise">
+      <header className="lect-hero animate-rise">
         <p className="eyebrow">Guide des prix</p>
         <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-ink">Prix d&apos;une rénovation par ville</h1>
         <p className="mt-2 text-[15px] text-muted">

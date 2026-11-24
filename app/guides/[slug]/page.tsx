@@ -1140,8 +1140,10 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
         <Link href="/guides" className="text-muted hover:text-brand-700">← Guides des prix</Link>
       </p>
 
+      <header className="lect-hero">
       <h1>{g.h1}</h1>
       <p className="prixmaj">Prix mis à jour le {PRIX_MAJ_FR} · <Link href="/methodologie">d&apos;où viennent ces prix ?</Link></p>
+      </header>
       <Body />
     </div>
   );

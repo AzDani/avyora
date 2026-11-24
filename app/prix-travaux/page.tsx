@@ -150,11 +150,13 @@ export default function PrixTravauxHub() {
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
+      <header className="lect-hero">
       <h1>Prix des travaux de rénovation en {ANNEE_PRIX}</h1>
       <p className="lead">
         Combien coûtent tes travaux ? Retrouve le budget moyen de chaque projet, <strong>détaillé poste par poste</strong>,
         calculé avec le moteur AVYORA. Puis affine l&apos;estimation à ton bien et ton code postal, gratuitement.
       </p>
+      </header>
 
       <div className="av-grid">
         {cards.map((c) => (

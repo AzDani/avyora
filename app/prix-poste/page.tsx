@@ -63,6 +63,7 @@ export default function PrixPosteHub() {
       <style dangerouslySetInnerHTML={{ __html: HUB_CSS }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
+      <header className="lect-hero">
       <p className="fil">
         <Link href="/">Accueil</Link> <span aria-hidden="true">›</span>{" "}Prix par corps d&apos;état
       </p>
@@ -76,6 +77,7 @@ export default function PrixPosteHub() {
       <p className="prixmaj">
         Prix mis à jour le {PRIX_MAJ_FR} · <Link href="/methodologie">d&apos;où viennent ces prix ?</Link>
       </p>
+      </header>
 
       <div className="cards">
         {POSTES_PAGES.map((p) => (

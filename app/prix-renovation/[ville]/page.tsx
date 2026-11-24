@@ -180,6 +180,7 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
         <Link href="/prix-renovation" className="text-muted hover:text-brand-700">← Prix rénovation par ville</Link>
       </p>
 
+      <header className="lect-hero">
       <p className="fil">
         <Link href="/">Accueil</Link> <span aria-hidden="true">›</span>{" "}
         <Link href="/prix-renovation">Prix par ville</Link> <span aria-hidden="true">›</span> {v.nom}
@@ -193,6 +194,7 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
         « {reg.zone} » — {coefPhrase} (<Link href="/methodologie">barème interne, méthode détaillée ici</Link>).
       </p>
       <p className="prixmaj">Prix mis à jour le {PRIX_MAJ_FR} · <Link href="/methodologie">d&apos;où viennent ces prix ?</Link></p>
+      </header>
 
       <h2>Prix au m² par type de travaux à {v.nom}</h2>
       <div className="tw">

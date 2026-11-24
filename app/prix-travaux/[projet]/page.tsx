@@ -272,6 +272,8 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
         <Link href="/prix-travaux" className="text-muted hover:text-brand-700">← Prix des travaux par type</Link>
       </p>
 
+      {/* Le bloc du haut (globals.css, « pages de lecture ») : titre, prix et deux boutons. */}
+      <header className="lect-hero">
       {/* L'emoji hors du h1 : il était lu en premier par les lecteurs d'écran et entrait dans le titre. */}
       <div className="titre">
         <span className="emo" aria-hidden="true">{p.emoji}</span>
@@ -285,6 +287,11 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
         <span className="sub">budget moyen · {p.base}</span>
       </div>
       <p className="note">Prix TTC indicatifs, finition standard, travaux confiés à des artisans, marge ±15&nbsp;%{ratioTexte}. Base de calcul : moteur AVYORA.</p>
+      <div className="lect-cta">
+        <a href="#estimer" className="btn btn-blanc brille">{pieceEstimateur ? `Estimer ${p.nom}` : "Estimer mes travaux"} →</a>
+        <Link href="/relecture-devis-travaux" className="btn btn-verre">Faire vérifier mon devis</Link>
+      </div>
+      </header>
 
       <h2>Le détail du budget, poste par poste</h2>
       <p>Voici comment se répartit le budget pour {p.base}, corps d&apos;état par corps d&apos;état :</p>
@@ -298,7 +305,7 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
             <Fragment key={lot.corps}>
               <tr className="lot">
                 <td>{catT("fr", "corps", lot.corps)}</td>
-                <td></td>
+                <td><span className="part" aria-hidden="true"><i style={{ width: `${Math.max(2, (lot.ttc / est.ttc) * 100)}%` }} /></span><span className="pc">{Math.round((lot.ttc / est.ttc) * 100)}&nbsp;%</span></td>
                 <td className="num">{euro(lot.ttc)}</td>
               </tr>
               {lot.lignes.map((li, i) => (
@@ -366,6 +373,7 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
         </>
       )}
 
+      <div id="estimer" style={{ scrollMarginTop: "96px" }} />
       <CtaEstimation
         src="projet"
         titre={`Estime ${p.nom} en 2 minutes`}
@@ -519,14 +527,19 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
       <div className="tw">
       <table>
         <thead>
-          <tr><th>Zone</th><th>Budget estimé (TTC)</th></tr>
+          <tr><th>Zone</th><th>Fourchette</th><th>Budget estimé (TTC)</th></tr>
         </thead>
         <tbody>
           {regions.map((r) => {
             const rf = four(r.ttc);
+            // Les fourchettes sur une même échelle (la plus basse à la plus haute de la page), pour comparer d'un coup d'œil.
+            const ech = regions.map((x) => four(x.ttc));
+            const mini = Math.min(...ech.map((x) => x.lo)) * 0.95, maxi = Math.max(...ech.map((x) => x.hi)) * 1.02;
+            const g = ((rf.lo - mini) / (maxi - mini)) * 100, l = ((rf.hi - rf.lo) / (maxi - mini)) * 100;
             return (
               <tr key={r.nom}>
                 <td>{r.nom}</td>
+                <td><span className="fourch" aria-hidden="true"><i style={{ left: `${g}%`, width: `${l}%` }} /></span></td>
                 <td className="num">{euro(rf.lo)} – {euro(rf.hi)}</td>
               </tr>
             );
@@ -575,7 +588,7 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
       <div className="chips">
         {liensDe(p.slug).map((slug) => {
           const rp = projetBySlug(slug);
-          return rp ? <Link key={slug} href={`/prix-travaux/${slug}`}>{rp.emoji} {rp.titre}</Link> : null;
+          return rp ? <Link key={slug} href={`/prix-travaux/${slug}`}>{rp.titre.charAt(0).toUpperCase() + rp.titre.slice(1)}</Link> : null;
         })}
         <Link href="/prix-travaux">Tous les travaux →</Link>
       </div>
