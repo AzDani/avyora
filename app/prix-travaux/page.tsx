@@ -6,6 +6,7 @@ import { PRIX_MAJ_FR, ANNEE_PRIX } from "@/lib/prix-maj";
 import { seoMeta } from "@/lib/seo-og";
 import { ALEAS_RENO } from "@/lib/estimateur/core";
 import { CtaEstimation } from "@/components/CtaEstimation";
+import IconeTravaux from "@/components/IconeTravaux";
 
 export const dynamic = "force-static";
 
@@ -161,7 +162,7 @@ export default function PrixTravauxHub() {
       <div className="av-grid">
         {cards.map((c) => (
           <Link key={c.slug} href={`/prix-travaux/${c.slug}`} className="av-card">
-            <div className="e">{c.emoji}</div>
+            <div className="e"><IconeTravaux slug={c.slug} /></div>
             <div className="t">{c.h1.replace("Prix ", "").replace("d'une ", "").replace("d'un ", "").replace("pour ", "").replace(` en ${ANNEE_PRIX}`, "")}</div>
             <div className="p">{euro(c.lo)} – {euro(c.hi)}</div>
             <div className="s">{c.base}</div>

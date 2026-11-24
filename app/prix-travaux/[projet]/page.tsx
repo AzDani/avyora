@@ -334,21 +334,15 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
             Le budget ne suit pas la surface au mètre carré près : les équipements ({equipFixes})
             coûtent la même chose dans une petite pièce que dans une grande. C&apos;est pour ça que le prix au m² baisse quand la pièce s&apos;agrandit.
           </p>
-          <div className="tw surf">
-            <table>
-              <thead>
-                <tr><th>Surface</th><th>Budget estimé (TTC)</th><th>Soit au m²</th></tr>
-              </thead>
-              <tbody>
-                {parSurface.map((r) => (
-                  <tr key={r.s} className={r.s === p.surface ? "lot" : undefined}>
-                    <td>{r.s} m²{r.s === p.surface ? " (référence)" : ""}</td>
-                    <td className="num">{euro(r.lo)} – {euro(r.hi)}</td>
-                    <td className="num">{euro(r.m2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          {/* Le barème par surface en tuiles : la surface, la fourchette, le prix au m² et sa barre (le plus cher au m² = barre pleine). */}
+          <div className="surfaces">
+            {parSurface.map((r) => (
+              <div key={r.s} className={r.s === p.surface ? "ts ref" : "ts"}>
+                <p className="t"><b>{r.s} m²</b>{r.s === p.surface ? <em>Référence</em> : null}</p>
+                <p className="r">{euro(r.lo)} – {euro(r.hi)}</p>
+                <p className="m"><span className="b" aria-hidden="true"><i style={{ width: `${(r.m2 / Math.max(...parSurface.map((x) => x.m2))) * 100}%` }} /></span>{euro(r.m2)}/m²</p>
+              </div>
+            ))}
           </div>
           <p className="note">
             Chaque ligne rejoue le même panier de travaux sur la surface indiquée : les ouvrages de
@@ -507,11 +501,17 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
         <Link href="/guides/calculer-budget-travaux" className="font-medium text-brand-600 hover:underline">calculer un budget travaux</Link>.
       </p>
 
-      <h2>Ce qui est compris</h2>
-      <ul>{p.inclus.map((x, i) => <li key={i}>{x}</li>)}</ul>
-
-      <h2>Ce qui fait varier le prix</h2>
-      <ul>{p.facteurs.map((x, i) => <li key={i}>{x}</li>)}</ul>
+      {/* Ce qui est compris / ce qui fait varier : deux cartes côte à côte (design des pages de lecture). */}
+      <div className="deux-cartes">
+        <div className="carte-l">
+          <h2>Ce qui est compris</h2>
+          <ul className="coches">{p.inclus.map((x, i) => <li key={i}>{x}</li>)}</ul>
+        </div>
+        <div className="carte-l">
+          <h2>Ce qui fait varier le prix</h2>
+          <ul className="fleches">{p.facteurs.map((x, i) => <li key={i}>{x}</li>)}</ul>
+        </div>
+      </div>
 
       <div className="astuce"><b>Astuce :</b> {p.astuce}</div>
 

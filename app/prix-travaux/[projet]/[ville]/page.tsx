@@ -297,11 +297,17 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
         sousTitre={`Gratuit, sans compte pour une pièce ou tout le bien — l'estimation part déjà ajustée à la main-d'œuvre de ${v.nom}.`}
       />
 
-      <h2>Ce qui est compris</h2>
-      <ul>{p.inclus.map((x, i) => <li key={i}>{x}</li>)}</ul>
-
-      <h2>Ce qui fait varier le prix à {v.nom}</h2>
-      <ul>{p.facteurs.map((x, i) => <li key={i}>{x}</li>)}</ul>
+      {/* Ce qui est compris / ce qui fait varier : deux cartes côte à côte (design des pages de lecture). */}
+      <div className="deux-cartes">
+        <div className="carte-l">
+          <h2>Ce qui est compris</h2>
+          <ul className="coches">{p.inclus.map((x, i) => <li key={i}>{x}</li>)}</ul>
+        </div>
+        <div className="carte-l">
+          <h2>Ce qui fait varier le prix à {v.nom}</h2>
+          <ul className="fleches">{p.facteurs.map((x, i) => <li key={i}>{x}</li>)}</ul>
+        </div>
+      </div>
 
       <div className="astuce"><b>Astuce :</b> {p.astuce}</div>
 

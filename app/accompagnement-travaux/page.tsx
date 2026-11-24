@@ -271,27 +271,6 @@ export default async function AccompagnementTravaux({
         </p>
       </section>
 
-      {/* ── En quoi c'est différent : France Rénov', maître d'œuvre, conseil ── */}
-      <section id="difference" aria-labelledby="diff-titre" className={section}>
-        <h2 id="diff-titre" className={h2}>{t.difference.h2}</h2>
-        <p className="mt-3 max-w-3xl text-[16px] leading-relaxed text-muted">{t.difference.intro}</p>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          {t.difference.acteurs.map((a) => (
-            <div key={a.nom} className={"rounded-card border p-5 " + (a.moi ? "border-brand-600 bg-surface shadow-card" : "border-line bg-surface-2")}>
-              <h3 className="text-[16px] font-semibold text-ink">{a.nom}</h3>
-              <dl className="mt-3 space-y-3">
-                {(["paie", "perimetre", "suivi", "responsabilite"] as const).map((k) => (
-                  <div key={k}>
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-faint">{t.difference.criteres[k]}</dt>
-                    <dd className="mt-0.5 text-[14.5px] leading-snug text-ink">{a[k]}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* ── Comment ça se passe : 3 étapes ── */}
       <section id="etapes" aria-labelledby="etapes-titre" className={section}>
         <h2 id="etapes-titre" className={h2}>{t.etapes.h2}</h2>

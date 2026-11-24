@@ -54,7 +54,6 @@ export const META_ACCOMPAGNEMENT = {
 /** `prix` : prix MOYEN affiché (décision de Dani du 24/11/2026 : il varie selon la taille du projet, sauf l'avis avant
  * achat, à prix fixe) ; `detail` : la durée de l'appel et ce qui est remis. */
 export type Service = { id: string; eyebrow: string; titre: string; texte: string; prix?: string; detail?: string; gain?: string; lien?: { href: string; label: string } };
-export type Acteur = { nom: string; paie: string; perimetre: string; suivi: string; responsabilite: string; moi?: boolean };
 
 const fr = {
   fil: "Accueil",
@@ -206,35 +205,6 @@ const fr = {
     ] satisfies Service[],
     notePrix:
       "Prix moyens : ils varient selon la taille de ton projet, sauf l'avis avant achat, à prix fixe. Je t'annonce toujours le prix exact avant tout engagement. TVA non applicable (franchise en base).",
-  },
-  difference: {
-    h2: "France Rénov', maître d'œuvre ou conseil : quelle différence ?",
-    intro: "Trois façons de se faire aider, qui ne font pas le même métier. Voici ce qui les distingue.",
-    criteres: { paie: "Qui paie", perimetre: "Ce qu'il fait", suivi: "Suivi du chantier", responsabilite: "Responsabilité" },
-    acteurs: [
-      {
-        nom: "Conseiller France Rénov'",
-        paie: "Personne : c'est un service public gratuit.",
-        perimetre: "La rénovation énergétique et les aides publiques.",
-        suivi: "Information et avis, sans suivi semaine après semaine.",
-        responsabilite: "Un conseil neutre, sans engagement sur ton chantier.",
-      },
-      {
-        nom: "Maître d'œuvre",
-        paie: "Toi, en général un pourcentage du montant des travaux.",
-        perimetre: "Il conçoit et dirige le chantier, il donne les ordres aux artisans.",
-        suivi: "Oui : c'est lui qui conduit le chantier.",
-        responsabilite: "Il répond de la conduite des travaux et doit être assuré pour cela.",
-      },
-      {
-        nom: "Mon accompagnement",
-        moi: true,
-        paie: "Toi : des prix moyens affichés plus haut, et le prix exact annoncé avant tout engagement.",
-        perimetre: "Conseil tous corps d'état : rénovation, construction neuve, achat, relecture de devis.",
-        suivi: "Si tu le veux, un point chaque semaine, tâches et budget dans AVYORA.",
-        responsabilite: "Conseil seulement : tu décides, tu signes, les artisans restent responsables de leurs travaux.",
-      },
-    ] satisfies Acteur[],
   },
   etapes: {
     h2: "Comment ça se passe",
@@ -527,35 +497,6 @@ const en: ContenuAccompagnement = {
     ],
     notePrix:
       "Average prices: they vary with the size of your project, except the opinion before you buy, which is a fixed price. I always give you the exact price before any commitment. VAT not applicable (French small-business exemption).",
-  },
-  difference: {
-    h2: "France Rénov', project manager or advice: what's the difference?",
-    intro: "Three ways to get help, three different jobs. Here's what sets them apart.",
-    criteres: { paie: "Who pays", perimetre: "What they do", suivi: "Site follow-up", responsabilite: "Liability" },
-    acteurs: [
-      {
-        nom: "France Rénov' advisor",
-        paie: "Nobody: it's a free public service.",
-        perimetre: "Energy renovation and public grants.",
-        suivi: "Information and advice, no week-by-week follow-up.",
-        responsabilite: "Neutral advice, with no commitment on your project.",
-      },
-      {
-        nom: "Project manager (maître d'œuvre)",
-        paie: "You, usually a percentage of the cost of the work.",
-        perimetre: "Designs and runs the project, gives instructions to contractors.",
-        suivi: "Yes: they run the site.",
-        responsabilite: "Liable for running the work and must be insured for it.",
-      },
-      {
-        nom: "My advice",
-        moi: true,
-        paie: "You: average prices shown above, and the exact price given before any commitment.",
-        perimetre: "Advice across all trades: renovation, new build, purchase, quote review.",
-        suivi: "If you want, a weekly check-in, tasks and budget in AVYORA.",
-        responsabilite: "Advice only: you decide, you sign, contractors remain liable for their work.",
-      },
-    ],
   },
   etapes: {
     h2: "How it works",
