@@ -17,9 +17,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { catT } from "@/lib/estimateur/catalog-i18n";
 import {
-  bilanBudget, corpsDuProjet, CORPS_AUTRE, CORPS_MATERIEL, NATURES,
-  type Depense, type Alerte, type LigneBudget, type NatureDepense,
+  bilanBudget, corpsDuProjet, tauxProposeDepense, CORPS_AUTRE, CORPS_MATERIEL, NATURES, TAUX_DEPENSE,
+  type Depense, type Alerte, type LigneBudget, type NatureDepense, type TauxDepense,
 } from "@/lib/estimateur/budget-reel";
+import { dictTva } from "@/lib/i18n/tva";
 import { euros, pourcent, lireMontant } from "@/lib/i18n/nombres";
 import { messageErreurApi } from "@/lib/i18n/erreurs-api";
 
@@ -123,7 +124,35 @@ const TR = {
 const CSS = `
 .av-bud{--b-ink:var(--color-ink,#15172b);--b-muted:var(--color-muted,#565a75);--b-faint:var(--color-faint,#6a6f88);--b-line:var(--color-line,#e9eaf3);--b-line2:var(--color-line-strong,#dcdeec);--b-brand:var(--color-brand-600,#4f46e5);--b-brand7:var(--color-brand-700,#4338ca);--b-weak:var(--color-brand-50,#eef1ff);--b-200:var(--color-brand-200,#c7ccfe);--b-nuit:var(--color-brand-900,#1e1b4b);--b-vert:#0f9d6b;--b-vertf:#e6f7f0;--b-ambre:#b06d10;--b-ambref:#fdf1e1;--b-rouge:#b42318;--b-rougef:#fdecec}
 .av-bud .num{font-variant-numeric:tabular-nums}
-.av-bud .resume{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px}
+.av-bud .resume{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:16px}
+.av-bud .tuile.tva{background:#f2efff;border-color:#c4b5fd}
+.av-bud .tuile.tva .k{color:#4338ca}
+.av-bud .base{font-size:12.5px;color:var(--b-muted);margin-top:6px}
+.av-bud .taxes{margin-top:18px;border:1px solid var(--b-line);border-radius:16px;padding:14px 16px;background:#fff;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:16px;align-items:start}
+.av-bud .taxes h3{grid-column:1/-1;font-size:16px;font-weight:700;color:var(--b-nuit);margin:0}
+.av-bud .taxes .tx-sous{grid-column:1/-1;font-size:12.5px;color:var(--b-muted);margin:-8px 0 0;line-height:1.45}
+.av-bud .taxes .tx-k{font-size:12.5px;font-weight:600;color:#4338ca}
+.av-bud .taxes .tx-v{font-size:30px;font-weight:700;letter-spacing:-.03em;color:var(--b-nuit);margin:2px 0}
+.av-bud .taxes .tx-s{font-size:12px;color:var(--b-muted);line-height:1.45;margin:4px 0}
+.av-bud .taxes .tx-j{display:block;height:8px;border-radius:999px;background:var(--b-weak);overflow:hidden;margin:8px 0 4px}
+.av-bud .taxes .tx-j i{display:block;height:100%;background:linear-gradient(90deg,var(--b-brand),#8b6cf3)}
+.av-bud .taxes table{width:100%;border-collapse:collapse;font-size:13px}
+.av-bud .taxes th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--b-faint);font-weight:600;text-align:right;padding:4px 0;border-bottom:1px solid var(--b-line2)}
+.av-bud .taxes th:first-child,.av-bud .taxes td:first-child{text-align:left}
+.av-bud .taxes td{padding:6px 0;border-bottom:1px solid var(--b-line);text-align:right;white-space:nowrap}
+.av-bud .taxes td:first-child{white-space:normal}
+.av-bud .taxes tr.tot td{font-weight:700;border-bottom:0}
+.av-bud .taxes .tx-tab{overflow-x:auto}
+.av-bud .nat-tva{background:#f2efff;color:#4338ca}
+.av-bud .hl .tvl{display:block;font-size:11.5px;color:var(--b-faint);overflow:hidden;text-overflow:ellipsis}
+.av-bud form.saisie .tvarow{grid-column:1/-1}
+.av-bud .seg.taux5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.av-bud .seg.taux5 span{min-height:40px;align-items:center;text-align:center}
+.av-bud .seg.base2{display:inline-grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;margin-top:4px}
+.av-bud .seg.base2 span{min-height:32px;padding:2px 10px;font-size:12.5px;align-items:center}
+.av-bud .tva-aide{font-size:12px;color:var(--b-faint);margin-top:6px;line-height:1.45}
+.av-bud .recap-tva{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;background:#fff;border:1px solid var(--b-line);border-radius:12px;padding:10px 12px;font-size:12px;color:var(--b-faint)}
+.av-bud .recap-tva b{display:block;font-size:15px;color:var(--b-ink)}
 .av-bud .tuile{border:1px solid var(--b-line);border-radius:16px;padding:14px 16px;background:#fff}
 .av-bud .tuile.fonce{background:var(--b-nuit);border-color:var(--b-nuit);color:#fff}
 .av-bud .tuile .k{font-size:12px;font-weight:600;color:var(--b-faint)}
@@ -225,7 +254,8 @@ const CSS = `
 .av-bud .pied{display:flex;justify-content:flex-end;margin-top:12px}
 @media (max-width:640px){
   .av-bud .resume{grid-template-columns:1fr 1fr}
-  .av-bud .resume .tuile:first-child{grid-column:1/-1}
+  .av-bud .taxes{grid-template-columns:1fr}
+  .av-bud .seg.taux5{grid-template-columns:repeat(3,minmax(0,1fr))}
   .av-bud .chiffres b{font-size:14px}
   .av-bud form.saisie{grid-template-columns:1fr 1fr}
   .av-bud form.saisie label.lib,.av-bud form.saisie label.corps{grid-column:1/-1}
@@ -270,6 +300,11 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales, o
   const [nature, setNature] = useState<NatureDepense>("fp");
   const [libelle, setLibelle] = useState("");
   const [montant, setMontant] = useState("");
+  // TVA de la facture (25/11/2026) : taux proposé selon le corps et la nature, modifiable ; « plusieurs taux » =
+  // le montant de TVA écrit sur la facture. Le montant se tape TTC (défaut) ou HT.
+  const [tauxChoisi, setTauxChoisi] = useState<TauxDepense | null>(null);
+  const [tvaMulti, setTvaMulti] = useState("");
+  const [montantHt, setMontantHt] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<{ msg: string; champs: boolean } | null>(null);
   const [aSupprimer, setASupprimer] = useState<string | null>(null);
@@ -284,23 +319,45 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales, o
 
   if (!bilan) return null;
   const estMateriel = choix === CORPS_MATERIEL;
+  const tv = dictTva(locale).budget;
+  const pro = bilan.base === "ht";
+  const pctTva = (x: TauxDepense): string => (x === "multi" ? tv.plusieurs : x === "0" ? tv.sans : dictTva(locale).pct(Number(x)));
+  const propose = tauxProposeDepense(rep, choix, estMateriel ? "mat" : nature);
+  const taux: TauxDepense = tauxChoisi ?? propose.taux;
+  /** La facture saisie : montant TTC et TVA (null si le montant ou la TVA manque). */
+  const facture = ((): { ttc: number; tva: number } | null => {
+    const m = lireMontant(montant);
+    if (!(m > 0)) return null;
+    if (taux === "multi") {
+      const e = lireMontant(tvaMulti);
+      if (!(e >= 0) || !tvaMulti.trim()) return null;
+      const ttc = montantHt ? m + e : m;
+      return e < ttc ? { ttc, tva: e } : null;
+    }
+    const r = Number(taux), ttc = montantHt ? m * (1 + r / 100) : m;
+    return { ttc, tva: ttc - ttc / (1 + r / 100) };
+  })();
 
   async function ajouter(e: React.FormEvent) {
     e.preventDefault();
     const m = lireMontant(montant);
     if (!libelle.trim() || !(m > 0)) { setErr({ msg: t.erreur, champs: true }); return; }
+    if (!facture) { setErr({ msg: taux === "multi" ? tv.erreurMulti : t.erreur, champs: true }); return; }
     setBusy(true); setErr(null);
     try {
       const r = await fetch(`/api/projects/${projectId}/depenses`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ corpsEtat: choix, libelle: libelle.trim(), montant: m, nature: estMateriel ? "mat" : nature }),
+        body: JSON.stringify({
+          corpsEtat: choix, libelle: libelle.trim(), montant: Math.round(facture.ttc * 100) / 100, nature: estMateriel ? "mat" : nature,
+          tauxTva: taux, ...(taux === "multi" ? { tva: Math.round(facture.tva * 100) / 100 } : {}),
+        }),
       });
       const j = await r.json().catch(() => null);
       if (!r.ok || !j?.depense) { setErr(erreurAjout(r.status)); return; }
       setDepenses((l) => [j.depense as Depense, ...l]);
       // Le corps concerné s'ouvre : la dépense ajoutée se voit tout de suite.
       setOuvert(choix);
-      setLibelle(""); setMontant("");
+      setLibelle(""); setMontant(""); setTvaMulti("");
     } catch { setErr({ msg: messageErreurApi(locale, 0, t.erreurServeur), champs: false }); } finally { setBusy(false); }
   }
 
@@ -339,6 +396,7 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales, o
 
   function saisirIci(c: string) {
     setChoix(c);
+    setTauxChoisi(null);
     if (c === CORPS_MATERIEL) setNature("mat");
     setSaisie(true);
     setTimeout(() => { refForm.current?.scrollIntoView({ block: "nearest", behavior: "smooth" }); refLibelle.current?.focus({ preventScroll: true }); }, 0);
@@ -423,6 +481,7 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales, o
             {NATURES.filter((n) => l.parNature[n] > 0).map((n) => (
               <span key={n} className={"nat nat-" + n}><i />{t.natures[n]}<b>{fmt(l.parNature[n])}</b></span>
             ))}
+            {l.tva > 0 && <span className="nat nat-tva">{tv.dontTva(pro)}<b>{fmt(l.tva)}</b></span>}
           </div>
         )}
         {l.prevuToi > 0 && l.prevuArtisan > 0 && <p className="partage num">{t.prevuPartage(fmt(l.prevuArtisan), fmt(l.prevuToi))}</p>}
@@ -470,7 +529,9 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales, o
                 <div key={d.id}>
                   <div className="hl">
                     <span className="d num">{dateCourte(d.date)}</span>
-                    <span className="tx" title={d.libelle}>{d.libelle}</span>
+                    <span className="tx" title={d.libelle}>{d.libelle}
+                      <small className="tvl">{d.tva != null ? tv.ligneTva(pctTva(d.taux ?? "multi"), fmt(d.tva)) : tv.tvaInconnue}</small>
+                    </span>
                     <span className={"tag " + n}>{t.natures[n]}</span>
                     <span className="m num">{fmt(d.montant)}</span>
                     <button type="button" onClick={() => setASupprimer(aSupprimer === d.id ? null : d.id)} aria-expanded={aSupprimer === d.id} aria-label={`${t.supprimer} ${d.libelle}`}>✕</button>
@@ -496,11 +557,13 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales, o
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <h2>{t.titre}</h2>
       <div className="sub">{t.sub}</div>
+      <div className="base">{tv.base(pro)}</div>
 
       <div className="resume num">
         <div className="tuile fonce"><div className="k">{t.bPrevu}</div><div className="v">{fmt(bilan.estimation)}</div><div className="s">{t.bPrevuS}</div></div>
         <div className="tuile"><div className="k">{t.bPaye}</div><div className="v">{fmt(bilan.reel)}</div><div className="s">{t.bPayeS(pct(partPayee))}</div></div>
         <div className="tuile"><div className="k">{t.bReste}</div><div className="v">{fmt(reste)}</div><div className="s">{t.bResteS}</div></div>
+        <div className="tuile tva"><div className="k">{tv.tuileTva(pro)}</div><div className="v">{fmt(bilan.tva.payee)}</div><div className="s">{tv.tuileTvaS(depenses.length - bilan.tva.sansTva, bilan.tva.sansTva)}</div></div>
       </div>
       {aDesDepenses && (
         <>
@@ -524,6 +587,35 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales, o
       )}
       {!aDesDepenses && <p className="vide-msg">{t.vide}</p>}
 
+      {/* Taxes payées (25/11/2026) : la TVA de chaque facture, additionnée, par taux, contre celle de l'estimation. */}
+      {aDesDepenses && (
+        <section className="taxes" aria-label={tv.taxesT}>
+          <h3>{tv.taxesT}</h3>
+          <p className="tx-sous">{tv.taxesSous(pro)}</p>
+          <div>
+            <div className="tx-k">{tv.taxesK(pro)}</div>
+            <div className="tx-v num">{fmt(bilan.tva.payee)}</div>
+            {bilan.tva.ttcFactures > 0 && <p className="tx-s">{tv.taxesPart(fmt(bilan.tva.ttcFactures), pct((bilan.tva.payee / bilan.tva.ttcFactures) * 100))}</p>}
+            <span className="tx-j" aria-hidden="true"><i style={{ width: `${Math.min(100, bilan.tva.prevue > 0 ? (bilan.tva.payee / bilan.tva.prevue) * 100 : 0)}%` }} /></span>
+            <p className="tx-s">{tv.taxesPrevu(fmt(bilan.tva.prevue), pct(bilan.tva.prevue > 0 ? (bilan.tva.payee / bilan.tva.prevue) * 100 : 0))}</p>
+            {bilan.tva.sansTva > 0 && <p className="tx-s">{tv.sansTvaNote(bilan.tva.sansTva)}</p>}
+          </div>
+          {bilan.tva.parTaux.length > 0 && (
+            <div className="tx-tab">
+              <table className="num">
+                <thead><tr><th>{tv.colTaux}</th><th>{tv.colNb}</th><th>{tv.colHt}</th><th>{tv.colTva}</th></tr></thead>
+                <tbody>
+                  {bilan.tva.parTaux.map((x) => (
+                    <tr key={x.taux}><td>{x.taux === "multi" ? tv.multi : x.taux === "0" ? tv.sans : "TVA " + pctTva(x.taux)}</td><td>{x.n}</td><td>{fmt(x.ht)}</td><td>{fmt(x.tva)}</td></tr>
+                  ))}
+                  <tr className="tot"><td>{tv.total}</td><td>{bilan.tva.parTaux.reduce((a, x) => a + x.n, 0)}</td><td>{fmt(bilan.tva.parTaux.reduce((a, x) => a + x.ht, 0))}</td><td>{fmt(bilan.tva.payee)}</td></tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      )}
+
       <div className="tete-c">
         <h3>{t.parCorps}</h3>
         <span>{t.nbDep(depenses.length)}</span>
@@ -539,7 +631,7 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales, o
       {saisie && (
         <form ref={refForm} className="saisie" onSubmit={ajouter} aria-label={t.ajouter}>
           <label className="corps"><span>{t.libCorps}</span>
-            <select value={choix} onChange={(e) => { setChoix(e.target.value); if (e.target.value === CORPS_MATERIEL) setNature("mat"); }}>
+            <select value={choix} onChange={(e) => { setChoix(e.target.value); setTauxChoisi(null); if (e.target.value === CORPS_MATERIEL) setNature("mat"); }}>
               {corps.map((c) => <option key={c} value={c}>{nomCorps(c)}</option>)}
               <option value={CORPS_AUTRE}>{t.autre}</option>
             </select>
@@ -547,8 +639,12 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales, o
           <label className="lib"><span>{t.libelle}</span>
             <input ref={refLibelle} value={libelle} onChange={(e) => setLibelle(e.target.value)} placeholder={estMateriel ? t.libellePhMat : t.libellePh} maxLength={200} aria-invalid={!!err?.champs && !libelle.trim()} />
           </label>
-          <label><span>{t.montant}</span>
+          <label><span>{tv.montantT(!montantHt)}</span>
             <input value={montant} onChange={(e) => setMontant(e.target.value)} inputMode="decimal" placeholder="0" aria-invalid={!!err?.champs && !(lireMontant(montant) > 0)} />
+            <span className="seg base2" role="radiogroup" aria-label={tv.montantT(!montantHt)}>
+              <label><input type="radio" name="base-depense" checked={!montantHt} onChange={() => setMontantHt(false)} /><span>{dictTva(locale).reglages.ttc}</span></label>
+              <label><input type="radio" name="base-depense" checked={montantHt} onChange={() => setMontantHt(true)} /><span>{dictTva(locale).reglages.ht}</span></label>
+            </span>
           </label>
           {!estMateriel && (
             <fieldset className="natrow">
@@ -556,12 +652,38 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales, o
               <div className="seg">
                 {NATURES.map((n) => (
                   <label key={n}>
-                    <input type="radio" name="nature-depense" value={n} checked={nature === n} onChange={() => setNature(n)} />
+                    <input type="radio" name="nature-depense" value={n} checked={nature === n} onChange={() => { setNature(n); setTauxChoisi(null); }} />
                     <span>{t.natures[n]}<small>{t.naturesAide[n]}</small></span>
                   </label>
                 ))}
               </div>
             </fieldset>
+          )}
+          <fieldset className="tvarow">
+            <legend>{tv.formTaux}</legend>
+            <div className="seg taux5">
+              {TAUX_DEPENSE.map((x) => (
+                <label key={x}>
+                  <input type="radio" name="taux-depense" value={x} checked={taux === x} onChange={() => setTauxChoisi(x)} />
+                  <span>{x === "0" ? tv.formSans : x === "multi" ? tv.formMulti : pctTva(x)}</span>
+                </label>
+              ))}
+            </div>
+            {taux === "multi" ? (
+              <>
+                <p className="tva-aide">{tv.formMultiAide}</p>
+                <input value={tvaMulti} onChange={(e) => setTvaMulti(e.target.value)} inputMode="decimal" placeholder={tv.formMultiPh} aria-label={tv.formMultiPh} style={{ maxWidth: 320, marginTop: 6 }} />
+              </>
+            ) : (
+              <p className="tva-aide">{tv.formPropose(pctTva(propose.taux), tv.pourquoi[propose.pourquoi], tauxChoisi && tauxChoisi !== propose.taux ? pctTva(tauxChoisi) : null)}</p>
+            )}
+          </fieldset>
+          {facture && (
+            <div className="recap-tva num">
+              <span>{tv.recapHt}<b>{fmt(facture.ttc - facture.tva)}</b></span>
+              <span>{tv.recapTva(pctTva(taux))}<b>{fmt(facture.tva)}</b></span>
+              <span>{tv.recapTtc}<b>{fmt(facture.ttc)}</b></span>
+            </div>
           )}
           <div className="envoi"><button type="submit" className="add" disabled={busy}>{busy ? t.enCours : t.valider}</button></div>
         </form>

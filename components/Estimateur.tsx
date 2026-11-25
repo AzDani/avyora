@@ -31,6 +31,9 @@ import { fmt, gras, Field, Stepper, CustomLines } from "./estimateur/partage";
 import { Intertitre, Pastilles, Segment, CartesFinition, ChampCodePostal, Interrupteur, Recap, ZoneRecap, useChampEnFaute } from "./estimateur/intake";
 import { ListeLots, TitrePhase, BlocLot, LignesLot } from "./estimateur/ListeLots";
 import { BarreLive } from "./estimateur/BarreLive";
+import { ReglagesTva, REGLAGES_TVA_CSS } from "./estimateur/ReglagesTva";
+import { enHT, estPro, totalAffiche, lotAffiche, montant, tvaParTaux } from "@/lib/estimateur/tva";
+import { dictTva } from "@/lib/i18n/tva";
 import { VueDevis, ChoixVue, type DonneesDevis } from "./estimateur/VueDevis";
 import {
   CATALOG, PHASES, ICON, isLoc, visible, lotHT,
@@ -263,20 +266,20 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
     return (
       <BlocLot key={l.c} ouvert={isOpen} entete={{
         icone: ICON[l.c] || "•", nom: catT(locale, "corps", l.c), cnt, ouvert: isOpen,
-        montant: cnt > 0 ? fmt(lotHT(ctx, sel, l) + customLotHT(custom, l.c), locale) + " " + dl.liste.ht : "",
+        montant: cnt > 0 ? fmt(lotAffiche(ctxR, sel, l, custom), locale) + " " + (enHT(ctx) ? dl.liste.ht : dictTva(locale).reglages.ttc) : "",
         onBascule: () => setOpen((o) => ({ ...o, [l.c]: !o[l.c] })),
       }}>
         {loc && <div className="locnote">{gras(dl.liste.locNote)}</div>}
         <LignesLot l={l} taches={postesAffichesReno(ctx, sel, l, seulementCoches)} ctx={ctxR} sel={sel} loc={loc} maj={upd} onCocher={toggleCheck} onAuto={toggleAuto} />
         {/* ligne perso disponible sur tous les lots */}
-        <CustomLines lines={cLines} onAdd={() => addCustom(l.c)} onUpd={updCustom} onDel={delCustom} tvas={(courant) => tauxPersoPossibles(ctx, courant)} />
+        <CustomLines lines={cLines} onAdd={() => addCustom(l.c)} onUpd={updCustom} onDel={delCustom} tvas={(courant) => tauxPersoPossibles(ctx, courant)} enTtc={!enHT(ctx)} />
       </BlocLot>
     );
   }
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: EST_CSS + ROW_SOI_CSS + INTAKE_CSS }} />
+      <style dangerouslySetInnerHTML={{ __html: EST_CSS + ROW_SOI_CSS + INTAKE_CSS + REGLAGES_TVA_CSS }} />
       <div className="av-estim">
         <VisiteGuidee id="detailleReno" etapes={etapesVisite} prerempli={edition || repris} />
         <ChoixVue vue={view} onVue={setView} saisie={dl.vues.saisie} devis={dl.vues.devis} aria={dl.vues.aria} />
@@ -379,6 +382,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
               <Segment aria={B.tvaT} valeur={ctx.fiscal === "pro" ? "pro" : "habitation"} onChoix={(f) => patchCtx({ fiscal: f })}
                 options={[{ v: "habitation", label: B.tvaHabitation }, { v: "pro", label: B.tvaPro }]} />
               <div className="locnote">{gras(B.tvaNote)}</div>
+              <ReglagesTva ctx={ctx} setCtx={setCtx} cat={CATALOG} sel={sel} setSel={setSel} />
 
               <Intertitre>{B.budgetT}</Intertitre>
               <div className="depart">
@@ -419,7 +423,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
         {view === "devis" && <DevisView ctx={ctxR} sel={sel} custom={custom} />}
       </div>
 
-      <BarreLive total={tot.ttc} budget={budget} vue={view} onVue={setView} onEnregistrer={enregistrer} saving={saving} edition={edition} erreur={erreur} erreurId={ID_ERREUR} t={dl.live}
+      <BarreLive total={totalAffiche(tot, ctx)} budget={budget} vue={view} onVue={setView} onEnregistrer={enregistrer} saving={saving} edition={edition} erreur={erreur} erreurId={ID_ERREUR} t={enHT(ctx) ? { ...dl.live, ttc: dictTva(locale).total.unite(true) } : dl.live}
         visite={{ total: "detail-total", jauge: "detail-jauge", devis: "detail-devis", enregistrer: "detail-enregistrer" }} />
     </>
   );
@@ -437,39 +441,45 @@ export function DevisView({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Selection;
   const persoTtc = cu.ht + cu.tva;
   const max = Math.max(1, ...lots.map((x) => x.ttc), persoTtc);
   const pro = ctx.fiscal === "pro";
+  // HT / TTC (25/11/2026) : le total et les montants suivent l'affichage du projet ; la TVA est détaillée par taux.
+  const tv = dictTva(locale);
+  const affHt = enHT(ctx), payeurPro = estPro(ctx);
+  const parTaux = tvaParTaux(CATALOG, ctx, sel, custom);
+  const detailTaux = parTaux.length > 1 ? " " + parTaux.map((x) => tv.total.parTaux(tv.pct(x.taux), fmt(x.ht, locale)) + " : " + fmt(x.tva, locale)).join(" · ") + "." : "";
+  const rappel = payeurPro ? " " + tv.total.rappelPro(fmt(t.tva, locale), fmt(t.ht + t.aleas, locale)) : affHt ? " " + tv.total.rappelHt(fmt(t.ttc, locale)) : "";
 
   const d: DonneesDevis = {
-    eb: D.eb, ttc: t.ttc, ttcUnite: dictDetail(locale).live.ttc,
+    eb: D.eb, ttc: totalAffiche(t, ctx), ttcUnite: affHt ? tv.total.unite(true) : dictDetail(locale).live.ttc,
     pilules: [
-      { k: D.travauxHt, v: t.ht }, { k: D.tva(pro), v: t.tva }, { k: D.aleas(ctx.aleas), v: t.aleas }, { k: D.budgetMax, v: ctx.budget },
+      { k: D.travauxHt, v: t.ht }, { k: payeurPro ? tv.total.tvaRecup : D.tva(pro), v: t.tva }, { k: D.aleas(ctx.aleas), v: t.aleas }, { k: D.budgetMax, v: ctx.budget },
     ],
-    hint: pro ? D.hintPro : D.hintHabitation,
+    hint: (pro ? D.hintPro : D.hintHabitation) + detailTaux + rappel,
     bilan: {
       titre: D.bilanT, titreNote: D.bilanHt, sous: D.bilanSous,
       paye: D.paye, payeV: b.paye, payeSous: D.dontMat(fmt(b.matA, locale), fmt(b.moA, locale)),
       achat: D.achat, achatV: b.achat, eco: D.eco, ecoV: b.eco,
     },
     repartition: {
-      titre: D.repT, sous: D.repSous,
+      titre: D.repT, sous: affHt ? tv.total.repSousHt : D.repSous,
       vide: !lots.length && !persoTtc ? D.vide : null,
       phases: PHASES.flatMap((ph) => {
         const pl = lots.filter((x) => x.phase === ph).sort((a, c) => c.ttc - a.ttc);
         return pl.length ? [{
           cle: ph, nom: catT(locale, "phases", ph),
-          lots: pl.map((x) => ({ cle: x.corps, nom: `${ICON[x.corps] || ""} ${catT(locale, "corps", x.corps)}`, v: x.ttc, pct: (x.ttc / max) * 100 })),
+          lots: pl.map((x) => ({ cle: x.corps, nom: `${ICON[x.corps] || ""} ${catT(locale, "corps", x.corps)}`, v: affHt ? lotHT(ctx, sel, CATALOG.find((l) => l.c === x.corps)!) : x.ttc, pct: (x.ttc / max) * 100 })),
         }] : [];
       }),
-      perso: persoTtc > 0 ? { cle: "perso", nom: D.perso, v: persoTtc, pct: (persoTtc / max) * 100 } : null,
+      perso: persoTtc > 0 ? { cle: "perso", nom: D.perso, v: affHt ? cu.ht : persoTtc, pct: (persoTtc / max) * 100 } : null,
     },
     detail: {
-      titre: D.detailT, sous: D.detailSous,
+      titre: D.detailT, sous: affHt ? tv.total.detailSousHt : D.detailSous,
       lignes: lignes.map((li) => ({
         cle: li.cle, nom: catLigne(locale, li.nom, li.cle),
         // Unité écrite (« m² », « m³ ») en français comme en anglais ; la clé reste « m2 ».
         q: li.unite === "forfait" ? "—" : D.qte(li.qty, catT(locale, "unites", li.unite), li.mode === "location"),
         mode: li.mode === "location" ? "mL" : li.mode === "je-fais" ? "mS" : "mA",
         modeTxt: li.mode === "location" ? D.modes.location : li.mode === "je-fais" ? D.modes.jeFais : D.modes.faitFaire,
-        m: fmt(li.ttc, locale),
+        m: fmt(affHt ? li.ht : li.ttc, locale),
       })),
     },
     pied: D.pied(D.finitionPied(ctx.finition)),

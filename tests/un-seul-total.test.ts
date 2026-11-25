@@ -122,8 +122,9 @@ describe("Prix unitaire affiché = celui du moteur (puReel)", () => {
   const ligne = (ctx: Ctx, lot: string, nom: string, s: Selection[string]) => {
     const l = CATALOG.find((x) => x.c === lot)!, t = l.t.find((x) => x.n === nom)!;
     const sel: Selection = { [key(lot, nom)]: s };
+    // Affichage HT : ce test compare le prix unitaire affiché au HT du moteur (puReel).
     const html = rendre(createElement(Row, {
-      l, t, ctx, sel, loc: false, onCheck: rien, onChoice: rien, onAuto: rien, onQty: rien, onMat: rien, onVit: rien, onMot: rien,
+      l, t, ctx: { ...ctx, affichage: "ht" }, sel, loc: false, onCheck: rien, onChoice: rien, onAuto: rien, onQty: rien, onMat: rien, onVit: rien, onMot: rien,
       onTai: rien, onVar: rien, onNote: rien, onPu: rien, onPm: rien,
     }));
     return { html, ff: puReel(ctx, sel, l, t, false), diy: puReel(ctx, sel, l, t, true), montant: lineHT(ctx, sel, l, t) };

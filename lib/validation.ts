@@ -76,6 +76,10 @@ export const depenseSchema = z.object({
   montant: z.coerce.number().min(0.01).max(5_000_000),
   /** fp fourni-posé (matériaux + main-d'œuvre), mo main-d'œuvre seule, mat matériaux seuls (budget réel, 25/11/2026). */
   nature: z.enum(["fp", "mo", "mat"]).default("fp"),
+  /** TVA de la facture (25/11/2026) : son taux, et son montant seulement pour une facture à plusieurs taux
+   *  (sinon le serveur la recalcule depuis le montant TTC). Absents : TVA non renseignée. */
+  tauxTva: z.enum(["0", "5.5", "10", "20", "multi"]).optional(),
+  tva: z.coerce.number().min(0).max(5_000_000).optional(),
 });
 
 /** Le budget « Matériel et outillage » fixé par l'utilisateur (null : revenir à celui de l'estimation). */

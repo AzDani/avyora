@@ -3,7 +3,7 @@
  * (liste, mon-espace, fiche). Tout part de `reponses = { v:"estimateur", ctx, sel }`.
  * Aucune dépendance à l'ancien moteur.
  */
-import { buildDevis, statutLigne, key, PHASES, customTotals, regionCoef, type Ctx, type Selection, type DevisLot, type Tache, type Totaux, type CustomLine } from "./core";
+import { buildDevis, statutLigne, key, PHASES, customTotals, prixHTPerso, regionCoef, type Ctx, type Selection, type DevisLot, type Tache, type Totaux, type CustomLine } from "./core";
 import { catalogueDe, PHASES_NEUF } from "./catalogue-neuf";
 import { normaliserCles } from "./identite";
 
@@ -154,7 +154,7 @@ export const PHASE_PERSO = "Personnalisé";
 export function lotsAvecPerso(lots: DevisLot[], custom: unknown): (DevisLot & { phases: string[] })[] {
   const out = lotsParCorps(lots);
   for (const x of persoValidees(custom)) {
-    const h = (x.prix || 0) * (x.qte || 0), ttc = h + (h * (x.tva || 0)) / 100;
+    const h = prixHTPerso(x) * (x.qte || 0), ttc = h + (h * (x.tva || 0)) / 100;
     const ex = out.find((l) => l.corps === x.lot);
     if (ex) ex.ttc += ttc;
     else out.push({ corps: x.lot, phase: PHASE_PERSO, ttc, phases: [PHASE_PERSO] });

@@ -15,16 +15,21 @@ import { useState, type ReactNode } from "react";
 import NumStepper from "@/components/Stepper";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { catT, catPoste } from "@/lib/estimateur/catalog-i18n";
-import { key, isAuto, autoQty, lineHT, effPrices, puReel, peutFaireSoiMeme, horsDecennaleSoiMeme, MENTIONS_SOI_MEME, type Ctx, type Selection, type Lot, type Tache, type RaisonPro } from "@/lib/estimateur";
+import { key, isAuto, autoQty, lineHT, effPrices, puReel, peutFaireSoiMeme, horsDecennaleSoiMeme, MENTIONS_SOI_MEME, effRate, rateMode, type Ctx, type Selection, type Lot, type Tache, type RaisonPro } from "@/lib/estimateur";
+import { tauxAuto, raisonTaux, alerteTaux, retouchee, enHT, montant, TAUX_TVA } from "@/lib/estimateur/tva";
+import { dictTva } from "@/lib/i18n/tva";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 import { dictDetail } from "@/lib/i18n/detail";
 import { BoutonInfo, ChoicePrice, TexteInfo, fmt, isUrl } from "./partage";
 import { nombre, pourcent } from "@/lib/i18n/nombres";
 
-export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote, onPu, onPm, badge, proRaison, choix }: {
+export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote, onPu, onPm, onTaux, onBase, onRevenir, badge, proRaison, choix }: {
   l: Lot; t: Tache; ctx: Ctx; sel: Selection; loc: boolean;
   onCheck: () => void; onChoice: (self: boolean) => void; onAuto: () => void; onQty: (v: number) => void;
   onMat: (m: "pvc" | "alu" | "bois") => void; onVit: (v: "double" | "triple") => void; onMot: (m: "manuel" | "motorise") => void; onTai: (z: "petit" | "grand") => void; onVar: (g: string, o: string) => void; onNote: (v: string) => void; onPu: (v: number | null) => void; onPm: (v: number | null) => void;
+  /** HT / TTC (25/11/2026) : forcer le taux de la ligne (`null` = automatique), changer la base d'un prix tapé,
+   *  revenir à l'automatique. Absents : pas de pastille TVA (rendu d'avant). */
+  onTaux?: (v: number | null) => void; onBase?: (quel: "pu" | "pm", ttc: boolean) => void; onRevenir?: () => void;
   /** `pct` : « {fp} % des travaux » au lieu d'une quantité ; `jalon` : « Démarche », sans montant. */
   badge?: "pct" | "jalon";
   /** Poste réservé aux pros : « Pro obligatoire · <raison> » à la place de « Je le fais ». Défaut :
@@ -40,6 +45,7 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
   const [noteOpen, setNoteOpen] = useState<boolean>(false);
   const [infoOpen, setInfoOpen] = useState<boolean>(false);
   const [puEdit, setPuEdit] = useState<boolean>(false);
+  const [tvaOpen, setTvaOpen] = useState<boolean>(false);
   const variant = !!(t.mat || t.vitrage || t.moto || t.taille || (t.vars && t.vars.length));
   const ep = effPrices(t, s, ctx);
   const matSel = s.mat || t.matDef || (ctx.finition === "premium" ? "alu" : "pvc");
@@ -52,14 +58,26 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
      poste : prix unitaire × quantité ne faisait pas le montant de la ligne. */
   const pmEdited = s.pm != null;
   const puEdited = s.pu != null;
-  const puMat = ep.sm != null ? puReel(ctx, sel, l, t, true) : null;                     // « Je le fais » (matériaux)
-  const puv = ep.fp != null || puEdited ? puReel(ctx, sel, l, t, false) : null;           // « Fait faire »
+  /* HT / TTC (25/11/2026) : les prix s'affichent dans la base choisie pour le projet (`ctx.affichage`) ; le
+     HT reste le calcul. Chaque mode a son taux (« Je le fais » : 20 %), un taux forcé passe avant. */
+  const tv = dictTva(locale);
+  const affHt = enHT(ctx);
+  const rFait = rateMode(l, t, sel, ctx, false), rSoi = rateMode(l, t, sel, ctx, true), rLigne = effRate(l, t, sel, ctx);
+  const puMatHt = ep.sm != null ? puReel(ctx, sel, l, t, true) : null;
+  const puvHt = ep.fp != null || puEdited ? puReel(ctx, sel, l, t, false) : null;
+  const puMat = puMatHt != null ? montant(puMatHt, rSoi, ctx) : null;                     // « Je le fais » (matériaux)
+  const puv = puvHt != null ? montant(puvHt, rFait, ctx) : null;                          // « Fait faire »
   const nTxt = dictNeufCommun(locale);
   const dl = dictDetail(locale), L = dl.ligne;
   // Unité du prix unitaire : écrite en français (« /m² », « /m³ ») comme en anglais (« /m² », « /day ») ; la clé reste « m2 ».
   const unitPart = badge !== "pct" && t.u !== "forfait" && t.u !== "u" ? "/" + catT(locale, "unites", t.u) : "";
   // Un frais (taxe, assurance) ne porte pas de TVA : pas de « HT ». N'existe qu'en neuf.
-  const uSuffix = t.frais ? unitPart + " · " + nTxt.sansTva : " " + dl.liste.ht + unitPart;
+  const uSuffix = t.frais ? unitPart + " · " + nTxt.sansTva : " " + (affHt ? dl.liste.ht : tv.reglages.ttc) + unitPart;
+  /* La pastille TVA : sur une ligne cochée qui porte une TVA (pas une taxe, une démarche ni un pourcentage). */
+  const avecTva = !!onTaux && !t.frais && badge !== "jalon" && badge !== "pct";
+  const retouche = on && retouchee(s);
+  const rAuto = tauxAuto(l, t, sel, ctx);
+  const alerte = alerteTaux(l, t, sel, ctx);
   /* « Je le fais » proposé : la même règle par poste pour les deux natures (`peutFaireSoiMeme`), hors
      poste réservé aux pros. En rénovation, elle décide exactement comme l'ancienne (« dès que le poste
      a un prix de fourniture », vérifié poste par poste et variante par variante par
@@ -82,7 +100,7 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
   const autoVal = au ? autoQty(ctx, l.c, t.n, sel) ?? 0 : 0;
 
   return (
-    <div className="trow">
+    <div className={"trow" + (retouche ? " retouche" : "")}>
       <button className={"cbx" + (on ? " on" : "")} onClick={onCheck} aria-label={on ? L.decocher : L.cocher} />
       <span className="tn">{catPoste(locale, t)}
         <span className={"pu" + (puEdited ? " edited" : "")}>
@@ -139,12 +157,52 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
           )}
           {s.note && !noteOpen && isUrl(s.note) && <a className="notechip" href={s.note} target="_blank" rel="noopener noreferrer" title={s.note}>🔗</a>}
           <button type="button" className={"notebtn" + (s.note ? " has" : "")} onClick={() => setNoteOpen((o) => !o)} title={s.note ? L.noteVoir : L.noteAjouter}>📝</button>
-          {!jalon && <span className="lineamt num">{fmt(lineHT(ctx, sel, l, t), locale)}</span>}
+          {avecTva && (
+            <button type="button" className={"tvachip" + (s.tva != null ? " force" : "")} aria-expanded={tvaOpen} onClick={() => setTvaOpen((o) => !o)}>
+              {tv.ligne.chip(tv.pct(rLigne))} <span className="tvaauto">{s.tva != null ? tv.ligne.modifiee : tv.ligne.auto}</span>
+            </button>
+          )}
+          {!jalon && <span className="lineamt num">{fmt(montant(lineHT(ctx, sel, l, t), rLigne, ctx), locale)}</span>}
         </span>
       ) : (
         <span className="tctl"><span className="unit">{t.u === "forfait" ? catT(locale, "unites", "forfait") : loc ? L.parJour : catT(locale, "unites", t.u)}</span></span>
       )}
       {infoOpen && info.length > 0 && <TexteInfo morceaux={info} />}
+      {on && avecTva && tvaOpen && (
+        <div className="ttva" role="group" aria-label={tv.ligne.titre}>
+          <div className="tt-l">{tv.ligne.titre}</div>
+          <div className="tt-taux">
+            <button type="button" aria-pressed={s.tva == null} onClick={() => onTaux?.(null)}>{tv.ligne.automatique(tv.pct(rAuto))}</button>
+            {(loc ? [20] : [...TAUX_TVA]).map((v) => (
+              <button type="button" key={v} aria-pressed={s.tva === v} onClick={() => onTaux?.(v)}>{tv.pct(v)}</button>
+            ))}
+          </div>
+          <p className="tt-aide">{tv.ligne.raisons[raisonTaux(l, t, sel, ctx)]}</p>
+          {alerte && <p className={"tt-alerte" + (alerte === "energie" ? " ok" : "")}>{tv.ligne.alertes[alerte]}</p>}
+          {(s.pu != null || s.pm != null) && (
+            <div className="tt-prix">
+              <div className="tt-l">{tv.ligne.prixT}</div>
+              {([["pu", s.pu, !!s.puTtc, loc ? null : tv.ligne.prixFait], ["pm", s.pm, !!s.pmTtc, tv.ligne.prixSoi]] as const).map(([quel, v, ttc, nom]) => v == null ? null : (
+                <span className="tt-p" key={quel}>
+                  {nom && <>{nom} : </>}<b className="num">{fmt(v, locale)}</b> {tv.ligne.saisiEn}
+                  <span className="tt-seg" role="group">
+                    <button type="button" aria-pressed={!ttc} onClick={() => onBase?.(quel, false)}>{dl.liste.ht}</button>
+                    <button type="button" aria-pressed={ttc} onClick={() => onBase?.(quel, true)}>{tv.reglages.ttc}</button>
+                  </span>
+                </span>
+              ))}
+              <p className="tt-aide">{tv.ligne.prixAide}</p>
+            </div>
+          )}
+          <div className="tt-pied">
+            <span>{retouche ? tv.ligne.retouchee : tv.ligne.suit}</span>
+            <span className="tt-act">
+              {retouche && <button type="button" className="tt-lien" onClick={() => onRevenir?.()}>{tv.ligne.revenir}</button>}
+              <button type="button" className="tt-lien" onClick={() => setTvaOpen(false)}>{tv.ligne.fermer}</button>
+            </span>
+          </div>
+        </div>
+      )}
       {choix && <div className="tchoix">{choix}</div>}
       {on && self && horsDecennale && <div className="decennale" role="note">{ctx.nature === "neuf" ? nTxt.horsDecennale : nTxt.horsDecennaleReno}</div>}
       {on && self && mention && <div className="mention-soi" role="note">{nTxt.mentionsSoiMeme[mention]}</div>}

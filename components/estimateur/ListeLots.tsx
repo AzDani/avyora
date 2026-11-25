@@ -19,6 +19,7 @@ import { useState, type ReactNode } from "react";
 import { Row } from "./Row";
 import { BoutonInfo, IconeInfo, TexteInfo } from "./partage";
 import { ligneQuantite, lignePrix, ligneMateriaux } from "@/lib/estimateur/detaille-reno";
+import { enHT, ligneTaux, ligneBase, ligneAuto } from "@/lib/estimateur/tva";
 import type { Ctx, Selection, LigneSel, Lot, Tache, RaisonPro } from "@/lib/estimateur";
 
 /** Titre d'une phase : simple intertitre (rénovation, « Mon devis ») ou bouton qui la replie (neuf). */
@@ -116,8 +117,12 @@ export function LignesLot({ l, taches, ctx, sel, loc, maj, onCocher, onAuto, opt
              ailleurs : choisir « à galandage » change le prix de la baie, là où l'on clique. */
           onVar={(g, o) => maj(l.c, t.n, (s) => ({ ...s, vsel: { ...(s.vsel || {}), [g]: o } }))}
           onNote={(v) => maj(l.c, t.n, (s) => ({ ...s, note: v }))}
-          onPu={(v) => maj(l.c, t.n, lignePrix(v))}
-          onPm={(v) => maj(l.c, t.n, ligneMateriaux(v))}
+          /* Un prix se tape dans l'affichage du projet : en TTC, il est gardé TTC (le chiffre du devis reste fixe). */
+          onPu={(v) => maj(l.c, t.n, lignePrix(v, !enHT(ctx)))}
+          onPm={(v) => maj(l.c, t.n, ligneMateriaux(v, !enHT(ctx)))}
+          onTaux={(v) => maj(l.c, t.n, ligneTaux(v))}
+          onBase={(quel, ttc) => maj(l.c, t.n, ligneBase(quel, ttc))}
+          onRevenir={() => maj(l.c, t.n, ligneAuto())}
         />
       ))}
     </>

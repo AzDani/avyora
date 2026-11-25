@@ -18,6 +18,8 @@ import { dictNeuf } from "@/lib/i18n/neuf";
 import { fmt } from "@/components/estimateur/partage";
 import { pourcent } from "@/lib/i18n/nombres";
 import { VueDevis, type DonneesDevis } from "@/components/estimateur/VueDevis";
+import { enHT, estPro, totalAffiche, tvaParTaux } from "@/lib/estimateur/tva";
+import { dictTva } from "@/lib/i18n/tva";
 
 export default function DevisNeuf({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Selection; custom?: CustomLine[] }) {
   const locale = useLocale();
@@ -35,23 +37,29 @@ export default function DevisNeuf({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Se
   const persoTtc = cu.ht + cu.tva;
   // Le nom de la finition : celui des deux rapides (N13), le même que les cartes du questionnaire.
   const finLbl = T.rapide.finitions[ctx.finition]?.label ?? ctx.finition;
+  // HT / TTC (25/11/2026) : le total et les lignes suivent l'affichage du projet ; un pro voit sa TVA récupérable.
+  const tv = dictTva(locale);
+  const affHt = enHT(ctx), payeurPro = estPro(ctx);
+  const parTaux = tvaParTaux(CATALOG_NEUF, ctx, sel, custom).filter((x) => x.taux > 0);
+  const detailTaux = parTaux.length > 1 ? " " + parTaux.map((x) => tv.total.parTaux(tv.pct(x.taux), fmt(x.ht, locale)) + " : " + fmt(x.tva, locale)).join(" · ") + "." : "";
+  const rappel = payeurPro ? " " + tv.total.rappelPro(fmt(t.tva, locale), fmt(t.ht + t.aleas, locale)) : affHt ? " " + tv.total.rappelHt(fmt(t.ttc, locale)) : "";
 
   const donnees: DonneesDevis = {
-    eb: d.devisEb, ttc: t.ttc, ttcUnite: d.ttc,
+    eb: d.devisEb, ttc: totalAffiche(t, ctx), ttcUnite: affHt ? tv.total.unite(true) : d.ttc,
     pilules: [
-      { k: d.travauxHt, v: t.ht - b.frais }, { k: d.tva, v: t.tva },
+      { k: d.travauxHt, v: t.ht - b.frais }, { k: payeurPro ? tv.total.tvaRecup : d.tva, v: t.tva },
       ...(b.frais > 0 ? [{ k: n.fraisHorsTva, v: b.frais }] : []),
       { k: d.aleas(ctx.aleas), v: t.aleas }, { k: d.budgetMax, v: ctx.budget },
     ],
     apresPilules: <p className="split-n">{n.dontConstr} <b>{fmt(cut.constr, locale)}</b> · {n.annexes} <b>{fmt(cut.annexes, locale)}</b></p>,
-    hint: d.heroHint,
+    hint: d.heroHint + detailTaux + rappel,
     bilan: {
       titre: d.bilanT, sous: d.bilanSous,
       paye: d.paye, payeV: b.paye, payeSous: d.dontMat(fmt(b.matA, locale), fmt(b.moA, locale)),
       achat: d.achat, achatV: b.achat, eco: d.eco, ecoV: b.eco,
     },
     repartition: {
-      titre: d.repT, sous: d.repSous,
+      titre: d.repT, sous: affHt ? tv.total.repSousHt : d.repSous,
       vide: !lots.length ? d.vide : null,
       phases: PHASES_NEUF.flatMap((ph) => {
         // Un lot peut revenir deux fois dans la même phase : on additionne ses blocs.
@@ -66,7 +74,7 @@ export default function DevisNeuf({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Se
       perso: persoTtc > 0 ? { cle: "perso", nom: d.perso, v: persoTtc, pct: Math.min(100, (persoTtc / max) * 100) } : null,
     },
     detail: {
-      titre: d.detailT, sous: d.detailSous,
+      titre: d.detailT, sous: affHt ? tv.total.detailSousHt : d.detailSous,
       lignes: lignes.map((li) => {
         const tk = taches.get(li.cle);
         const jalon = estJalon(tk) && li.ttc === 0;
@@ -78,7 +86,7 @@ export default function DevisNeuf({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Se
           cle: li.cle, nom: catLigne(locale, li.nom, li.cle), q: jalon ? "—" : q,
           mode: jalon ? "dem" : li.mode === "location" ? "mL" : li.mode === "je-fais" ? "mS" : "mA",
           modeTxt: jalon ? n.demarche : li.mode === "location" ? d.modeLocation : li.mode === "je-fais" ? d.modeJeFais : d.modeFaitFaire,
-          m: jalon ? "" : fmt(li.ttc, locale),
+          m: jalon ? "" : fmt(affHt ? li.ht : li.ttc, locale),
         };
       }),
     },

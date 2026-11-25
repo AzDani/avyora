@@ -10,3 +10,4 @@ export * from "./presets-neuf";
 // par ce baril : ils ne servent qu'aux écrans du neuf, et un module à effets de bord (un `new Set`
 // au chargement) entrerait dans le bundle de chaque page de la rénovation qui importe le baril.
 // On les importe par leur chemin.
+export * from "./tva";

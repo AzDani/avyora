@@ -28,6 +28,9 @@ import {
 } from "@/lib/estimateur/detaille-neuf";
 import { buildDevis, catalogueDe, presetMaison, maisonParDefaut, maisonComplete, defaultCtx, BORNES_NEUF, ALEAS_NEUF, ALEAS_RENO, type Ctx, type Selection, type MaisonNeuve } from "@/lib/estimateur";
 import { dictDetail } from "@/lib/i18n/detail";
+import { dictTva } from "@/lib/i18n/tva";
+/** Les intertitres « TVA et prix » (25/11/2026) : qui paie, l'affichage, qui fait les travaux. */
+const TVA = (locale: "fr" | "en") => { const r = dictTva(locale).reglages; return [r.payeurT, r.affichageT, r.quiT]; };
 import { dictNeuf } from "@/lib/i18n/neuf";
 import { sansVisite } from "./sans-visite";
 
@@ -62,12 +65,12 @@ describe("N9 · une seule carte, les intertitres de la rénovation dans le même
     it(`${locale} : une carte « Parle-nous de ta maison », ses intertitres`, () => {
       expect(compte(neuf, /class="card"/g)).toBe(1);
       expect(neuf).toContain(`<h2>${echapper(d.titre)}</h2>`);
-      expect(intertitres(neuf)).toEqual([d.typeT, B.surfacesT, B.piecesConfT, d.techT, B.finitionT, q("pilotage").l[locale], B.tvaT, B.budgetT]);
+      expect(intertitres(neuf)).toEqual([d.typeT, B.surfacesT, B.piecesConfT, d.techT, B.finitionT, q("pilotage").l[locale], B.tvaT, ...TVA(locale), B.budgetT]);
     });
 
     it(`${locale} : ceux de la rénovation, au même rang (« Type de bien » devient « Type de maison » ; pas de périmètre)`, () => {
       const r = intertitres(reno);
-      expect(r).toEqual([B.perimetreT, B.typeT, B.surfacesT, B.piecesConfT, B.finitionT, B.tvaT, B.budgetT]);
+      expect(r).toEqual([B.perimetreT, B.typeT, B.surfacesT, B.piecesConfT, B.finitionT, B.tvaT, ...TVA(locale), B.budgetT]);
       const communs = r.slice(2);
       expect(intertitres(neuf).filter((t) => communs.includes(t))).toEqual(communs);
     });

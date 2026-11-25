@@ -4,7 +4,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { buildDevis, catalogueDe, presetNeuf, presetRapide, lotsAvecPerso, totauxAvecPerso, statutLigne, type Ctx, type Selection } from "@/lib/estimateur";
-import { bilanBudget, corpsDuProjet, CORPS_AUTRE, CORPS_MATERIEL, SEUIL_ATTENTION, type Depense } from "@/lib/estimateur/budget-reel";
+import { bilanBudget, corpsDuProjet, tauxProposeDepense, CORPS_AUTRE, CORPS_MATERIEL, SEUIL_ATTENTION, type Depense } from "@/lib/estimateur/budget-reel";
 
 const rep = (p: { ctx: Ctx; sel: Selection }, extra: Record<string, unknown> = {}) => ({ v: "estimateur", mode: "detaille", ctx: p.ctx, sel: p.sel, codePostal: p.ctx.codePostal, ...extra });
 const reno = rep(presetRapide({ type: "Maison", surface: 100, codePostal: "45000", ampleur: "complete", finition: "standard", qui: "pros" }));
@@ -138,16 +138,29 @@ describe("routes /api/projects/[id]/depenses", () => {
   it("ajoute une dépense valide sur un corps du projet", async () => {
     const r = await post({ corpsEtat: corps(), libelle: "Facture", montant: 1234.5 });
     expect(r.status).toBe(200);
-    expect(S.ajout).toEqual([[ID, { corps: corps(), libelle: "Facture", montant: 1234.5, nature: "fp" }]]);
+    expect(S.ajout).toEqual([[ID, { corps: corps(), libelle: "Facture", montant: 1234.5, nature: "fp", tva: null, taux: null }]]);
   });
   it("la nature est gardée ; le matériel est toujours « matériaux »", async () => {
     expect((await post({ corpsEtat: corps(), libelle: "Main-d'œuvre", montant: 800, nature: "mo" })).status).toBe(200);
     expect((await post({ corpsEtat: CORPS_MATERIEL, libelle: "Perceuse", montant: 120, nature: "fp" })).status).toBe(200);
     expect((await post({ corpsEtat: corps(), libelle: "x", montant: 1, nature: "cadeau" })).status).toBe(400);
     expect(S.ajout).toEqual([
-      [ID, { corps: corps(), libelle: "Main-d'œuvre", montant: 800, nature: "mo" }],
-      [ID, { corps: CORPS_MATERIEL, libelle: "Perceuse", montant: 120, nature: "mat" }],
+      [ID, { corps: corps(), libelle: "Main-d'œuvre", montant: 800, nature: "mo", tva: null, taux: null }],
+      [ID, { corps: CORPS_MATERIEL, libelle: "Perceuse", montant: 120, nature: "mat", tva: null, taux: null }],
     ]);
+  });
+  it("TVA de la facture (25/11/2026) : recalculée depuis le TTC et le taux ; tapée pour « plusieurs taux », plus petite que le montant", async () => {
+    expect((await post({ corpsEtat: corps(), libelle: "Plombier", montant: 2640, tauxTva: "10" })).status).toBe(200);
+    expect((await post({ corpsEtat: corps(), libelle: "Chauffagiste", montant: 3424, tauxTva: "multi", tva: 224 })).status).toBe(200);
+    expect((await post({ corpsEtat: corps(), libelle: "Sans TVA", montant: 50, tauxTva: "0" })).status).toBe(200);
+    expect((await post({ corpsEtat: corps(), libelle: "x", montant: 100, tauxTva: "multi" })).status).toBe(400);
+    expect((await post({ corpsEtat: corps(), libelle: "x", montant: 100, tauxTva: "multi", tva: 100 })).status).toBe(400);
+    expect((await post({ corpsEtat: corps(), libelle: "x", montant: 100, tauxTva: "7" })).status).toBe(400);
+    const [a, b, c] = S.ajout as [string, { tva: number; taux: string }][];
+    expect(a[1].taux).toBe("10"); expect(a[1].tva).toBeCloseTo(240, 6);
+    expect(b[1]).toMatchObject({ taux: "multi", tva: 224 });
+    expect(c[1]).toMatchObject({ taux: "0", tva: 0 });
+    expect(S.ajout.length).toBe(3);
   });
   it("« Autre » est accepté ; un corps inventé non", async () => {
     expect((await post({ corpsEtat: CORPS_AUTRE, libelle: "Benne", montant: 300 })).status).toBe(200);
@@ -230,5 +243,51 @@ describe("budget réel : la nature des dépenses et le matériel (25/11/2026)", 
     expect(b.budgetMateriel).toBe(600);
     expect(b.estimation).toBeCloseTo(b0.estimation + 600, 1);
     expect(bilanBudget({ ...reno, budgetMateriel: "estimation" }, [])!.budgetMateriel).toBeNull();
+  });
+});
+
+/* ─── HT / TTC et taxes payées (25/11/2026) ─────────────────────────────── */
+
+describe("budget réel : TVA de chaque dépense, taxes payées, base HT d'un professionnel", () => {
+  const avecTva = (corps: string, ttc: number, taux: "5.5" | "10" | "20"): Depense => {
+    const r = Number(taux);
+    return { ...dep(corps, ttc), tva: ttc - ttc / (1 + r / 100), taux };
+  };
+  const c = () => corpsDuProjet(reno)[0];
+
+  it("particulier : base TTC, la TVA payée s'additionne par taux ; une dépense d'avant n'a pas de TVA", () => {
+    const d = [avecTva(c(), 1100, "10"), avecTva(c(), 1200, "20"), dep(c(), 500)];
+    const b = bilanBudget(reno, d)!;
+    expect(b.base).toBe("ttc");
+    expect(b.reel).toBeCloseTo(2800, 6);
+    expect(b.tva.payee).toBeCloseTo(300, 2);
+    expect(b.tva.sansTva).toBe(1);
+    expect(b.tva.ttcFactures).toBeCloseTo(2300, 2);
+    expect(b.tva.parTaux.map((x) => [x.taux, Math.round(x.tva), x.n])).toEqual([["10", 100, 1], ["20", 200, 1]]);
+    expect(b.lignes.find((l) => l.corps === c())!.tva).toBeCloseTo(300, 2);
+    // La TVA prévue = celle de l'estimation.
+    const dv = buildDevis(catalogueDe(reno.ctx), reno.ctx, reno.sel);
+    expect(b.tva.prevue).toBeCloseTo(dv.totaux.tva, 1);
+  });
+
+  it("professionnel : prévu et estimation en HT, chaque dépense pour son HT (montant − TVA)", () => {
+    const pro = { ...reno, ctx: { ...reno.ctx, payeur: "pro" as const } };
+    const dv = buildDevis(catalogueDe(pro.ctx), pro.ctx, pro.sel);
+    const t = totauxAvecPerso(dv.totaux, undefined, pro.ctx.aleas);
+    const b = bilanBudget(pro, [avecTva(c(), 1100, "10")])!;
+    expect(b.base).toBe("ht");
+    expect(b.estimation).toBeCloseTo(t.ht + t.aleas, 1);
+    expect(b.reel).toBeCloseTo(1000, 6);
+    const htCorps = dv.lignes.filter((li) => li.corps === c()).reduce((s, li) => s + li.ht, 0);
+    expect(b.lignes.find((l) => l.corps === c())!.prevu).toBeCloseTo(htCorps, 1);
+    // Particulier (défaut) : rien ne change par rapport à avant.
+    expect(bilanBudget(reno, [])!.estimation).toBeCloseTo(totauxAvecPerso(buildDevis(catalogueDe(reno.ctx), reno.ctx, reno.sel).totaux, undefined, reno.ctx.aleas).ttc, 1);
+  });
+
+  it("taux proposé : 20 % pour le matériel et les matériaux seuls ; le taux de l'estimation pour un artisan", () => {
+    expect(tauxProposeDepense(reno, CORPS_MATERIEL, "fp").taux).toBe("20");
+    expect(tauxProposeDepense(reno, c(), "mat").taux).toBe("20");
+    expect(["5.5", "10"]).toContain(tauxProposeDepense(reno, c(), "fp").taux);
+    expect(tauxProposeDepense(neuf, corpsDuProjet(neuf)[0], "fp").taux).toBe("20");
   });
 });

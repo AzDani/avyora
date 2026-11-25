@@ -108,6 +108,11 @@ export interface Ctx {
   aleas: number;              // % provision aléas
   finition: Finition;
   fiscal?: "habitation" | "pro"; // régime TVA : habitation +2 ans (10/5,5 %) ou neuf/−2 ans/local pro (20 %)
+  /** Qui paie (25/11/2026) : « pro » = récupère la TVA, son vrai coût est le HT (budget réel et
+   *  rentabilité comptés en HT). Absent = particulier : coût TTC, comme avant. Ne change aucun taux. */
+  payeur?: "pro";
+  /** Affichage des prix : « ht » ou TTC (absent). N'affecte jamais le calcul. */
+  affichage?: "ht";
   codePostal?: string;        // sert au coefficient régional (main-d'œuvre)
   // Détail des pièces (estimateur détaillé). Si renseigné, pilote le nb de pièces effectif + les SDB.
   sejour?: number; cuisine?: number; chambres?: number; suites?: number; couloir?: number; buanderie?: number;
@@ -138,8 +143,16 @@ export interface LigneSel {
   /** Cette ligne a été écrite par le PLAN. Dès que l'utilisateur corrige la quantité, le drapeau
    *  tombe et la ligne lui appartient : le plan cesse de l'alimenter (décision D12). */
   plan?: boolean;
-  pu?: number;                 // prix unitaire fourni-posé HT PERSONNALISÉ (override « Fait faire » — total figé)
-  pm?: number;                 // prix unitaire MATÉRIAUX HT PERSONNALISÉ (override « Je le fais » ; Fait faire = pm + MO)
+  pu?: number;                 // prix unitaire fourni-posé PERSONNALISÉ (override « Fait faire » — total figé) ; HT, ou TTC si `puTtc`
+  pm?: number;                 // prix unitaire MATÉRIAUX PERSONNALISÉ (override « Je le fais » ; Fait faire = pm + MO) ; HT, ou TTC si `pmTtc`
+  /** HT / TTC (25/11/2026, décision de Dani : « le chiffre tapé reste fixe »). Vrai : `pu` (ou `pm`) a été
+   *  tapé TTC et reste ce chiffre-là ; son HT se déduit au taux de la ligne, et suit ce taux s'il change.
+   *  Absent : HT, comme tous les projets d'avant. */
+  puTtc?: boolean;
+  pmTtc?: boolean;
+  /** Taux de TVA forcé par l'utilisateur (5,5 / 10 / 20), à la place du taux automatique du poste.
+   *  Absent : automatique (règle du poste, du logement et de « Je le fais »), comme avant. */
+  tva?: number;
 }
 export type Selection = Record<string, LigneSel>;
 
@@ -704,6 +717,7 @@ export const rate = (l: Lot, t: Tache): number => (t.tva != null ? t.tva : l.tva
 export function effRate(l: Lot, t: Tache, sel: Selection, ctx?: Ctx): number {
   if (t.frais) return 0;                       // une taxe ou une prime d'assurance ne porte pas de TVA
   const s = sel[key(l.c, t.n)];
+  if (s && s.tva != null) return s.tva;         // taux forcé par l'utilisateur (prime sur toutes les règles)
   if (s && s.self && !isLoc(l.c)) return 20;
   if (ctx && ctx.fiscal === "pro") return 20; // neuf / logement −2 ans / local professionnel
   if (ctx && ctx.nature === "neuf") return 20; // construction neuve : aucun taux réduit
@@ -714,10 +728,28 @@ export function effRate(l: Lot, t: Tache, sel: Selection, ctx?: Ctx): number {
   return rate(l, t);
 }
 
-export function lineHT(ctx: Ctx, sel: Selection, l: Lot, t: Tache): number {
+/** Taux d'une ligne dans un mode donné (« Fait faire » ou « Je le fais »), quel que soit son mode actuel. */
+export function rateMode(l: Lot, t: Tache, sel: Selection, ctx: Ctx | undefined, self: boolean): number {
+  const k = key(l.c, t.n);
+  return effRate(l, t, { ...sel, [k]: { ...(sel[k] ?? {}), self } }, ctx);
+}
+/** Prix perso d'une ligne ramenés en HT : `pu` au taux « Fait faire » (ou location), `pm` au taux « Je le fais ».
+ *  Sans `puTtc` / `pmTtc`, les montants sont déjà HT : rien ne change pour les projets d'avant. */
+export function persoHT(ctx: Ctx | undefined, sel: Selection, l: Lot, t: Tache): { pu?: number; pm?: number } {
   const s = sel[key(l.c, t.n)];
-  if (!s || !s.on) return 0;
+  if (!s) return {};
+  const out: { pu?: number; pm?: number } = {};
+  if (s.pu != null) out.pu = s.puTtc ? s.pu / (1 + rateMode(l, t, sel, ctx, false) / 100) : s.pu;
+  if (s.pm != null) out.pm = s.pmTtc ? s.pm / (1 + rateMode(l, t, sel, ctx, true) / 100) : s.pm;
+  return out;
+}
+
+export function lineHT(ctx: Ctx, sel: Selection, l: Lot, t: Tache): number {
+  const s0 = sel[key(l.c, t.n)];
+  if (!s0 || !s0.on) return 0;
   if (!visibleTask(ctx, t)) return 0;
+  // Prix perso en HT (un prix tapé TTC est ramené au HT au taux de la ligne).
+  const s = s0.puTtc || s0.pmTtc ? { ...s0, ...persoHT(ctx, sel, l, t) } : s0;
   const R = regCoef(ctx);
   const q = qtyOf(ctx, sel, l.c, t);
   const fc = finCoefTask(ctx, l, t), fm = finCoefMO(ctx, l, t); // finition : un coefficient sur la fourniture, un sur la pose
@@ -782,7 +814,11 @@ export function lotHT(ctx: Ctx, sel: Selection, l: Lot): number {
 /** Ligne personnalisée saisie par l'utilisateur (par lot). Prix HT, TVA propre.
  *  `phase` : construction neuve seulement (un lot y revient dans plusieurs phases) — la phase où
  *  la ligne s'affiche. La rénovation ne l'écrit ni ne la lit ; les totaux l'ignorent. */
-export interface CustomLine { id: string; lot: string; nom: string; prix: number; unite: string; qte: number; note?: string; tva: number; on?: boolean; draft?: boolean; phase?: string; }
+export interface CustomLine { id: string; lot: string; nom: string; prix: number; unite: string; qte: number; note?: string; tva: number; on?: boolean; draft?: boolean; phase?: string;
+  /** Vrai : `prix` a été tapé TTC (le chiffre reste fixe) ; absent : HT, comme avant (25/11/2026). */
+  ttc?: boolean; }
+/** Prix unitaire HT d'une ligne perso (un prix tapé TTC est ramené au HT à son taux). */
+export const prixHTPerso = (x: CustomLine): number => (x.ttc ? (x.prix || 0) / (1 + (x.tva || 0) / 100) : (x.prix || 0));
 const clOn = (x: CustomLine): boolean => x.on !== false && !x.draft; // validée (cochée) et non en cours d'édition
 /** TVA d'une nouvelle ligne perso : 20 % en construction neuve et en régime « pro » (logement de
  *  moins de deux ans, local professionnel), comme tous les postes du moteur ; 10 % sinon. Avant,
@@ -799,12 +835,12 @@ export function tauxPersoPossibles(ctx: Pick<Ctx, "nature" | "fiscal">, courant?
 }
 /** Total HT des lignes perso VALIDÉES d'un lot donné. */
 export function customLotHT(lines: CustomLine[], lot: string): number {
-  return lines.filter((x) => x.lot === lot && clOn(x)).reduce((s, x) => s + (x.prix || 0) * (x.qte || 0), 0);
+  return lines.filter((x) => x.lot === lot && clOn(x)).reduce((s, x) => s + prixHTPerso(x) * (x.qte || 0), 0);
 }
 /** Totaux HT / TVA des lignes perso validées (TVA au taux de chaque ligne). */
 export function customTotals(lines: CustomLine[]): { ht: number; tva: number } {
   let ht = 0, tva = 0;
-  for (const x of lines) { if (!clOn(x)) continue; const h = (x.prix || 0) * (x.qte || 0); ht += h; tva += (h * (x.tva || 0)) / 100; }
+  for (const x of lines) { if (!clOn(x)) continue; const h = prixHTPerso(x) * (x.qte || 0); ht += h; tva += (h * (x.tva || 0)) / 100; }
   return { ht, tva };
 }
 export function lotTTC(ctx: Ctx, sel: Selection, l: Lot): number {
@@ -832,9 +868,10 @@ export function bilan(catalog: Lot[], ctx: Ctx, sel: Selection): Bilan {
   const R = regCoef(ctx);
   catalog.filter((l) => visible(ctx, l)).forEach((l) => {
     l.t.forEach((t) => {
-      const s = sel[key(l.c, t.n)];
-      if (!s || !s.on) return;
+      const s0 = sel[key(l.c, t.n)];
+      if (!s0 || !s0.on) return;
       if (!visibleTask(ctx, t)) return;
+      const s = s0.puTtc || s0.pmTtc ? { ...s0, ...persoHT(ctx, sel, l, t) } : s0;
       const { fp: fpU, sm: smU } = effPrices(t, s, ctx);
       if (fpU == null) return;
       const q = qtyOf(ctx, sel, l.c, t);

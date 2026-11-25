@@ -17,6 +17,9 @@ import {
 } from "@/lib/estimateur";
 import { decoupe, INFO_PHASES, qteNeuf, premiersCorps } from "@/lib/estimateur/etapes-neuf";
 import { totauxAvecPerso, persoValidees, lotsAvecPerso } from "@/lib/estimateur/projet";
+import { enHT, estPro, totalAffiche } from "@/lib/estimateur/tva";
+import { prixHTPerso } from "@/lib/estimateur";
+import { dictTva } from "@/lib/i18n/tva";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 import { normaliserCles } from "@/lib/estimateur/identite";
 import { euros, euroApres, euroAvant, eurosM2, nombre, pourcent } from "@/lib/i18n/nombres";
@@ -448,14 +451,19 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
   }
   const t = totauxAvecPerso(t0, perso, ctx.aleas);
   const persoHT = customTotals(perso).ht;
+  /* HT / TTC (25/11/2026) : la fiche suit l'affichage choisi dans l'estimation (`ctx.affichage`) ; le calcul ne
+     change pas. Un professionnel voit sa TVA « récupérable ». */
+  const affHt = enHT(ctx), payeurPro = estPro(ctx);
+  const tAff = totalAffiche(t, ctx);
+  const tvx = dictTva(locale);
   const pc = (n: number) => (t.ht > 0 ? Math.round((n / t.ht) * 100) : 0); // part du coût HT
   const pcTxt = (n: number) => (locale === "en" ? pc(n) + "%" : pc(n) + "\u00a0%"); // « 31 % » / « 31% »
   // Unité d'une quantité : « 6 units » au pluriel en anglais (le français garde « u »).
   const uniteTxt = (u: string, q: number) => (locale === "en" && u === "u" && q !== 1 ? "units" : catT(locale, "unites", u));
 
   // Stats
-  const eurM2 = ctx.surface > 0 ? t.ttc / ctx.surface : 0; // ton coût réel (avec ton bricolage)
-  const lo = Math.round((t.ttc * 0.85) / 100) * 100, hi = Math.round((t.ttc * 1.15) / 100) * 100;
+  const eurM2 = ctx.surface > 0 ? tAff / ctx.surface : 0; // ton coût réel (avec ton bricolage)
+  const lo = Math.round((tAff * 0.85) / 100) * 100, hi = Math.round((tAff * 1.15) / 100) * 100;
   const reg = regionCoef(ctx.codePostal);
   const moPct = Math.round((reg.mo - 1) * 100);
 
@@ -465,7 +473,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
   for (const k2 of Object.keys(sel)) {
     const v = sel[k2];
     if (!v) continue;
-    const { self: _s, pu: _pu, pm: _pm, ...reste } = v;
+    const { self: _s, pu: _pu, pm: _pm, puTtc: _pt, pmTtc: _mt, tva: _tv, ...reste } = v;
     selFF[k2] = { ...reste, self: false };
   }
 
@@ -504,11 +512,25 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
   // flottant de la ligne, et la pastille affichait « 10 % · 6 % · 5 % ».
   const tvaByRate: Record<number, number> = {};
   lignes.forEach((li) => { if (li.ht > 0 && li.tva > 0) { const r = Math.round((li.tva / li.ht) * 1000) / 10; tvaByRate[r] = (tvaByRate[r] || 0) + li.tva; } });
-  perso.forEach((x) => { const h = (x.prix || 0) * (x.qte || 0); if (h > 0 && x.tva > 0) tvaByRate[x.tva] = (tvaByRate[x.tva] || 0) + (h * x.tva) / 100; });
+  perso.forEach((x) => { const h = prixHTPerso(x) * (x.qte || 0); if (h > 0 && x.tva > 0) tvaByRate[x.tva] = (tvaByRate[x.tva] || 0) + (h * x.tva) / 100; });
+  /* Montant d'un corps d'état dans l'affichage du projet : le HT de ses lignes (et lignes perso) en HT, son TTC
+     sinon ; la part « Autres corps d'état » du neuf = le reste. Les proportions du camembert restent en TTC. */
+  const htCorps = new Map<string, number>();
+  lignes.forEach((li) => htCorps.set(li.corps, (htCorps.get(li.corps) ?? 0) + li.ht));
+  perso.forEach((x) => htCorps.set(x.lot, (htCorps.get(x.lot) ?? 0) + prixHTPerso(x) * (x.qte || 0)));
+  const htTousCorps = [...htCorps.values()].reduce((a, v) => a + v, 0);
+  const montantCorps = (corps: string, ttc: number): number => {
+    if (!affHt) return ttc;
+    const v = htCorps.get(corps);
+    if (v != null) return v;
+    // « Autres corps d'état » (neuf) : le HT de tout ce qui n'est pas dans les parts nommées.
+    const nommes = lotsTri.slice(0, Math.max(0, lotsDonut.length - 1)).reduce((a, l) => a + (htCorps.get(l.corps) ?? 0), 0);
+    return Math.max(0, htTousCorps - nommes);
+  };
   const tauxPresents = Object.keys(tvaByRate).map(Number).sort((a, x) => x - a);
 
   const budget = ctx.budget || 0;
-  const over = budget > 0 && t.ttc > budget;
+  const over = budget > 0 && tAff > budget;
   const nbLots = lotsCorps.length;
   // Construction neuve : la construction contre « études, taxes, assurance, branchements », la maison décrite.
   const cut = neuf ? decoupe(dv) : null;
@@ -521,7 +543,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
   // Tableau de bord : le résumé de chaque espace.
   const bilanLive = depensesLive ? bilanBudget(repBudget, depensesLive) : null;
   const donneesTuiles = {
-    estim: { ttc: t.ttc, m2: eurM2 },
+    estim: { ttc: tAff, m2: eurM2, ht: affHt },
     chantier: { fait: lignes.filter((li) => statutLigne(statuts, li) === 2).length, enCours: lignes.filter((li) => statutLigne(statuts, li) === 1).length, total: lignes.length },
     budget: depensesLive && bilanLive ? { prevision: bilanLive.prevision, estimation: bilanLive.estimation, paye: bilanLive.reel, nbDepenses: depensesLive.length, depasse: bilanLive.alertes.some((a) => a.type === "depasse") } : undefined,
     invest: invest && ctxInvest ? resumeInvest : undefined,
@@ -540,8 +562,8 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
       <div className="hero">
         <span className="glow g1" /><span className="glow g2" />
         <div className="eb"><span className="dot" />{neuf ? n.badgeEstim : s.badge}</div>
-        <div className="four"><span className="num">{euroAvant(locale)}{nb(lo)}</span><span className="s">–</span><span className="num">{euroAvant(locale)}{nb(hi)}</span>{euroApres(locale)}<small>{s.inclTax}</small></div>
-        <div className="cap">{s.mostLikely} <b>{fmt(t.ttc)}</b> · ≈ <b>{eurosM2(locale, eurM2)}</b> · {s.margin}</div>
+        <div className="four"><span className="num">{euroAvant(locale)}{nb(lo)}</span><span className="s">–</span><span className="num">{euroAvant(locale)}{nb(hi)}</span>{euroApres(locale)}<small>{affHt ? tvx.reglages.ht : s.inclTax}</small></div>
+        <div className="cap">{s.mostLikely} <b>{fmt(tAff)}</b> · ≈ <b>{eurosM2(locale, eurM2)}</b> · {s.margin}</div>
         {ctx.codePostal && (
           <div className="zone">📍 {rapide.zones[reg.zone] ?? reg.zone}{moPct ? ` · ${s.labor} ${moPct > 0 ? "+" : ""}${pourcent(locale, moPct, 0)}` : ""}</div>
         )}
@@ -550,11 +572,11 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
           {neuf && b.frais > 0 && (
             <div className="pill"><span className="k">{n.fraisHorsTva}</span><br /><span className="v num">{fmt(b.frais)}</span></div>
           )}
-          <div className="pill"><span className="k">{s.vat} {tauxPresents.length ? "(" + tauxPresents.map((r) => pourcent(locale, r)).join(" · ") + ")" : ""}</span><br /><span className="v num">{fmt(t.tva)}</span></div>
+          <div className="pill"><span className="k">{payeurPro ? tvx.total.tvaRecup : s.vat} {tauxPresents.length ? "(" + tauxPresents.map((r) => pourcent(locale, r)).join(" · ") + ")" : ""}</span><br /><span className="v num">{fmt(t.tva)}</span></div>
           <div className="pill"><span className="k">{s.contingency} {pourcent(locale, ctx.aleas || 0)}</span><br /><span className="v num">{fmt(t.aleas)}</span></div>
           <div className="pill"><span className="k">{s.finish}</span><br /><span className="v" style={{ textTransform: "capitalize" }}>{rapide.finitions[ctx.finition]?.label ?? ctx.finition}</span></div>
           {budget > 0 && (
-            <div className="pill"><span className="k">{s.budgetLabel} · {over ? s.budgetOver : s.budgetLeft}</span><br /><span className="v num">{over ? "− " + fmt(t.ttc - budget) : fmt(budget - t.ttc)}</span></div>
+            <div className="pill"><span className="k">{s.budgetLabel} · {over ? s.budgetOver : s.budgetLeft}</span><br /><span className="v num">{over ? "− " + fmt(tAff - budget) : fmt(budget - tAff)}</span></div>
           )}
         </div>
         {/* Jauge de budget retirée pour le moment (le pill « Budget · reste » suffit). */}
@@ -584,7 +606,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
           <div className="v" style={{ fontSize: 20 }}>{top ? `${ICON[top.corps] || ""} ${catT(locale, "corps", top.corps)}` : "—"}</div>
           {/* Le montant en chiffres à chasse fixe, comme les autres cartes : en Geist à 12 px, l'espace fine des milliers
               ne se voyait presque pas (« 14148 € », F1). */}
-          <p className="sub">{top ? <><span className="num">{fmt(top.ttc)}</span> · {pourcent(locale, topPct, 0)} {s.ofBudget}</> : ""}</p>
+          <p className="sub">{top ? <><span className="num">{fmt(montantCorps(top.corps, top.ttc))}</span> · {pourcent(locale, topPct, 0)} {s.ofBudget}</> : ""}</p>
         </div>
         <div className="stat">
           <div className="k">{s.theSite}</div>
@@ -641,7 +663,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
             <svg viewBox="0 0 200 200" aria-hidden="true">
               {slices.map((s) => (
                 <path key={s.corps} d={s.d} fill={s.color} stroke="var(--surface)" strokeWidth={2}>
-                  <title>{`${catT(locale, "corps", s.corps)} — ${fmt(s.ttc)} · ${pctLabel(locale, s.pct)}`}</title>
+                  <title>{`${catT(locale, "corps", s.corps)} — ${fmt(montantCorps(s.corps, s.ttc))} · ${pctLabel(locale, s.pct)}`}</title>
                 </path>
               ))}
             </svg>
@@ -652,7 +674,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
               <div key={s.corps} className="lg">
                 <span className="dot" style={{ background: s.color }} />
                 <span className="nm">{ICON[s.corps] || ""} {catT(locale, "corps", s.corps)}</span>
-                <span className="am">{fmt(s.ttc)}</span>
+                <span className="am">{fmt(montantCorps(s.corps, s.ttc))}</span>
                 <span className="pc">{pctLabel(locale, s.pct)}</span>
               </div>
             ))}
@@ -780,7 +802,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
                         </span>
                       </>
                     )}
-                    {jalon ? (projectId ? <span className="dem">{n.demarche}</span> : <span className="m" />) : <span className="m">{fmt(li.ttc)}</span>}
+                    {jalon ? (projectId ? <span className="dem">{n.demarche}</span> : <span className="m" />) : <span className="m">{fmt(affHt ? li.ht : li.ttc)}</span>}
                   </div>
                 );
               })}

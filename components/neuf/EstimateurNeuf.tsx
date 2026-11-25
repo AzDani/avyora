@@ -51,6 +51,9 @@ import {
   Intertitre, Pastilles, Segment, CartesFinition, ChampCodePostal, Interrupteur, Recap, ZoneRecap, CompteurFixe, useChampEnFaute,
 } from "@/components/estimateur/intake";
 import { BarreLive } from "@/components/estimateur/BarreLive";
+import { ReglagesTva, REGLAGES_TVA_CSS } from "@/components/estimateur/ReglagesTva";
+import { enHT, totalAffiche } from "@/lib/estimateur/tva";
+import { dictTva } from "@/lib/i18n/tva";
 import { ChoixVue } from "@/components/estimateur/VueDevis";
 import { dictDetail } from "@/lib/i18n/detail";
 import { majLigne, basculerAuto } from "@/lib/estimateur/detaille-reno";
@@ -178,10 +181,10 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
   }, [etat, custom, open, edition]);
 
   // ── Chiffrage ──────────────────────────────────────────────────────────────────────────────
-  const { maison: maisonSaisie, finition, aleas, budget, qui, sel } = etat;
+  const { maison: maisonSaisie, finition, aleas, budget, qui, sel, payeur, affichage } = etat;
   const ctx = useMemo(
-    () => ctxDetailNeuf({ maison: maisonSaisie, finition, aleas, budget, qui: "pros", sel: {}, facadeAuto: false }),
-    [maisonSaisie, finition, aleas, budget],
+    () => ctxDetailNeuf({ maison: maisonSaisie, finition, aleas, budget, qui: "pros", sel: {}, facadeAuto: false, payeur, affichage }),
+    [maisonSaisie, finition, aleas, budget, payeur, affichage],
   );
   const m = ctx.neuf as MaisonNeuve;
   const dv = useMemo(() => buildDevis(CATALOG_NEUF, ctx, sel), [ctx, sel]);
@@ -189,7 +192,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
   // Lignes perso comprises : le même total que la vue devis, la fiche, la liste et le PDF.
   const tot = useMemo(() => totauxAvecPerso(dv.totaux, custom, ctx.aleas), [dv, custom, ctx.aleas]);
   const frais = dv.bilan.frais;
-  const m2 = ctx.surface > 0 ? tot.ttc / ctx.surface : 0;
+  const m2 = ctx.surface > 0 ? totalAffiche(tot, ctx) / ctx.surface : 0;
   const geo = useMemo(() => geometrieNeuf(m), [m]);
   const reg = regionCoef(m.codePostal);
   const zoneLbl = (T.rapide.zones as Record<string, string>)[reg.zone] ?? reg.zone;
@@ -366,7 +369,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: EST_CSS + ROW_SOI_CSS + INTAKE_CSS + NEUF_DETAIL_CSS }} />
+      <style dangerouslySetInnerHTML={{ __html: EST_CSS + ROW_SOI_CSS + INTAKE_CSS + NEUF_DETAIL_CSS + REGLAGES_TVA_CSS }} />
       <div className="av-estim av-neuf-d">
         <VisiteGuidee id="detailleNeuf" etapes={etapesVisite} prerempli={edition || repris} />
         <ChoixVue vue={view} onVue={setView} saisie={d.vueSaisie} devis={d.vueDevis} aria={dl.vues.aria} />
@@ -431,6 +434,14 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
 
               <Intertitre>{B.tvaT}</Intertitre>
               <div className="locnote">{gras(d.tvaNote)}</div>
+              {/* HT / TTC (25/11/2026) : qui paie, l'affichage et qui fait sont gardés dans l'état du neuf. */}
+              <ReglagesTva ctx={ctx} cat={CATALOG_NEUF} sel={sel} setSel={majSel}
+                setCtx={(f) => setEtat((e) => {
+                  const c = f(ctx);
+                  const { payeur: _p, affichage: _a, ...reste } = e;
+                  void _p; void _a;
+                  return { ...reste, ...(c.payeur ? { payeur: c.payeur } : {}), ...(c.affichage ? { affichage: c.affichage } : {}) };
+                })} />
 
               <Intertitre>{B.budgetT}</Intertitre>
               <div className="depart">
@@ -498,13 +509,13 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
       </div>
 
       {/* Barre live sticky (la même que la rénovation), avec le prix au m² et les frais */}
-      <BarreLive total={tot.ttc} budget={budget} vue={view} onVue={setView} onEnregistrer={enregistrer} saving={saving} edition={edition} erreur={erreur}
+      <BarreLive total={totalAffiche(tot, ctx)} budget={budget} vue={view} onVue={setView} onEnregistrer={enregistrer} saving={saving} edition={edition} erreur={erreur}
         erreurId={ID_ERREUR} className="av-neuf-live"
         visite={{ total: "neuf-d-total", jauge: "neuf-d-jauge", devis: "neuf-d-devis", enregistrer: "neuf-d-enregistrer" }}
         m2={<div className="m2"><span className="m2-v">≈ {fmt(m2, locale)}<span className="m2-l"> {d.parM2}</span><span className="m2-c">{d.parM2Court}</span>
           {frais > 0 ? <> <span className="m2-f">· {d.dontFrais} {fmt(frais, locale)}</span></> : null}</span></div>}
         t={{
-          totalK: d.totalK, ttc: d.ttc, budget: d.budgetTxt, depasse: d.depasse, reste: d.reste, sansBudget: d.sansBudget,
+          totalK: d.totalK, ttc: enHT(ctx) ? dictTva(locale).total.unite(true) : d.ttc, budget: d.budgetTxt, depasse: d.depasse, reste: d.reste, sansBudget: d.sansBudget,
           voirDevis: d.voirDevis, modifier: d.retourSaisie, enregistrer: d.enregistrer, enregistrerModifs: d.enregistrerModifs, enregistrement: d.enregistrement,
         }} />
     </>

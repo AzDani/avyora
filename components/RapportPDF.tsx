@@ -1,6 +1,7 @@
 import {
   buildDevis, regionCoef, ICON, customTotals, piecesEff, sdbEff, type Ctx, type Selection, type CustomLine, catalogueDe, estNeuf,
   totauxAvecPerso, persoValidees, lotsAvecPerso, maisonComplete, piecesNeuf, PHASES_NEUF,
+  prixHTPerso,
 } from "@/lib/estimateur";
 import { parPhase, INFO_PHASES, premiersCorps } from "@/lib/estimateur/etapes-neuf";
 import { dictNeuf } from "@/lib/i18n/neuf";
@@ -423,13 +424,13 @@ export async function RapportPDF({
             <thead><tr><th>{r.designation}</th><th>{r.detail}</th><th className="amt">{r.montant}</th></tr></thead>
             <tbody>
               {customVal.map((x) => {
-                const h = (x.prix || 0) * (x.qte || 0);
+                const h = prixHTPerso(x) * (x.qte || 0);
                 const ttc = h + (h * (x.tva || 0)) / 100;
                 return (
                   <tr key={x.id}>
                     <td>{x.nom}</td>
                     {/* Lot : libellé accentué en français (« Électricité »), traduit en anglais (« Electrical »). */}
-                    <td className="ph">{nombre(locale, x.qte, 2)} {catT(locale, "unites", x.unite)} × {euro(x.prix)} · {catT(locale, "corps", x.lot)}</td>
+                    <td className="ph">{nombre(locale, x.qte, 2)} {catT(locale, "unites", x.unite)} × {euro(x.prix)}{x.ttc ? " TTC" : ""} · {catT(locale, "corps", x.lot)}</td>
                     <td className="amt">{euro(ttc)}</td>
                   </tr>
                 );

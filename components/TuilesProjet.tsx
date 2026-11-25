@@ -17,7 +17,8 @@ export type ResumeInvest =
   | { etat: "ok"; strategie: "location" | "revente"; valeur: string; detail: string; ton: "pos" | "neg" };
 
 export type DonneesTuiles = {
-  estim: { ttc: number; m2: number };
+  /** `ht` : l'estimation est affichée hors taxes (réglage du projet, 25/11/2026). */
+  estim: { ttc: number; m2: number; ht?: boolean };
   chantier: { fait: number; enCours: number; total: number };
   /** undefined : espace indisponible (compte gratuit) ; nbDepenses = 0 : rien de saisi. */
   budget?: { prevision: number; estimation: number; paye: number; nbDepenses: number; depasse: boolean };
@@ -27,7 +28,7 @@ export type DonneesTuiles = {
 const TR = {
   fr: {
     titre: "Ton projet en un coup d'œil",
-    estim: "Estimation", chantier: "Chantier", budget: "Budget réel", invest: "Investissement",
+    estim: "Estimation", chantier: "Chantier", budget: "Budget réel", invest: "Investissement", ht: "HT",
     marge: "±15 %",
     pasCommence: "Pas encore commencé", taches: (f: number, n: number) => `${f} tâche${f > 1 ? "s" : ""} faite${f > 1 ? "s" : ""} sur ${n}`, enCours: (n: number) => `${n} en cours`,
     seulementEnCours: (c: number, n: number) => `${c} tâche${c > 1 ? "s" : ""} en cours sur ${n}`,
@@ -39,7 +40,7 @@ const TR = {
   },
   en: {
     titre: "Your project at a glance",
-    estim: "Estimate", chantier: "Site", budget: "Actual budget", invest: "Investment",
+    estim: "Estimate", chantier: "Site", budget: "Actual budget", invest: "Investment", ht: "excl. VAT",
     marge: "±15%",
     pasCommence: "Not started yet", taches: (f: number, n: number) => `${f} of ${n} task${n === 1 ? "" : "s"} done`, enCours: (n: number) => `${n} in progress`,
     seulementEnCours: (c: number, n: number) => `${c} of ${n} task${n === 1 ? "" : "s"} in progress`,
@@ -103,7 +104,7 @@ export default function TuilesProjet({ donnees: d, actif, onChoisir }: { donnees
       <div className="grille">
         {tuile("estim", <>
           <span className="k">{t.estim}</span>
-          <span className="v">{fmt(d.estim.ttc)}</span>
+          <span className="v">{fmt(d.estim.ttc)}{d.estim.ht ? " " + t.ht : ""}</span>
           <span className="s">{eurosM2(locale, d.estim.m2)} · {t.marge}</span>
           <span className="go">{t.go.estim} →</span>
         </>)}

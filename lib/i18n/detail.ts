@@ -68,7 +68,7 @@ const fr = {
       standard: { eye: "Le plus courant", label: "Standard", desc: "Matériaux milieu de gamme, bon rapport qualité-prix." },
       premium: { eye: "Haut de gamme", label: "Premium", desc: "Matériaux haut de gamme : parquet, grand format, cuisine haut de gamme. Pose plus soignée, comptée plus cher." },
     } as Record<string, { eye: string; label: string; desc: string }>,
-    tvaT: "Régime de TVA",
+    tvaT: "Le logement et la TVA",
     /* Régime de TVA d'une rénovation (N14) : l'âge du logement, plus « Neuf », qui se lisait comme une
        construction neuve dans l'estimateur de la rénovation. Espaces insécables : sur mobile, chaque
        bouton passe sur deux lignes équilibrées (« Logement de / plus de 2 ans »). */
@@ -285,7 +285,7 @@ const en: typeof fr = {
       standard: { eye: "Most common", label: "Standard", desc: "Mid-range materials, good value." },
       premium: { eye: "High-end", label: "Premium", desc: "High-end materials: hardwood, large-format tile, high-end kitchen. More careful installation, priced higher." },
     },
-    tvaT: "VAT rate",
+    tvaT: "The home and VAT",
     tvaHabitation: "Home over 2\u00a0years\u00a0old",
     tvaPro: "Under 2\u00a0years or\u00a0business",
     tvaNote: "**Home over 2 years old**: reduced VAT of **10%** (and **5.5%** on energy-efficiency work — insulation, efficient heating…). **Home under 2 years old or business premises**: everything at **20%**; to build a new house, choose “New build”. Materials you buy yourself (“DIY”) stay at **20%** in every case.",

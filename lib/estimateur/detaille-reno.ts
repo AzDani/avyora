@@ -253,16 +253,18 @@ export const ligneQuantite = (ctx: Ctx, l: Lot, t: Tache, v: number) => (s: Lign
   ({ ...s, qty: v, manual: isAuto(ctx, l.c, t.n) ? true : s.manual, plan: undefined });
 
 /** Prix unitaire « Fait faire » perso (`null` : retour au prix AVYORA). */
-export const lignePrix = (v: number | null) => (s: LigneSel): LigneSel => {
+export const lignePrix = (v: number | null, ttc = false) => (s: LigneSel): LigneSel => {
   const n = { ...s };
-  if (v == null) delete n.pu; else n.pu = v;
+  delete n.puTtc;
+  if (v == null) delete n.pu; else { n.pu = v; if (ttc) n.puTtc = true; }
   return n;
 };
 
 /** Prix matériaux « Je le fais » perso (`null` : retour au prix AVYORA) ; il remplace un prix « Fait faire » perso. */
-export const ligneMateriaux = (v: number | null) => (s: LigneSel): LigneSel => {
+export const ligneMateriaux = (v: number | null, ttc = false) => (s: LigneSel): LigneSel => {
   const n = { ...s };
-  if (v == null) delete n.pm; else { n.pm = v; delete n.pu; }
+  delete n.pmTtc;
+  if (v == null) delete n.pm; else { n.pm = v; if (ttc) n.pmTtc = true; delete n.pu; delete n.puTtc; }
   return n;
 };
 

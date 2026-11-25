@@ -10,7 +10,8 @@ import { useState, type ReactNode } from "react";
 import NumStepper from "@/components/Stepper";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { dictDetail } from "@/lib/i18n/detail";
-import type { CustomLine } from "@/lib/estimateur";
+import { prixHTPerso, type CustomLine } from "@/lib/estimateur";
+import { dictTva } from "@/lib/i18n/tva";
 import { euros } from "@/lib/i18n/nombres";
 
 /** Un montant arrondi à l'euro, dans la langue de la page (N14) : « 92 000 € » en français (le format
@@ -118,10 +119,13 @@ const TVAS_DEFAUT = [5.5, 10, 20];
 /** `guideTva` (facultatif, construction neuve) remplace le texte du guide « Quelle TVA ? » de la rénovation.
  *  `tvas` (facultatif) : les taux que le sélecteur propose pour une ligne, selon le régime du projet
  *  (`tauxPersoPossibles`) et le taux déjà enregistré de la ligne. Absent : 5,5 / 10 / 20 %. */
-export function CustomLines({ lines, onAdd, onUpd, onDel, guideTva, tvas }: { lines: CustomLine[]; onAdd: () => void; onUpd: (id: string, patch: Partial<CustomLine>) => void; onDel: (id: string) => void; guideTva?: React.ReactNode; tvas?: (courant: number) => number[] }) {
+export function CustomLines({ lines, onAdd, onUpd, onDel, guideTva, tvas, enTtc = false }: { lines: CustomLine[]; onAdd: () => void; onUpd: (id: string, patch: Partial<CustomLine>) => void; onDel: (id: string) => void; guideTva?: React.ReactNode; enTtc?: boolean; tvas?: (courant: number) => number[] }) {
   const locale = useLocale();
   const t = dictDetail(locale).perso;
-  const ht = dictDetail(locale).liste.ht;
+  /* HT / TTC (25/11/2026) : les montants suivent l'affichage du projet (`enTtc`) ; un prix se tape dans cet
+     affichage et reste ce chiffre-là (`ttc` sur la ligne). Absent : HT, le rendu d'avant. */
+  const ht = enTtc ? dictTva(locale).reglages.ttc : dictDetail(locale).liste.ht;
+  const aff = (l: CustomLine, v: number) => (enTtc ? v * (1 + (l.tva || 0) / 100) : v);
   /* L'unité enregistrée reste la valeur française ; seul l'affichage change (en français : identique). */
   const unite = (u: string) => t.unites[u] ?? u;
   const [guide, setGuide] = useState<string | null>(null);
@@ -135,7 +139,7 @@ export function CustomLines({ lines, onAdd, onUpd, onDel, guideTva, tvas }: { li
         if (!l.draft) return (
           <div className="trow" key={l.id}>
             <button type="button" className={"cbx" + (on ? " on" : "")} onClick={() => onUpd(l.id, { on: !on })} aria-label={on ? dictDetail(locale).ligne.decocher : dictDetail(locale).ligne.cocher} />
-            <span className="tn">{l.nom || t.sansNom}<span className="pu">{fmt(l.prix || 0, locale)} {ht}/{unite(l.unite)}{isUrl(l.note) ? " · " : ""}{isUrl(l.note) && <a className="cl-open" href={l.note} target="_blank" rel="noopener noreferrer">{t.lien}</a>}</span></span>
+            <span className="tn">{l.nom || t.sansNom}<span className="pu">{fmt(aff(l, prixHTPerso(l)), locale)} {ht}/{unite(l.unite)}{isUrl(l.note) ? " · " : ""}{isUrl(l.note) && <a className="cl-open" href={l.note} target="_blank" rel="noopener noreferrer">{t.lien}</a>}</span></span>
             <span className="tctl">
               <NumStepper compact value={l.qte} min={0} onChange={(v) => onUpd(l.id, { qte: v })} />
               <span className="unit">{unite(l.unite)}</span>
@@ -143,7 +147,7 @@ export function CustomLines({ lines, onAdd, onUpd, onDel, guideTva, tvas }: { li
               {confirmDel === l.id
                 ? <button type="button" className="cl-delconfirm" onClick={() => { onDel(l.id); setConfirmDel(null); }}>{t.supprimerQ}</button>
                 : <button type="button" className="cl-icon" onClick={() => askDel(l.id)} title={t.supprimer}>🗑</button>}
-              <span className="lineamt num">{fmt((l.prix || 0) * (l.qte || 0), locale)}</span>
+              <span className="lineamt num">{fmt(aff(l, prixHTPerso(l) * (l.qte || 0)), locale)}</span>
             </span>
           </div>
         );
@@ -153,12 +157,12 @@ export function CustomLines({ lines, onAdd, onUpd, onDel, guideTva, tvas }: { li
           <div className="clr">
             <span className="clbadge">{t.badge}</span>
             <input className="cl-nom" placeholder={t.nomPlaceholder} value={l.nom} onChange={(e) => onUpd(l.id, { nom: e.target.value })} />
-            <input className="cl-prix num" type="number" inputMode="decimal" value={l.prix || ""} placeholder="0" onChange={(e) => onUpd(l.id, { prix: parseFloat(e.target.value) || 0 })} title={t.prixTitre} />
-            <span className="cl-sep">€ /</span>
+            <input className="cl-prix num" type="number" inputMode="decimal" value={l.prix || ""} placeholder="0" onChange={(e) => onUpd(l.id, { prix: parseFloat(e.target.value) || 0, ttc: enTtc || undefined })} title={t.prixTitre} />
+            <span className="cl-sep">€ {(l.ttc ?? enTtc) ? dictTva(locale).reglages.ttc : dictDetail(locale).liste.ht} /</span>
             <select className="cl-unite" value={l.unite} onChange={(e) => onUpd(l.id, { unite: e.target.value })}>{CL_UNITS.map((u) => <option key={u} value={unite(u) !== u ? u : undefined}>{unite(u)}</option>)}</select>
             <span className="cl-sep">×</span>
             <NumStepper compact value={l.qte} min={0} onChange={(v) => onUpd(l.id, { qte: v })} />
-            <span className="cl-total num">= {fmt((l.prix || 0) * (l.qte || 0), locale)}</span>
+            <span className="cl-total num">= {fmt(aff(l, prixHTPerso(l) * (l.qte || 0)), locale)}</span>
           </div>
           <div className="clr">
             <span className="cl-lk">🔗</span>

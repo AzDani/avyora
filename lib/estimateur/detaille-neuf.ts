@@ -43,11 +43,17 @@ export interface EtatNeuf {
   sel: Selection;
   /** La façade suit les murs (ossature → bardage bois, sinon enduit) tant qu'on ne l'a pas choisie. */
   facadeAuto: boolean;
+  /** HT / TTC (25/11/2026) : qui paie (« pro » récupère la TVA) et l'affichage des prix. Absents : particulier, TTC. */
+  payeur?: "pro";
+  affichage?: "ht";
 }
 
 /** Contexte moteur de l'état. `ctxNeuf` remet le budget à 0 : on le repose. */
 export function ctxDetailNeuf(e: EtatNeuf): Ctx {
-  return { ...ctxNeuf(e.maison, { finition: e.finition, codePostal: e.maison.codePostal ?? "", aleas: e.aleas }), budget: e.budget || 0 };
+  return {
+    ...ctxNeuf(e.maison, { finition: e.finition, codePostal: e.maison.codePostal ?? "", aleas: e.aleas }), budget: e.budget || 0,
+    ...(e.payeur ? { payeur: e.payeur } : {}), ...(e.affichage ? { affichage: e.affichage } : {}),
+  };
 }
 
 /** La façade est-elle celle que les murs donneraient d'office ? (reprise d'une maison déjà décrite) */
@@ -59,6 +65,7 @@ export function etatDepuisPreset(p: { ctx: Ctx; sel: Selection }, qui: QuiRealis
   return {
     maison, finition: p.ctx.finition ?? "standard", qui, aleas: p.ctx.aleas, budget: budget || 0,
     sel: p.sel ?? {}, facadeAuto: facadeAutoDe(maison),
+    ...(p.ctx.payeur ? { payeur: p.ctx.payeur } : {}), ...(p.ctx.affichage ? { affichage: p.ctx.affichage } : {}),
   };
 }
 

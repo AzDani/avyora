@@ -28,11 +28,13 @@ import { dictNeuf } from "@/lib/i18n/neuf";
 import { dictDetail } from "@/lib/i18n/detail";
 import { catT } from "@/lib/estimateur/catalog-i18n";
 import {
-  customLotHT, isLoc, key, visibleTask, raisonProNeuf, tauxPersoPossibles, PHASES_NEUF, ICON,
+  customLotHT, effRate, isLoc, key, visibleTask, raisonProNeuf, tauxPersoPossibles, PHASES_NEUF, ICON,
   type Ctx, type Selection, type LigneSel, type CustomLine, type Lot, type Tache, type MaisonNeuve,
 } from "@/lib/estimateur";
 import { INFO_PHASES } from "@/lib/estimateur/etapes-neuf";
 import { badgeNeuf, lignesPersoDuLot } from "@/lib/estimateur/detaille-neuf";
+import { enHT, montant, persoAffiche } from "@/lib/estimateur/tva";
+import { dictTva } from "@/lib/i18n/tva";
 import {
   GRANDES_PHASES_NEUF, POSTES_FRAIS_NEUF, sousTitreEtapeNeuf, CARTE_FRAIS, CARTE_DEMARCHES, elementsLotNeuf, lotsAffichesNeuf, notesDuLotNeuf, postesDesElements, postesCochesNeuf,
   alternativeMontreeNeuf, raisonIndisponibleNeuf, type PosteListeNeuf, type LigneChoixNeuf,
@@ -68,7 +70,8 @@ const Drapeau = () => (
  *  ainsi), avec ce que le neuf ajoute (badge, raison « Pro obligatoire », boutons d'une ligne de choix). */
 function rangees({ ctx, sel, htParCle, actions }: Pick<PropsCommunes, "ctx" | "sel" | "htParCle" | "actions">) {
   const coche = ({ l, t }: PosteListeNeuf) => !!sel[key(l.c, t.n)]?.on;
-  const htDe = (postes: PosteListeNeuf[]) => postes.reduce((s, { l, t }) => s + (htParCle.get(key(l.c, t.n)) ?? 0), 0);
+  /* Montant de postes dans l'affichage du projet (HT ou TTC, chaque poste à son taux ; 25/11/2026). */
+  const htDe = (postes: PosteListeNeuf[]) => postes.reduce((s, { l, t }) => s + montant(htParCle.get(key(l.c, t.n)) ?? 0, effRate(l, t, sel, ctx), ctx), 0);
   const rangee = (p: PosteListeNeuf, choix?: ReactNode) => (
     <LignesLot key={p.t.id} l={p.l} taches={[p.t]} ctx={ctx} sel={sel} loc={isLoc(p.l.c)} maj={actions.maj} onCocher={actions.cocher} onAuto={actions.auto}
       options={(t) => ({ badge: badgeNeuf(ctx, sel, p.l, t), proRaison: raisonProNeuf(t), choix })} />
@@ -116,13 +119,13 @@ export function ListeNeuf(props: PropsCommunes & { custom: CustomLine[]; outils:
     const cnt = postesCochesNeuf(sel, elements) + cLines.filter((x) => x.on !== false && !x.draft).length;
     if (seulementCoches && cnt === 0) return null;
     const ouvert = !!open[c];
-    const amt = htDe(postesDesElements(elements)) + customLotHT(cLines, c);
+    const amt = htDe(postesDesElements(elements)) + persoAffiche(cLines, c, ctx);
     const notes = notesDuLotNeuf(elements);
     const traduire = (xs: string[]) => xs.map((x) => catT(locale, "notes", x));
     return (
       <BlocLot key={c} ouvert={ouvert} notes={traduire(notes.entete)} labelInfo={dl.liste.infoNote} entete={{
         icone: ICON[c] || "•", nom: catT(locale, "corps", c), cnt, ouvert, onBascule: () => onBascule(c),
-        montant: cnt > 0 ? fmt(amt, locale) + " " + dl.liste.ht : "",
+        montant: cnt > 0 ? fmt(amt, locale) + " " + (enHT(ctx) ? dl.liste.ht : dictTva(locale).reglages.ttc) : "",
       }}>
         {elements.map((e) => {
           if (e.type === "etape") return <SousEtape key={"e-" + e.phase} notes={traduire(notes.etapes[e.phase] ?? [])} labelInfo={dl.liste.infoNote}>{sousTitreEtapeNeuf(e.phase)?.[locale] ?? catT(locale, "phases", e.phase)}</SousEtape>;
@@ -131,7 +134,7 @@ export function ListeNeuf(props: PropsCommunes & { custom: CustomLine[]; outils:
           return seulementCoches && !coche(e.p) ? null : rangee(e.p);
         })}
         <CustomLines lines={cLines} onAdd={() => actions.ajouterPerso(c)} onUpd={actions.majPerso} onDel={actions.supprimerPerso} guideTva={d.guideTva}
-          tvas={(courant) => tauxPersoPossibles(ctx, courant)} />
+          tvas={(courant) => tauxPersoPossibles(ctx, courant)} enTtc={!enHT(ctx)} />
       </BlocLot>
     );
   }
