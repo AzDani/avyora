@@ -4,7 +4,7 @@ import { ajouterDepense, compterDepenses, MAX_DEPENSES } from "@/lib/data/depens
 import { getUser, estPro } from "@/lib/auth";
 import { verifierLimite } from "@/lib/ratelimit";
 import { valider, jsonBody, depenseSchema } from "@/lib/validation";
-import { corpsDuProjet, CORPS_AUTRE, CORPS_MATERIEL, tvaDeTtc } from "@/lib/estimateur/budget-reel";
+import { corpsDuProjet, natureEtTva, CORPS_AUTRE } from "@/lib/estimateur/budget-reel";
 
 /**
  * Ajoute une dépense réelle à un projet (module M5). Pro (pendant la bêta : tout compte confirmé),
@@ -30,16 +30,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   if ((await compterDepenses(id)) >= MAX_DEPENSES) return NextResponse.json({ error: "Nombre maximal de dépenses atteint" }, { status: 409 });
 
-  const nature = v.data.corpsEtat === CORPS_MATERIEL ? "mat" : v.data.nature;
-  // TVA : recalculée depuis le montant TTC et le taux ; tapée telle quelle pour une facture à plusieurs taux,
-  // et alors plus petite que le montant.
-  const taux = v.data.tauxTva ?? null;
-  let tva: number | null = null;
-  if (taux === "multi") {
-    if (v.data.tva == null || v.data.tva >= v.data.montant) return NextResponse.json({ error: "Données invalides." }, { status: 400 });
-    tva = v.data.tva;
-  } else if (taux) tva = tvaDeTtc(v.data.montant, Number(taux));
-  const d = await ajouterDepense(id, { corps: v.data.corpsEtat, libelle: v.data.libelle, montant: v.data.montant, nature, tva, taux });
+  // Nature (le matériel est toujours « matériaux ») et TVA (recalculée, ou tapée pour une facture à plusieurs taux).
+  const nt = natureEtTva(v.data);
+  if (!nt) return NextResponse.json({ error: "Données invalides." }, { status: 400 });
+  const d = await ajouterDepense(id, { corps: v.data.corpsEtat, libelle: v.data.libelle, montant: v.data.montant, ...nt });
   if (!d) return NextResponse.json({ error: "Enregistrement impossible" }, { status: 500 });
   return NextResponse.json({ depense: d });
 }

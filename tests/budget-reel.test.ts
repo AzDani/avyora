@@ -113,11 +113,11 @@ describe("corpsDuProjet", () => {
 
 describe("routes /api/projects/[id]/depenses", () => {
   const ID = "11111111-1111-4111-8111-111111111111", DID = "22222222-2222-4222-8222-222222222222";
-  const S = { nb: 0, user: null as null | { id: string }, pro: true, limite: true, projet: reno as unknown, ajout: [] as unknown[], suppr: [] as unknown[] };
+  const S = { nb: 0, user: null as null | { id: string }, pro: true, limite: true, projet: reno as unknown, ajout: [] as unknown[], suppr: [] as unknown[], modif: [] as unknown[], trouve: true };
   const MOCKS = ["@/lib/auth", "@/lib/ratelimit", "@/lib/data/projects", "@/lib/data/depenses"];
   beforeEach(() => {
     vi.resetModules();
-    Object.assign(S, { nb: 0, user: { id: "u1" }, pro: true, limite: true, projet: reno, ajout: [], suppr: [] });
+    Object.assign(S, { nb: 0, user: { id: "u1" }, pro: true, limite: true, projet: reno, ajout: [], suppr: [], modif: [], trouve: true });
     vi.doMock("@/lib/auth", () => ({ getUser: async () => S.user, estPro: () => S.pro }));
     vi.doMock("@/lib/ratelimit", () => ({ verifierLimite: async () => S.limite }));
     vi.doMock("@/lib/data/projects", () => ({ getProjet: async () => (S.projet ? { id: ID, reponses: S.projet } : null) }));
@@ -125,6 +125,7 @@ describe("routes /api/projects/[id]/depenses", () => {
       MAX_DEPENSES: 500, compterDepenses: async () => S.nb,
       ajouterDepense: async (pid: string, d: unknown) => { S.ajout.push([pid, d]); return { id: DID, ...(d as object), date: "x" }; },
       supprimerDepense: async (pid: string, did: string) => { S.suppr.push([pid, did]); return true; },
+      modifierDepense: async (pid: string, did: string, d: unknown) => { S.modif.push([pid, did, d]); return S.trouve ? { id: did, ...(d as object), date: "x" } : null; },
     }));
   });
   afterEach(() => { for (const m of MOCKS) vi.doUnmock(m); });
@@ -183,6 +184,25 @@ describe("routes /api/projects/[id]/depenses", () => {
   });
   it("montant au-delà de 5 M€ refusé", async () => {
     expect((await post({ corpsEtat: corps(), libelle: "x", montant: 6_000_000 })).status).toBe(400);
+  });
+  it("modification (25/11/2026) : mêmes règles que l'ajout ; introuvable 404 ; anonyme 401", async () => {
+    const { PATCH } = await import("@/app/api/projects/[id]/depenses/[depenseId]/route");
+    const maj = (body: unknown, did = DID) => PATCH(new Request("http://x", { method: "PATCH", body: JSON.stringify(body) }), { params: Promise.resolve({ id: ID, depenseId: did }) });
+    const r = await maj({ corpsEtat: corps(), libelle: "Plombier corrigé", montant: 2200, nature: "fp", tauxTva: "10" });
+    expect(r.status).toBe(200);
+    const [pid, did, d] = S.modif[0] as [string, string, { libelle: string; montant: number; taux: string; tva: number; nature: string }];
+    expect([pid, did, d.libelle, d.montant, d.taux, d.nature]).toEqual([ID, DID, "Plombier corrigé", 2200, "10", "fp"]);
+    expect(d.tva).toBeCloseTo(200, 6);
+    expect((await maj({ corpsEtat: CORPS_MATERIEL, libelle: "Perceuse", montant: 120, nature: "fp" })).status).toBe(200);
+    expect((S.modif[1] as [string, string, { nature: string; tva: null }])[2]).toMatchObject({ nature: "mat", tva: null, taux: null });
+    expect((await maj({ corpsEtat: "Piscine olympique", libelle: "x", montant: 1 })).status).toBe(400);
+    expect((await maj({ corpsEtat: corps(), libelle: "x", montant: 100, tauxTva: "multi", tva: 150 })).status).toBe(400);
+    expect((await maj({ corpsEtat: corps(), libelle: "x", montant: 1 }, "pas-un-uuid")).status).toBe(404);
+    S.trouve = false;
+    expect((await maj({ corpsEtat: corps(), libelle: "x", montant: 1 })).status).toBe(404);
+    S.user = null;
+    expect((await maj({ corpsEtat: corps(), libelle: "x", montant: 1 })).status).toBe(401);
+    expect(S.modif.length).toBe(3);
   });
   it("suppression : 204, identifiants malformés 404, anonyme 401", async () => {
     const { DELETE } = await import("@/app/api/projects/[id]/depenses/[depenseId]/route");

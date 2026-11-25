@@ -58,6 +58,22 @@ export async function ajouterDepense(projectId: string, d: { corps: string; libe
   return versDepense(data as unknown as Ligne);
 }
 
+/** Modifie une dépense du projet (la RLS refuse celle d'un autre). null si aucune ligne n'a changé. Sans les colonnes
+ *  de la migration 0011 (ou 0010), la modification se fait sans elles, comme l'ajout. */
+export async function modifierDepense(projectId: string, depenseId: string, d: { corps: string; libelle: string; montant: number; nature?: NatureDepense; tva?: number | null; taux?: TauxDepense | null }): Promise<Depense | null> {
+  const sb = await supabaseServer();
+  const ligne = { corps_etat: d.corps, libelle: d.libelle, montant: Math.round(d.montant * 100) / 100 };
+  // La TVA est toujours réécrite : une dépense passée « sans taux » perd l'ancienne.
+  const avecTva = d.tva != null && d.taux ? { tva: Math.round(d.tva * 100) / 100, taux_tva: d.taux } : { tva: null, taux_tva: null };
+  const maj = (champs: Record<string, unknown>, colonnes: string) =>
+    sb.from("expenses").update(champs).eq("id", depenseId).eq("project_id", projectId).select(colonnes).maybeSingle();
+  let { data, error } = await maj({ ...ligne, nature: nature(d.nature), ...avecTva }, `${COLONNES}, nature, tva, taux_tva`);
+  if (sansColonneTva(error)) ({ data, error } = await maj({ ...ligne, nature: nature(d.nature) }, `${COLONNES}, nature`));
+  if (sansColonneNature(error)) ({ data, error } = await maj(ligne, COLONNES));
+  if (error || !data) return null;
+  return versDepense(data as unknown as Ligne);
+}
+
 /** Supprime une dépense du projet (la RLS refuse celle d'un autre). true si une ligne est partie. */
 export async function supprimerDepense(projectId: string, depenseId: string): Promise<boolean> {
   const sb = await supabaseServer();

@@ -277,3 +277,17 @@ export function tauxProposeDepense(reponses: unknown, corps: string, nature: Nat
   const taux = ht > 0 ? (tva / ht) * 100 : 10;
   return taux < 7.75 ? { taux: "5.5", pourquoi: "energie" } : taux < 15 ? { taux: "10", pourquoi: "reduit" } : { taux: "20", pourquoi: "neuf" };
 }
+
+/** Nature et TVA d'une dépense saisie (ajout comme modification) : le matériel est toujours « matériaux » ; la TVA
+ *  est recalculée depuis le montant TTC et le taux, ou tapée pour une facture à plusieurs taux (plus petite que le
+ *  montant). null : TVA « plusieurs taux » absente ou trop grande, la saisie est refusée. */
+export function natureEtTva(d: { corpsEtat: string; montant: number; nature: NatureDepense; tauxTva?: TauxDepense; tva?: number }):
+  { nature: NatureDepense; taux: TauxDepense | null; tva: number | null } | null {
+  const nature: NatureDepense = d.corpsEtat === CORPS_MATERIEL ? "mat" : d.nature;
+  const taux = d.tauxTva ?? null;
+  if (taux === "multi") {
+    if (d.tva == null || d.tva >= d.montant) return null;
+    return { nature, taux, tva: d.tva };
+  }
+  return { nature, taux, tva: taux ? tvaDeTtc(d.montant, Number(taux)) : null };
+}

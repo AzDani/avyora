@@ -59,6 +59,8 @@ const TR = {
     materielAucun: "Pas encore de budget matériel : fixe-le pour suivre tes achats et tes locations d'outils.",
     erreurMateriel: "Le budget matériel n'a pas pu être enregistré. Réessaie.",
     supprimer: "Supprimer", confirmer: "Supprimer cette dépense ?", annuler: "Annuler",
+    modifier: "Modifier", modifTitre: (l: string) => `Modifier la dépense « ${l} »`, modifValider: "Enregistrer la modification",
+    erreurModif: "La modification n'a pas pu être enregistrée.",
     vide: "Aucune dépense pour l'instant. Ajoute la première facture ou le premier acompte : chaque corps d'état se met à jour tout de suite.",
     erreur: "Enregistrement impossible. Vérifie le libellé et le montant, puis réessaie.",
     erreurServeur: "Enregistrement impossible. Réessaie dans un instant.",
@@ -106,6 +108,8 @@ const TR = {
     materielAucun: "No tools budget yet: set one to track what you buy and hire.",
     erreurMateriel: "The tools budget couldn't be saved. Try again.",
     supprimer: "Delete", confirmer: "Delete this expense?", annuler: "Cancel",
+    modifier: "Edit", modifTitre: (l: string) => `Edit the expense “${l}”`, modifValider: "Save changes",
+    erreurModif: "The change could not be saved.",
     vide: "No expenses yet. Add your first invoice or deposit: each trade updates right away.",
     erreur: "Could not save. Check the label and the amount, then try again.",
     erreurServeur: "Could not save. Try again in a moment.",
@@ -216,7 +220,7 @@ const CSS = `
 .av-bud .lien{border:0;background:none;color:var(--b-brand7);font:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:8px 0;min-height:40px;text-align:left}
 .av-bud .lien:hover{text-decoration:underline;text-underline-offset:3px}
 .av-bud .det{margin-top:6px;border-top:1px dashed var(--b-line)}
-.av-bud .hl{display:grid;grid-template-columns:58px minmax(0,1fr) auto auto 40px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--b-line);font-size:13px}
+.av-bud .hl{display:grid;grid-template-columns:58px minmax(0,1fr) auto auto 40px 40px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--b-line);font-size:13px}
 .av-bud .hl .d{color:var(--b-faint);font-size:12px}
 .av-bud .hl .tx{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .av-bud .hl .m{font-weight:600}
@@ -224,6 +228,10 @@ const CSS = `
 .av-bud .tag.fp{background:var(--b-weak);color:var(--b-brand7)}.av-bud .tag.mo{background:#f1edfe;color:#6a4fd8}.av-bud .tag.mat{background:var(--b-ambref);color:#a15c13}
 .av-bud .hl button{width:40px;height:40px;border:0;background:none;color:var(--b-faint);cursor:pointer;border-radius:10px;font-size:15px}
 .av-bud .hl button:hover{background:var(--b-rougef);color:var(--b-rouge)}
+.av-bud .hl button.modif:hover{background:var(--b-weak);color:var(--b-brand7)}
+.av-bud .hl.edite{background:var(--b-weak);border-radius:10px}
+.av-bud form.saisie .modif-t{grid-column:1/-1;font-size:13.5px;font-weight:700;color:var(--b-brand7);margin:0}
+.av-bud form.saisie .envoi{gap:8px}
 .av-bud .hl-conf{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px;padding:6px 0;border-bottom:1px dashed var(--b-line);font-size:13px;color:var(--b-rouge);font-weight:500}
 .av-bud .hl-conf button{height:36px;border-radius:10px;padding:0 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--b-line2);background:#fff;color:var(--b-muted)}
 .av-bud .hl-conf button.oui{background:var(--b-rouge);border-color:var(--b-rouge);color:#fff}
@@ -261,7 +269,7 @@ const CSS = `
   .av-bud form.saisie label.lib,.av-bud form.saisie label.corps{grid-column:1/-1}
   .av-bud .seg span{min-height:48px;padding:6px 8px;font-size:12.5px}
   .av-bud .seg span small{display:none}
-  .av-bud .hl{grid-template-columns:48px minmax(0,1fr) auto 40px}
+  .av-bud .hl{grid-template-columns:48px minmax(0,1fr) auto 40px 40px}
   .av-bud .hl .tag{display:none}
 }
 @media (prefers-reduced-motion:reduce){.av-bud .gtrack i,.av-bud .barre i,.av-bud button.add{transition:none}.av-bud button.add:hover{transform:none}}
@@ -305,6 +313,8 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales, o
   const [tauxChoisi, setTauxChoisi] = useState<TauxDepense | null>(null);
   const [tvaMulti, setTvaMulti] = useState("");
   const [montantHt, setMontantHt] = useState(false);
+  // Modifier une dépense (25/11/2026) : le formulaire d'ajout, rempli avec la dépense, enregistre une modification.
+  const [edition, setEdition] = useState<Depense | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<{ msg: string; champs: boolean } | null>(null);
   const [aSupprimer, setASupprimer] = useState<string | null>(null);
@@ -345,19 +355,23 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales, o
     if (!facture) { setErr({ msg: taux === "multi" ? tv.erreurMulti : t.erreur, champs: true }); return; }
     setBusy(true); setErr(null);
     try {
-      const r = await fetch(`/api/projects/${projectId}/depenses`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
+      const r = await fetch(edition ? `/api/projects/${projectId}/depenses/${edition.id}` : `/api/projects/${projectId}/depenses`, {
+        method: edition ? "PATCH" : "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           corpsEtat: choix, libelle: libelle.trim(), montant: Math.round(facture.ttc * 100) / 100, nature: estMateriel ? "mat" : nature,
           tauxTva: taux, ...(taux === "multi" ? { tva: Math.round(facture.tva * 100) / 100 } : {}),
         }),
       });
       const j = await r.json().catch(() => null);
-      if (!r.ok || !j?.depense) { setErr(erreurAjout(r.status)); return; }
-      setDepenses((l) => [j.depense as Depense, ...l]);
+      if (!r.ok || !j?.depense) { setErr(edition && r.status === 404 ? { msg: t.erreurModif, champs: false } : erreurAjout(r.status)); return; }
+      if (edition) {
+        const id = edition.id;
+        setDepenses((l) => l.map((x) => (x.id === id ? (j.depense as Depense) : x)));
+        setEdition(null);
+      } else setDepenses((l) => [j.depense as Depense, ...l]);
       // Le corps concerné s'ouvre : la dépense ajoutée se voit tout de suite.
       setOuvert(choix);
-      setLibelle(""); setMontant(""); setTvaMulti("");
+      setLibelle(""); setMontant(""); setTvaMulti(""); setTauxChoisi(null); setMontantHt(false);
     } catch { setErr({ msg: messageErreurApi(locale, 0, t.erreurServeur), champs: false }); } finally { setBusy(false); }
   }
 
@@ -371,6 +385,7 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales, o
   // Suppression : confirmation EN LIGNE (deux clics) ; un échec remet la ligne ET le dit.
   async function supprimer(d: Depense) {
     setASupprimer(null);
+    if (edition?.id === d.id) annulerModif();
     setErr(null);
     const avant = depenses;
     setDepenses((l) => l.filter((x) => x.id !== d.id));
@@ -394,7 +409,27 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales, o
     } catch { setMatErr(true); } finally { setMatBusy(false); }
   }
 
+  function modifier(d: Depense) {
+    setEdition(d);
+    setChoix(d.corps);
+    setNature(d.nature ?? "fp");
+    setLibelle(d.libelle);
+    setMontant(String(d.montant));
+    setMontantHt(false);
+    // Une dépense d'avant le suivi de la TVA : le taux proposé ; enregistrer la modification lui donne sa TVA.
+    setTauxChoisi(d.taux ?? null);
+    setTvaMulti(d.taux === "multi" && d.tva != null ? String(d.tva) : "");
+    setErr(null); setASupprimer(null);
+    setSaisie(true);
+    setTimeout(() => { refForm.current?.scrollIntoView({ block: "nearest", behavior: "smooth" }); refLibelle.current?.focus({ preventScroll: true }); }, 0);
+  }
+  function annulerModif() {
+    setEdition(null);
+    setLibelle(""); setMontant(""); setTvaMulti(""); setTauxChoisi(null); setMontantHt(false); setErr(null);
+  }
+
   function saisirIci(c: string) {
+    if (edition) annulerModif();
     setChoix(c);
     setTauxChoisi(null);
     if (c === CORPS_MATERIEL) setNature("mat");
@@ -527,13 +562,14 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales, o
               const n: NatureDepense = d.nature ?? "fp";
               return (
                 <div key={d.id}>
-                  <div className="hl">
+                  <div className={"hl" + (edition?.id === d.id ? " edite" : "")}>
                     <span className="d num">{dateCourte(d.date)}</span>
                     <span className="tx" title={d.libelle}>{d.libelle}
                       <small className="tvl">{d.tva != null ? tv.ligneTva(pctTva(d.taux ?? "multi"), fmt(d.tva)) : tv.tvaInconnue}</small>
                     </span>
                     <span className={"tag " + n}>{t.natures[n]}</span>
                     <span className="m num">{fmt(d.montant)}</span>
+                    <button type="button" className="modif" onClick={() => modifier(d)} aria-label={`${t.modifier} ${d.libelle}`} title={t.modifier}>✎</button>
                     <button type="button" onClick={() => setASupprimer(aSupprimer === d.id ? null : d.id)} aria-expanded={aSupprimer === d.id} aria-label={`${t.supprimer} ${d.libelle}`}>✕</button>
                   </div>
                   {aSupprimer === d.id && (
@@ -623,17 +659,20 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales, o
       <div className="cartes">{lignes.map(carte)}</div>
 
       <div className="pied">
-        <button type="button" className={saisie ? "sec" : "add"} onClick={() => setSaisie((v) => !v)} aria-expanded={saisie}>
+        <button type="button" className={saisie ? "sec" : "add"} onClick={() => { if (saisie && edition) annulerModif(); setSaisie((v) => !v); }} aria-expanded={saisie}>
           {saisie ? t.fermer : "+ " + t.ajouter}
         </button>
       </div>
 
       {saisie && (
-        <form ref={refForm} className="saisie" onSubmit={ajouter} aria-label={t.ajouter}>
+        <form ref={refForm} className="saisie" onSubmit={ajouter} aria-label={edition ? t.modifTitre(edition.libelle) : t.ajouter}>
+          {edition && <p className="modif-t">{t.modifTitre(edition.libelle)}</p>}
           <label className="corps"><span>{t.libCorps}</span>
             <select value={choix} onChange={(e) => { setChoix(e.target.value); setTauxChoisi(null); if (e.target.value === CORPS_MATERIEL) setNature("mat"); }}>
               {corps.map((c) => <option key={c} value={c}>{nomCorps(c)}</option>)}
               <option value={CORPS_AUTRE}>{t.autre}</option>
+              {/* Une dépense sur un corps qui n'est plus dans l'estimation : son corps reste proposé à la modification. */}
+              {edition && !corps.includes(edition.corps) && edition.corps !== CORPS_AUTRE && <option value={edition.corps}>{nomCorps(edition.corps)}</option>}
             </select>
           </label>
           <label className="lib"><span>{t.libelle}</span>
@@ -685,7 +724,10 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales, o
               <span>{tv.recapTtc}<b>{fmt(facture.ttc)}</b></span>
             </div>
           )}
-          <div className="envoi"><button type="submit" className="add" disabled={busy}>{busy ? t.enCours : t.valider}</button></div>
+          <div className="envoi">
+            {edition && <button type="button" className="sec" onClick={annulerModif}>{t.annuler}</button>}
+            <button type="submit" className="add" disabled={busy}>{busy ? t.enCours : edition ? t.modifValider : t.valider}</button>
+          </div>
         </form>
       )}
       {err && <div className="err" role="alert">{err.msg}</div>}
