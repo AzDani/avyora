@@ -147,12 +147,12 @@ exports[`Témoins · pendant la bêta (12/10/2026) > accueil (FR, EN) > accueil 
 <a href="/inscription?source=accueil" class="promo"><span style="text-align:center"><span class="dot" style="display:inline-block;vertical-align:middle;margin:0 8px 2px 0"></span><b>Free beta</b> — all of AVYORA is free through December 31, 2026 <span class="arr">· create your account →</span></span></a>
 <style>
 .av-home .hero .in{z-index:1}
-.av-home .hero .in.v2{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.85fr);gap:44px;align-items:center;text-align:left;max-width:none;padding:52px 48px 56px}
+.av-home .hero .in.v2{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:36px;align-items:center;text-align:left;max-width:none;padding:52px 48px 56px}
 .av-home .hero .v2 .tags{display:flex;flex-wrap:wrap;gap:8px}
 .av-home .hero .v2 .tags span{font-size:12.5px;font-weight:600;color:#c7ccfe;border:1px solid rgba(199,204,254,.3);border-radius:999px;padding:5px 12px}
-.av-home .hero .v2 h1{font-size:clamp(32px,4.4vw,52px);line-height:1.05;margin-top:18px}
-.av-home .hero .v2 p.sub{margin:18px 0 0;max-width:56ch}
-.av-home .hero .v2 .cta{justify-content:flex-start;margin-top:28px}
+.av-home .hero .v2 h1{font-size:clamp(30px,3.7vw,44px);line-height:1.06;margin-top:16px}
+.av-home .hero .v2 p.sub{margin:16px 0 0;max-width:56ch;font-size:16px}
+.av-home .hero .v2 .cta{justify-content:flex-start;margin-top:24px}
 .av-home .hero .v2 .trust{justify-content:flex-start;margin-top:22px}
 .av-home .fond{background:#fff;color:var(--ink);border-radius:20px;padding:22px;box-shadow:0 30px 60px -28px rgba(0,0,0,.55)}
 .av-home .fond .qui{display:flex;align-items:center;gap:16px}
@@ -163,15 +163,17 @@ exports[`Témoins · pendant la bêta (12/10/2026) > accueil (FR, EN) > accueil 
 .av-home .fond .role .tel{display:none}
 /* Carte du haut, piste A (25/11/2026) : la pastille BTS sous le nom, quatre tuiles alignées (le chiffre en gros, l'explication
    dessous), le bouton « Mon parcours » sur toute la largeur. Au téléphone : les quatre chiffres sur une ligne (libellés courts). */
-.av-home .fond img{width:84px;height:84px}
+.av-home .fond img{width:132px;height:132px;border-radius:20px}
+.av-home .fond .nom{font-size:19px}
+.av-home .fond .role{font-size:14px}
 .av-home .fond .pastilles{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .av-home .fond .pastille{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;line-height:1.2;color:var(--brand-700);background:var(--brand-weak);border-radius:999px;padding:4px 10px;white-space:nowrap}
 .av-home .fond .tuiles{list-style:none;margin:16px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .av-home .fond .tuiles li{background:var(--brand-weak);border-radius:14px;padding:12px 12px 11px}
 .av-home .fond .tuiles .v{display:flex;align-items:baseline;gap:5px;color:var(--brand-700)}
-.av-home .fond .tuiles .v b{font-size:26px;font-weight:700;line-height:1}
+.av-home .fond .tuiles .v b{font-size:28px;font-weight:700;line-height:1}
 .av-home .fond .tuiles .v small{font-family:var(--font-geist-mono),monospace;font-size:13px;font-weight:600}
-.av-home .fond .tuiles .lg{display:block;margin-top:5px;font-size:12.5px;line-height:1.35;color:var(--ink)}
+.av-home .fond .tuiles .lg{display:block;margin-top:5px;font-size:13px;line-height:1.35;color:var(--ink)}
 .av-home .fond .tuiles .ct{display:none}
 .av-home .fond .lien{display:inline-flex;align-items:center;min-height:44px;margin-top:4px;font-weight:600;font-size:14.5px;color:var(--brand-700)}
 .av-home .fond .lien:hover{text-decoration:underline;text-underline-offset:3px}
@@ -242,7 +244,7 @@ exports[`Témoins · pendant la bêta (12/10/2026) > accueil (FR, EN) > accueil 
 .av-home .monte{animation:avmonte .6s var(--ease) backwards}
 .av-home .monte.d1{animation-delay:.1s}.av-home .monte.d2{animation-delay:.18s}.av-home .monte.d3{animation-delay:.26s}
 @media(max-width:900px){.av-home .offres{grid-template-columns:1fr}.av-home .tuiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:820px){.av-home .hero .in.v2{grid-template-columns:1fr;padding:26px 20px 30px;gap:0}.av-home .fond{order:-1;background:none;box-shadow:none;padding:0 0 16px;color:#fff}.av-home .fond img{width:84px;height:84px;border-radius:50%;border:2px solid #fff}.av-home .fond .nom{color:#fff}.av-home .fond .role{color:#c7ccfe}.av-home .fond .role .tel{display:inline}.av-home .fond .role .pc,.av-home .hero .v2 .tags{display:none}.av-home .fond .lien.btn-v{display:inline-flex;width:auto;margin-top:12px;padding:9px 18px;min-height:40px;font-size:13.5px;background:#fff;color:var(--brand);box-shadow:none}.av-home .fond .lien.btn-v:hover{background:#fff}.av-home .fond .pastille{background:rgba(255,255,255,.12);color:#ece9ff;font-size:11.5px;padding:3px 9px}.av-home .fond .tuiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:14px}.av-home .fond .tuiles li{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);padding:8px 4px;text-align:center}.av-home .fond .tuiles .v{justify-content:center;color:#fff}.av-home .fond .tuiles .v b{font-size:19px}.av-home .fond .tuiles .v small,.av-home .fond .tuiles .lg{display:none}.av-home .fond .tuiles .ct{display:block;margin-top:4px;font-size:10.5px;line-height:1.25;color:#c7ccfe}.av-home .hero .v2 h1{margin-top:6px}.av-home .hero .v2 .cta .btn{width:100%}.av-home .situ .pan{grid-template-columns:1fr;padding:18px}}
+@media(max-width:820px){.av-home .hero .in.v2{grid-template-columns:1fr;padding:26px 20px 30px;gap:0}.av-home .fond{order:-1;background:none;box-shadow:none;padding:0 0 16px;color:#fff}.av-home .fond img{width:100px;height:100px;border-radius:50%;border:2px solid #fff}.av-home .fond .nom{color:#fff}.av-home .fond .role{color:#c7ccfe}.av-home .fond .role .tel{display:inline}.av-home .fond .role .pc,.av-home .hero .v2 .tags{display:none}.av-home .fond .lien.btn-v{display:inline-flex;width:auto;margin-top:12px;padding:9px 18px;min-height:40px;font-size:13.5px;background:#fff;color:var(--brand);box-shadow:none}.av-home .fond .lien.btn-v:hover{background:#fff}.av-home .fond .pastille{background:rgba(255,255,255,.12);color:#ece9ff;font-size:11.5px;padding:3px 9px}.av-home .fond .tuiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:14px}.av-home .fond .tuiles li{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);padding:8px 4px;text-align:center}.av-home .fond .tuiles .v{justify-content:center;color:#fff}.av-home .fond .tuiles .v b{font-size:19px}.av-home .fond .tuiles .v small,.av-home .fond .tuiles .lg{display:none}.av-home .fond .tuiles .ct{display:block;margin-top:4px;font-size:10.5px;line-height:1.25;color:#c7ccfe}.av-home .hero .v2 h1{margin-top:6px}.av-home .hero .v2 .cta .btn{width:100%}.av-home .situ .pan{grid-template-columns:1fr;padding:18px}}
 @media(max-width:480px){.av-home .tuiles{grid-template-columns:1fr}.av-home .fin3{padding:24px 20px}}
 @media (prefers-reduced-motion:reduce){.av-home .monte{animation:none}.av-home .btn,.av-home .offre,.av-home .tuile,.av-home .situ label,.av-home .fond img,.av-home .fin3 img{transition:none}.av-home .btn:hover,.av-home .offre:hover,.av-home .tuile:hover,.av-home .situ label:hover,.av-home .fond:hover img,.av-home .fin3:hover img{transform:none}}
 </style><div class="wrap"><header class="hero"><div class="in v2"><div class="intro monte">
@@ -425,12 +427,12 @@ exports[`Témoins · pendant la bêta (12/10/2026) > accueil (FR, EN) > accueil 
 <a href="/inscription?source=accueil" class="promo"><span style="text-align:center"><span class="dot" style="display:inline-block;vertical-align:middle;margin:0 8px 2px 0"></span><b>Bêta gratuite</b> — tout AVYORA est offert jusqu'au 31 décembre 2026 <span class="arr">· crée ton compte →</span></span></a>
 <style>
 .av-home .hero .in{z-index:1}
-.av-home .hero .in.v2{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.85fr);gap:44px;align-items:center;text-align:left;max-width:none;padding:52px 48px 56px}
+.av-home .hero .in.v2{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:36px;align-items:center;text-align:left;max-width:none;padding:52px 48px 56px}
 .av-home .hero .v2 .tags{display:flex;flex-wrap:wrap;gap:8px}
 .av-home .hero .v2 .tags span{font-size:12.5px;font-weight:600;color:#c7ccfe;border:1px solid rgba(199,204,254,.3);border-radius:999px;padding:5px 12px}
-.av-home .hero .v2 h1{font-size:clamp(32px,4.4vw,52px);line-height:1.05;margin-top:18px}
-.av-home .hero .v2 p.sub{margin:18px 0 0;max-width:56ch}
-.av-home .hero .v2 .cta{justify-content:flex-start;margin-top:28px}
+.av-home .hero .v2 h1{font-size:clamp(30px,3.7vw,44px);line-height:1.06;margin-top:16px}
+.av-home .hero .v2 p.sub{margin:16px 0 0;max-width:56ch;font-size:16px}
+.av-home .hero .v2 .cta{justify-content:flex-start;margin-top:24px}
 .av-home .hero .v2 .trust{justify-content:flex-start;margin-top:22px}
 .av-home .fond{background:#fff;color:var(--ink);border-radius:20px;padding:22px;box-shadow:0 30px 60px -28px rgba(0,0,0,.55)}
 .av-home .fond .qui{display:flex;align-items:center;gap:16px}
@@ -441,15 +443,17 @@ exports[`Témoins · pendant la bêta (12/10/2026) > accueil (FR, EN) > accueil 
 .av-home .fond .role .tel{display:none}
 /* Carte du haut, piste A (25/11/2026) : la pastille BTS sous le nom, quatre tuiles alignées (le chiffre en gros, l'explication
    dessous), le bouton « Mon parcours » sur toute la largeur. Au téléphone : les quatre chiffres sur une ligne (libellés courts). */
-.av-home .fond img{width:84px;height:84px}
+.av-home .fond img{width:132px;height:132px;border-radius:20px}
+.av-home .fond .nom{font-size:19px}
+.av-home .fond .role{font-size:14px}
 .av-home .fond .pastilles{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .av-home .fond .pastille{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;line-height:1.2;color:var(--brand-700);background:var(--brand-weak);border-radius:999px;padding:4px 10px;white-space:nowrap}
 .av-home .fond .tuiles{list-style:none;margin:16px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .av-home .fond .tuiles li{background:var(--brand-weak);border-radius:14px;padding:12px 12px 11px}
 .av-home .fond .tuiles .v{display:flex;align-items:baseline;gap:5px;color:var(--brand-700)}
-.av-home .fond .tuiles .v b{font-size:26px;font-weight:700;line-height:1}
+.av-home .fond .tuiles .v b{font-size:28px;font-weight:700;line-height:1}
 .av-home .fond .tuiles .v small{font-family:var(--font-geist-mono),monospace;font-size:13px;font-weight:600}
-.av-home .fond .tuiles .lg{display:block;margin-top:5px;font-size:12.5px;line-height:1.35;color:var(--ink)}
+.av-home .fond .tuiles .lg{display:block;margin-top:5px;font-size:13px;line-height:1.35;color:var(--ink)}
 .av-home .fond .tuiles .ct{display:none}
 .av-home .fond .lien{display:inline-flex;align-items:center;min-height:44px;margin-top:4px;font-weight:600;font-size:14.5px;color:var(--brand-700)}
 .av-home .fond .lien:hover{text-decoration:underline;text-underline-offset:3px}
@@ -520,7 +524,7 @@ exports[`Témoins · pendant la bêta (12/10/2026) > accueil (FR, EN) > accueil 
 .av-home .monte{animation:avmonte .6s var(--ease) backwards}
 .av-home .monte.d1{animation-delay:.1s}.av-home .monte.d2{animation-delay:.18s}.av-home .monte.d3{animation-delay:.26s}
 @media(max-width:900px){.av-home .offres{grid-template-columns:1fr}.av-home .tuiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:820px){.av-home .hero .in.v2{grid-template-columns:1fr;padding:26px 20px 30px;gap:0}.av-home .fond{order:-1;background:none;box-shadow:none;padding:0 0 16px;color:#fff}.av-home .fond img{width:84px;height:84px;border-radius:50%;border:2px solid #fff}.av-home .fond .nom{color:#fff}.av-home .fond .role{color:#c7ccfe}.av-home .fond .role .tel{display:inline}.av-home .fond .role .pc,.av-home .hero .v2 .tags{display:none}.av-home .fond .lien.btn-v{display:inline-flex;width:auto;margin-top:12px;padding:9px 18px;min-height:40px;font-size:13.5px;background:#fff;color:var(--brand);box-shadow:none}.av-home .fond .lien.btn-v:hover{background:#fff}.av-home .fond .pastille{background:rgba(255,255,255,.12);color:#ece9ff;font-size:11.5px;padding:3px 9px}.av-home .fond .tuiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:14px}.av-home .fond .tuiles li{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);padding:8px 4px;text-align:center}.av-home .fond .tuiles .v{justify-content:center;color:#fff}.av-home .fond .tuiles .v b{font-size:19px}.av-home .fond .tuiles .v small,.av-home .fond .tuiles .lg{display:none}.av-home .fond .tuiles .ct{display:block;margin-top:4px;font-size:10.5px;line-height:1.25;color:#c7ccfe}.av-home .hero .v2 h1{margin-top:6px}.av-home .hero .v2 .cta .btn{width:100%}.av-home .situ .pan{grid-template-columns:1fr;padding:18px}}
+@media(max-width:820px){.av-home .hero .in.v2{grid-template-columns:1fr;padding:26px 20px 30px;gap:0}.av-home .fond{order:-1;background:none;box-shadow:none;padding:0 0 16px;color:#fff}.av-home .fond img{width:100px;height:100px;border-radius:50%;border:2px solid #fff}.av-home .fond .nom{color:#fff}.av-home .fond .role{color:#c7ccfe}.av-home .fond .role .tel{display:inline}.av-home .fond .role .pc,.av-home .hero .v2 .tags{display:none}.av-home .fond .lien.btn-v{display:inline-flex;width:auto;margin-top:12px;padding:9px 18px;min-height:40px;font-size:13.5px;background:#fff;color:var(--brand);box-shadow:none}.av-home .fond .lien.btn-v:hover{background:#fff}.av-home .fond .pastille{background:rgba(255,255,255,.12);color:#ece9ff;font-size:11.5px;padding:3px 9px}.av-home .fond .tuiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:14px}.av-home .fond .tuiles li{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);padding:8px 4px;text-align:center}.av-home .fond .tuiles .v{justify-content:center;color:#fff}.av-home .fond .tuiles .v b{font-size:19px}.av-home .fond .tuiles .v small,.av-home .fond .tuiles .lg{display:none}.av-home .fond .tuiles .ct{display:block;margin-top:4px;font-size:10.5px;line-height:1.25;color:#c7ccfe}.av-home .hero .v2 h1{margin-top:6px}.av-home .hero .v2 .cta .btn{width:100%}.av-home .situ .pan{grid-template-columns:1fr;padding:18px}}
 @media(max-width:480px){.av-home .tuiles{grid-template-columns:1fr}.av-home .fin3{padding:24px 20px}}
 @media (prefers-reduced-motion:reduce){.av-home .monte{animation:none}.av-home .btn,.av-home .offre,.av-home .tuile,.av-home .situ label,.av-home .fond img,.av-home .fin3 img{transition:none}.av-home .btn:hover,.av-home .offre:hover,.av-home .tuile:hover,.av-home .situ label:hover,.av-home .fond:hover img,.av-home .fin3:hover img{transform:none}}
 </style><div class="wrap"><header class="hero"><div class="in v2"><div class="intro monte">
