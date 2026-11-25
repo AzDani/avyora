@@ -258,13 +258,22 @@ const V2_CSS = `<style>
 .av-home .fond .nom{font-weight:700;font-size:17px;color:var(--nuit)}
 .av-home .fond .role{font-size:13.5px;color:var(--muted);line-height:1.35;margin-top:2px}
 .av-home .fond .role .tel{display:none}
-.av-home .fond ul{list-style:none;margin:16px 0 0;padding:14px 0 0;border-top:1px solid var(--line);display:grid;gap:10px}
-.av-home .fond li{display:grid;grid-template-columns:56px 1fr;gap:10px;align-items:baseline;font-size:14.5px;line-height:1.4}
-.av-home .fond li .k{font-size:17px;font-weight:700;color:var(--brand);white-space:nowrap}
+/* Carte du haut, piste A (25/11/2026) : la pastille BTS sous le nom, quatre tuiles alignées (le chiffre en gros, l'explication
+   dessous), le bouton « Mon parcours » sur toute la largeur. Au téléphone : les quatre chiffres sur une ligne (libellés courts). */
+.av-home .fond img{width:84px;height:84px}
+.av-home .fond .pastilles{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.av-home .fond .pastille{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;line-height:1.2;color:var(--brand-700);background:var(--brand-weak);border-radius:999px;padding:4px 10px;white-space:nowrap}
+.av-home .fond .tuiles{list-style:none;margin:16px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.av-home .fond .tuiles li{background:var(--brand-weak);border-radius:14px;padding:12px 12px 11px}
+.av-home .fond .tuiles .v{display:flex;align-items:baseline;gap:5px;color:var(--brand-700)}
+.av-home .fond .tuiles .v b{font-size:26px;font-weight:700;line-height:1}
+.av-home .fond .tuiles .v small{font-family:var(--font-geist-mono),monospace;font-size:13px;font-weight:600}
+.av-home .fond .tuiles .lg{display:block;margin-top:5px;font-size:12.5px;line-height:1.35;color:var(--ink)}
+.av-home .fond .tuiles .ct{display:none}
 .av-home .fond .lien{display:inline-flex;align-items:center;min-height:44px;margin-top:4px;font-weight:600;font-size:14.5px;color:var(--brand-700)}
 .av-home .fond .lien:hover{text-decoration:underline;text-underline-offset:3px}
 /* « Mon parcours » mis en avant (25/11/2026, demande de Dani) : bouton violet avec le reflet animé du bouton principal. */
-.av-home .fond .lien.btn-v{margin-top:14px;padding:12px 22px;font-size:14.5px;background:var(--brand);color:#fff;box-shadow:0 10px 24px -12px rgba(79,70,229,.7)}
+.av-home .fond .lien.btn-v{display:flex;width:100%;justify-content:center;margin-top:14px;padding:12px 22px;font-size:14.5px;background:var(--brand);color:#fff;box-shadow:0 10px 24px -12px rgba(79,70,229,.7)}
 .av-home .fond .lien.btn-v:hover{background:var(--brand-700);text-decoration:none}
 .av-home .titre-s{font-size:clamp(24px,3vw,30px);font-weight:700;color:var(--nuit)}
 .av-home .sous-t{color:var(--muted);font-size:16px;margin-top:6px}
@@ -330,7 +339,7 @@ const V2_CSS = `<style>
 .av-home .monte{animation:avmonte .6s var(--ease) backwards}
 .av-home .monte.d1{animation-delay:.1s}.av-home .monte.d2{animation-delay:.18s}.av-home .monte.d3{animation-delay:.26s}
 @media(max-width:900px){.av-home .offres{grid-template-columns:1fr}.av-home .tuiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:820px){.av-home .hero .in.v2{grid-template-columns:1fr;padding:26px 20px 30px;gap:0}.av-home .fond{order:-1;background:none;box-shadow:none;padding:0 0 16px;color:#fff}.av-home .fond img{width:84px;height:84px;border-radius:50%;border:2px solid #fff}.av-home .fond .nom{color:#fff}.av-home .fond .role{color:#c7ccfe}.av-home .fond .role .tel{display:inline}.av-home .fond .role .pc,.av-home .fond ul,.av-home .hero .v2 .tags{display:none}.av-home .fond .lien.btn-v{margin-top:12px;padding:9px 18px;min-height:40px;font-size:13.5px}.av-home .hero .v2 h1{margin-top:6px}.av-home .hero .v2 .cta .btn{width:100%}.av-home .situ .pan{grid-template-columns:1fr;padding:18px}}
+@media(max-width:820px){.av-home .hero .in.v2{grid-template-columns:1fr;padding:26px 20px 30px;gap:0}.av-home .fond{order:-1;background:none;box-shadow:none;padding:0 0 16px;color:#fff}.av-home .fond img{width:84px;height:84px;border-radius:50%;border:2px solid #fff}.av-home .fond .nom{color:#fff}.av-home .fond .role{color:#c7ccfe}.av-home .fond .role .tel{display:inline}.av-home .fond .role .pc,.av-home .hero .v2 .tags{display:none}.av-home .fond .lien.btn-v{display:inline-flex;width:auto;margin-top:12px;padding:9px 18px;min-height:40px;font-size:13.5px;background:#fff;color:var(--brand);box-shadow:none}.av-home .fond .lien.btn-v:hover{background:#fff}.av-home .fond .pastille{background:rgba(255,255,255,.12);color:#ece9ff;font-size:11.5px;padding:3px 9px}.av-home .fond .tuiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:14px}.av-home .fond .tuiles li{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);padding:8px 4px;text-align:center}.av-home .fond .tuiles .v{justify-content:center;color:#fff}.av-home .fond .tuiles .v b{font-size:19px}.av-home .fond .tuiles .v small,.av-home .fond .tuiles .lg{display:none}.av-home .fond .tuiles .ct{display:block;margin-top:4px;font-size:10.5px;line-height:1.25;color:#c7ccfe}.av-home .hero .v2 h1{margin-top:6px}.av-home .hero .v2 .cta .btn{width:100%}.av-home .situ .pan{grid-template-columns:1fr;padding:18px}}
 @media(max-width:480px){.av-home .tuiles{grid-template-columns:1fr}.av-home .fin3{padding:24px 20px}}
 @media (prefers-reduced-motion:reduce){.av-home .monte{animation:none}.av-home .btn,.av-home .offre,.av-home .tuile,.av-home .situ label,.av-home .fond img,.av-home .fin3 img{transition:none}.av-home .btn:hover,.av-home .offre:hover,.av-home .tuile:hover,.av-home .situ label:hover,.av-home .fond:hover img,.av-home .fin3:hover img{transform:none}}
 </style>`;
@@ -367,6 +376,8 @@ const tuile = (v: string, nm: string, href: string, e: string) =>
   `<a class="tuile" href="${href}"><span class="v" style="display:block">${v}</span><span class="nm" style="display:block">${nm}</span><span class="e" style="display:block">${e}</span></a>`;
 
 const PHOTO = "/accompagnement/daniel-leal-carre-v2-320.webp";
+/** Icône de diplôme de la pastille « Diplômé BTS Bâtiment » (carte du haut, piste A validée par Dani le 25/11/2026). */
+const CHAPEAU = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5L2 9z" fill="currentColor"/><path d="M6 11.5v4.2c0 1.3 2.7 2.8 6 2.8s6-1.5 6-2.8v-4.2l-6 3-6-3z" fill="currentColor" opacity=".75"/><path d="M21 9v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
 
 function accueilFr(b: Beta): string {
   const note = "Le prix ferme t'est annoncé par écrit avant de commencer.";
@@ -438,12 +449,12 @@ ${V2_CSS}<div class="wrap"><header class="hero"><div class="in v2"><div class="i
   <div class="cta"><a href="/accompagnement-travaux#demande" class="btn btn-o brille">Demander mon appel gratuit →</a><a href="/projets/nouveau" class="btn btn-w">Estimer mes travaux</a></div>
   <div class="trust"><span><b>Premier appel</b> gratuit</span><span><b>Prix écrit</b> avant de commencer</span><span><b>sans</b> engagement</span></div>
 </div><aside class="fond monte d1" aria-label="Qui t'accompagne">
-  <div class="qui"><img src="${PHOTO}" alt="Daniel Leal, fondateur d'AVYORA" width="124" height="124" decoding="async"><div><p class="nom">Daniel Leal</p><p class="role">Ex-gérant d'une société de travaux<span class="tel"> · 8 ans de chantier</span><span class="pc">, fondateur d'AVYORA</span></p></div></div>
-  <ul>
-    <li><span class="k"><b class="num" data-compte="3">3</b> ans</span><span>à la tête de notre société de travaux, avec mon frère</span></li>
-    <li><span class="k"><b class="num" data-compte="2">2</b></span><span>maisons rénovées de nos mains, puis revendues</span></li>
-    <li><span class="k"><b class="num" data-compte="1">1</b></span><span>maison neuve construite presque entièrement de nos mains</span></li>
-    <li><span class="k"><b class="num" data-compte="8">8</b> ans</span><span>de chantier au total</span></li>
+  <div class="qui"><img src="${PHOTO}" alt="Daniel Leal, fondateur d'AVYORA" width="124" height="124" decoding="async"><div><p class="nom">Daniel Leal</p><p class="role">Ex-gérant d'une société de travaux<span class="tel"> · 8 ans de chantier</span><span class="pc">, fondateur d'AVYORA</span></p><p class="pastilles"><span class="pastille">${CHAPEAU}Diplômé BTS Bâtiment</span></p></div></div>
+  <ul class="tuiles">
+    <li><span class="v"><b class="num" data-compte="3">3</b><small>ans</small></span><span class="lg">à la tête de notre société de travaux</span><span class="ct">ans de société</span></li>
+    <li><span class="v"><b class="num" data-compte="2">2</b><small>maisons</small></span><span class="lg">rénovées de nos mains, puis revendues</span><span class="ct">maisons rénovées</span></li>
+    <li><span class="v"><b class="num" data-compte="1">1</b><small>maison neuve</small></span><span class="lg">construite presque entièrement par nous</span><span class="ct">maison neuve</span></li>
+    <li><span class="v"><b class="num" data-compte="8">8</b><small>ans</small></span><span class="lg">de chantier au total</span><span class="ct">ans de chantier</span></li>
   </ul>
   <a href="/accompagnement-travaux#qui" class="lien btn btn-v brille">Mon parcours →</a>
 </aside></div></header></div>
@@ -578,12 +589,12 @@ ${V2_CSS}<div class="wrap"><header class="hero"><div class="in v2"><div class="i
   <div class="cta"><a href="/accompagnement-travaux#demande" class="btn btn-o brille">Request my free call →</a><a href="/projets/nouveau" class="btn btn-w">Estimate my project</a></div>
   <div class="trust"><span><b>First call</b> free</span><span><b>Written price</b> before we start</span><span><b>no</b> commitment</span></div>
 </div><aside class="fond monte d1" aria-label="Who's helping you">
-  <div class="qui"><img src="${PHOTO}" alt="Daniel Leal, founder of AVYORA" width="124" height="124" decoding="async"><div><p class="nom">Daniel Leal</p><p class="role">Former head of a building company<span class="tel"> · 8 years on site</span><span class="pc">, founder of AVYORA</span></p></div></div>
-  <ul>
-    <li><span class="k"><b class="num" data-compte="3">3</b> yrs</span><span>running our building company, with my brother</span></li>
-    <li><span class="k"><b class="num" data-compte="2">2</b></span><span>houses renovated with our own hands, then sold</span></li>
-    <li><span class="k"><b class="num" data-compte="1">1</b></span><span>new house built almost entirely with our own hands</span></li>
-    <li><span class="k"><b class="num" data-compte="8">8</b> yrs</span><span>on site in total</span></li>
+  <div class="qui"><img src="${PHOTO}" alt="Daniel Leal, founder of AVYORA" width="124" height="124" decoding="async"><div><p class="nom">Daniel Leal</p><p class="role">Former head of a building company<span class="tel"> · 8 years on site</span><span class="pc">, founder of AVYORA</span></p><p class="pastilles"><span class="pastille">${CHAPEAU}Building degree (BTS Bâtiment)</span></p></div></div>
+  <ul class="tuiles">
+    <li><span class="v"><b class="num" data-compte="3">3</b><small>yrs</small></span><span class="lg">running our building company</span><span class="ct">yrs company</span></li>
+    <li><span class="v"><b class="num" data-compte="2">2</b><small>houses</small></span><span class="lg">renovated with our own hands, then sold</span><span class="ct">houses renovated</span></li>
+    <li><span class="v"><b class="num" data-compte="1">1</b><small>new house</small></span><span class="lg">built almost entirely by us</span><span class="ct">new house</span></li>
+    <li><span class="v"><b class="num" data-compte="8">8</b><small>yrs</small></span><span class="lg">on site in total</span><span class="ct">yrs on site</span></li>
   </ul>
   <a href="/accompagnement-travaux#qui" class="lien btn btn-v brille">My background →</a>
 </aside></div></header></div>

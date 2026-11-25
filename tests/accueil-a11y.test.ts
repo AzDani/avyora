@@ -40,7 +40,8 @@ describe("accueil : les puces du héros et la police à chasse fixe", () => {
   it("la police à chasse fixe n'est pas posée sur des mots en gras ; les chiffres passent par .num", () => {
     expect(regle(page, ".av-home .hero .trust b")).not.toContain("mono");
     expect(page).not.toContain(".av-home .promo b{");
-    expect(page).toContain('<span class="k"><b class="num" data-compte="8">8</b> ans</span><span>de chantier au total</span>');
+    // Carte du haut, piste A (25/11/2026) : le chiffre en .num, son unité et son texte à part.
+    expect(page).toContain('<span class="v"><b class="num" data-compte="8">8</b><small>ans</small></span><span class="lg">de chantier au total</span>');
   });
 
   it("le jeton --faint de l'accueil est celui du site (contraste AA), plus #898ea8", () => {
