@@ -391,8 +391,8 @@ export const VISITE_CSS = `
 .av-visite-k{font:600 11px/1.2 var(--font-geist-mono),ui-monospace,monospace;color:var(--color-brand-600,#4f46e5);letter-spacing:.04em;text-transform:uppercase}
 .av-visite-titre{font-size:17px;font-weight:700;margin:6px 0;letter-spacing:-.01em;line-height:1.25}
 .av-visite-texte{font-size:14px;line-height:1.5;color:var(--color-muted,#565a75);margin:0}
-.av-visite-pied{display:flex;align-items:center;gap:6px;margin-top:14px}
-.av-visite-pts{display:flex;gap:5px;margin-right:auto}
+.av-visite-pied{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:12px 6px;margin-top:14px}
+.av-visite-pts{display:flex;gap:5px;flex:1 0 100%}
 .av-visite-pts i{width:7px;height:7px;border-radius:99px;background:var(--color-line-strong,#dcdeec);display:block;transition:width .2s}
 .av-visite-pts i.fait{background:var(--color-accent-300,#c4b5fd)}
 .av-visite-pts i.on{background:var(--color-brand-600,#4f46e5);width:18px}
