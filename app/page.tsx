@@ -263,6 +263,9 @@ const V2_CSS = `<style>
 .av-home .fond li .k{font-size:17px;font-weight:700;color:var(--brand);white-space:nowrap}
 .av-home .fond .lien{display:inline-flex;align-items:center;min-height:44px;margin-top:4px;font-weight:600;font-size:14.5px;color:var(--brand-700)}
 .av-home .fond .lien:hover{text-decoration:underline;text-underline-offset:3px}
+/* « Mon parcours » mis en avant (25/11/2026, demande de Dani) : bouton violet avec le reflet animé du bouton principal. */
+.av-home .fond .lien.btn-v{margin-top:14px;padding:12px 22px;font-size:14.5px;background:var(--brand);color:#fff;box-shadow:0 10px 24px -12px rgba(79,70,229,.7)}
+.av-home .fond .lien.btn-v:hover{background:var(--brand-700);text-decoration:none}
 .av-home .titre-s{font-size:clamp(24px,3vw,30px);font-weight:700;color:var(--nuit)}
 .av-home .sous-t{color:var(--muted);font-size:16px;margin-top:6px}
 .av-home .offres{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:18px}
@@ -442,7 +445,7 @@ ${V2_CSS}<div class="wrap"><header class="hero"><div class="in v2"><div class="i
     <li><span class="k"><b class="num" data-compte="1">1</b></span><span>maison neuve construite presque entièrement de nos mains</span></li>
     <li><span class="k"><b class="num" data-compte="8">8</b> ans</span><span>de chantier au total</span></li>
   </ul>
-  <a href="/accompagnement-travaux#qui" class="lien">Mon parcours →</a>
+  <a href="/accompagnement-travaux#qui" class="lien btn btn-v brille">Mon parcours →</a>
 </aside></div></header></div>
 
 <section class="blk" style="padding:44px 0 0" aria-labelledby="offres-titre"><div class="wrap">
@@ -582,7 +585,7 @@ ${V2_CSS}<div class="wrap"><header class="hero"><div class="in v2"><div class="i
     <li><span class="k"><b class="num" data-compte="1">1</b></span><span>new house built almost entirely with our own hands</span></li>
     <li><span class="k"><b class="num" data-compte="8">8</b> yrs</span><span>on site in total</span></li>
   </ul>
-  <a href="/accompagnement-travaux#qui" class="lien">My background →</a>
+  <a href="/accompagnement-travaux#qui" class="lien btn btn-v brille">My background →</a>
 </aside></div></header></div>
 
 <section class="blk" style="padding:44px 0 0" aria-labelledby="offres-titre"><div class="wrap">
