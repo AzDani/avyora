@@ -36,6 +36,10 @@ export type PageService = {
   parent?: { href: string; nom: string } | null;
   /** Pas de bloc « Qui je suis » (la page ne parle pas de l'accompagnement de Daniel). */
   sansBio?: boolean;
+  /** La casquette mise en avant pour CE service, en tête de « Qui je suis » (règle de Dani du 25/11/2026 :
+   *  le chef de chantier pour l'organisation et le suivi, les rénovations faites de ses mains pour la technique,
+   *  le gérant de l'entreprise de travaux pour les devis et le budget, l'achat-revente pour l'avant-achat). */
+  pourquoiMoi?: string;
   titreFinal?: string;
   texteFinal?: string;
 };
@@ -48,10 +52,11 @@ export const PARCOURS_COURT =
   "BTS Bâtiment en alternance dans un grand groupe du BTP, puis 3 ans chef de chantier dans ce même groupe (équipes, planification, aléas), 3 ans à la tête de notre entreprise de travaux avec mon frère, du devis aux travaux réalisés nous-mêmes, et nos propres projets : deux maisons achetées, rénovées entièrement de nos mains et revendues avec une plus-value, puis une maison neuve construite de A à Z, presque entièrement de nos mains.";
 
 export const RELECTURE_DEVIS: PageService = {
+  pourquoiMoi: "Pour ton devis, c'est mon expérience de chef d'entreprise qui compte : pendant 3 ans, j'ai chiffré et écrit des devis de travaux, je sais ce qu'un prix doit contenir et ce qu'on y oublie.",
   chemin: "/relecture-devis-travaux",
   titre: "Faire vérifier un devis de travaux avant de signer",
   description:
-    "Un ancien chef de chantier vérifie avec toi que tout ce que tu as demandé est compté dans ton devis : oublis, quantités, postes flous. Appel de 20 min.",
+    "Un ancien gérant d'entreprise de travaux, qui a écrit des devis, vérifie avec toi que tout est compté : oublis, quantités, postes flous. Appel de 20 min.",
   nomService: "Relecture de devis de travaux",
   serviceType: "Vérification de devis de travaux",
   h1: "Fais vérifier ton devis de travaux par un pro, avant de signer.",
@@ -126,6 +131,7 @@ export const RELECTURE_DEVIS: PageService = {
 };
 
 export const SUIVI_CHANTIER: PageService = {
+  pourquoiMoi: "Pour suivre ton chantier, c'est le chef de chantier qui parle : pendant 3 ans dans un grand groupe du BTP, j'ai géré les équipes, la planification des travaux et les aléas.",
   chemin: "/suivi-de-chantier",
   titre: "Suivi de chantier à distance pour particuliers",
   description:
@@ -219,10 +225,11 @@ export const SUIVI_CHANTIER: PageService = {
  * tâches, « ta prochaine étape ». Pas de conseil fiscal : le statut de marchand de biens renvoie au notaire / comptable.
  */
 export const ACHAT_REVENTE: PageService = {
+  pourquoiMoi: "Acheter, rénover, revendre : je l'ai fait moi-même, avec mon frère, sur deux maisons girondines rénovées de nos mains et revendues avec une plus-value.",
   chemin: "/accompagnement-achat-revente",
   titre: "Achat-revente : rénover et revendre, accompagné",
   description:
-    "Tu achètes pour rénover et revendre ? Un ancien chef de chantier qui l'a fait lui-même t'aide avant l'offre, sur les devis et pendant les travaux.",
+    "Tu achètes pour rénover et revendre ? Quelqu'un qui a acheté, rénové et revendu des maisons t'aide avant l'offre, sur les devis et pendant les travaux.",
   nomService: "Accompagnement achat-revente",
   serviceType: "Conseil travaux pour l'achat-revente immobilier",
   h1: "Acheter, rénover, revendre : je t'accompagne à chaque étape.",
@@ -308,10 +315,11 @@ export const ACHAT_REVENTE: PageService = {
 
 /** Estimation du budget travaux, rénovation ou neuf (24/11/2026) : l'estimation AVYORA reprise par Daniel, poste par poste. */
 export const ESTIMATION_BUDGET: PageService = {
+  pourquoiMoi: "Pour ton budget, c'est le chef d'entreprise qui parle : pendant 3 ans, j'ai chiffré nos chantiers poste par poste, et je sais ce qu'on oublie dans un budget.",
   chemin: "/estimation-budget-travaux",
   titre: "Estimation de budget travaux par un pro du chantier",
   description:
-    "Rénovation ou construction neuve : un ancien chef de chantier vérifie ton budget travaux poste par poste, avec ce qu'on oublie. Appel de 1 h et budget écrit.",
+    "Rénovation ou neuf : un ancien gérant d'entreprise de travaux vérifie ton budget poste par poste, avec ce qu'on oublie. Appel de 1 h et budget écrit.",
   nomService: "Estimation de budget travaux",
   serviceType: "Estimation de budget de travaux de rénovation et de construction",
   h1: "Ton budget travaux vérifié par un pro, poste par poste.",
@@ -392,10 +400,11 @@ export const ESTIMATION_BUDGET: PageService = {
 
 /** L'avis avant achat (24/11/2026) : prix FIXE de 99 €, dossier envoyé avant l'appel (photos, annonce, localisation). */
 export const AVIS_AVANT_ACHAT: PageService = {
+  pourquoiMoi: "Avant ton offre, je regarde ton bien comme j'ai regardé les miens : avec mon frère, on a acheté, rénové et revendu deux maisons.",
   chemin: "/avis-travaux-avant-achat",
   titre: "Avis travaux avant achat : un pro regarde le bien",
   description:
-    "Avant ton offre, un ancien chef de chantier regarde le bien : travaux à prévoir, enveloppe, risques et arguments pour négocier. 99 €, prix fixe, appel de 1 h.",
+    "Avant ton offre, quelqu'un qui a acheté et rénové des maisons regarde le bien : travaux, enveloppe, risques, arguments pour négocier. 99 €, appel de 1 h.",
   nomService: "Avis travaux avant achat",
   serviceType: "Avis sur les travaux d'un bien immobilier avant achat",
   h1: "Avant de faire ton offre, un pro regarde les travaux.",
@@ -477,10 +486,11 @@ export const AVIS_AVANT_ACHAT: PageService = {
 
 /** Les choix techniques (24/11/2026) : la bonne méthode et le bon matériau, pour les artisans comme pour ceux qui font eux-mêmes. */
 export const CHOIX_TECHNIQUES: PageService = {
+  pourquoiMoi: "Mes conseils techniques, je les ai appliqués de mes mains : deux maisons rénovées entièrement et une maison neuve construite presque entièrement par nous.",
   chemin: "/conseil-technique-travaux",
   titre: "Conseil technique travaux : les bons choix",
   description:
-    "Quel matériau, quelle méthode, quoi vérifier avant de refermer : un ancien chef de chantier t'aide à faire les bons choix techniques, artisans ou fait maison.",
+    "Quel matériau, quelle méthode, quoi vérifier avant de refermer : quelqu'un qui a rénové des maisons de ses mains t'aide à faire les bons choix techniques.",
   nomService: "Conseil technique travaux",
   serviceType: "Conseil technique pour des travaux de rénovation et de construction",
   h1: "Le bon matériau, la bonne méthode, avant de commencer.",
@@ -561,10 +571,11 @@ export const CHOIX_TECHNIQUES: PageService = {
 
 /** Les plans 2D (24/11/2026) : dessinés par Daniel dans l'éditeur AVYORA, à partir des mesures du client. 2D seulement. */
 export const PLANS_2D: PageService = {
+  pourquoiMoi: "Je dessine ton plan avec l'œil de quelqu'un qui a rénové et construit des maisons : ce qui se fait simplement, et ce qui coûte cher.",
   chemin: "/faire-dessiner-plan-maison",
   titre: "Faire dessiner le plan 2D de ta maison",
   description:
-    "Le plan de l'existant et de ton projet, dessiné en 2D par un ancien chef de chantier : cloisons, cuisine, salle de bain. Pour te projeter et comparer tes devis.",
+    "Ton existant et ton projet, dessinés en 2D par quelqu'un qui a rénové des maisons : cloisons, cuisine, salle de bain. Pour te projeter et comparer tes devis.",
   nomService: "Plans 2D de ton projet",
   serviceType: "Réalisation de plans 2D d'aménagement",
   h1: "Ton plan 2D dessiné par un pro du chantier.",
@@ -646,10 +657,11 @@ export const PLANS_2D: PageService = {
 
 /** Le suivi du budget (24/11/2026) : les dépenses face au budget, facture par facture, avenant par avenant. */
 export const SUIVI_BUDGET: PageService = {
+  pourquoiMoi: "Pour suivre ton budget, c'est le chef d'entreprise qui parle : pendant 3 ans, j'ai tenu les comptes de nos chantiers, devis, factures et avenants.",
   chemin: "/suivi-budget-travaux",
   titre: "Suivi de budget travaux : dépenses sous contrôle",
   description:
-    "Tes dépenses de travaux suivies face à ton budget, facture par facture et avenant par avenant, par un ancien chef de chantier. Les dérives repérées tôt.",
+    "Tes dépenses de travaux suivies face à ton budget, facture par facture, par un ancien gérant d'entreprise de travaux. Les dérives repérées tôt.",
   nomService: "Suivi de budget travaux",
   serviceType: "Suivi du budget de travaux pour particuliers",
   h1: "Ton budget travaux suivi, facture par facture.",

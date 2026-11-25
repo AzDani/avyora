@@ -169,7 +169,7 @@ export default function PageService({ c }: { c: Contenu }) {
           <img src={PHOTO_FONDATEUR} alt="" width={80} height={80} loading="lazy" className="h-20 w-20 shrink-0 rounded-2xl object-cover" />
         )}
         <p className="max-w-[64ch] text-[16px] leading-relaxed text-ink">
-          {`Je m'appelle Daniel Leal, fondateur d'AVYORA. ${PARCOURS_COURT} J'ai vu un chantier sous tous ses angles : l'entreprise qui exécute, le chef de chantier qui coordonne, le propriétaire qui paie, et surtout celui qui fait les travaux lui-même.`}{" "}
+          {`Je m'appelle Daniel Leal, fondateur d'AVYORA. ${c.pourquoiMoi ? c.pourquoiMoi + " Mon parcours : " : ""}${PARCOURS_COURT} J'ai vu un chantier sous tous ses angles : l'entreprise qui exécute, le chef de chantier qui coordonne, le propriétaire qui paie, et surtout celui qui fait les travaux lui-même.`}{" "}
           <Link href={CHEMIN_ACCOMPAGNEMENT} className={lienProse}>Tout l&apos;accompagnement</Link>
         </p>
         </div>
@@ -203,7 +203,7 @@ export default function PageService({ c }: { c: Contenu }) {
 
       <section className="rounded-3xl bg-[#1E1B4B] px-6 py-10 text-center sm:px-10">
         <h2 className="text-[24px] font-semibold tracking-tight text-white [text-wrap:balance] sm:text-[28px]">{c.titreFinal ?? "Parle-moi de ton projet."}</h2>
-        <p className="mx-auto mt-2 max-w-[50ch] text-[15px] leading-relaxed text-[#c7c3f4]">{c.texteFinal ?? "Le premier appel est gratuit et sans engagement. Je te rappelle sous 48 h ouvrées, en visio ou sur WhatsApp."}</p>
+        <p className="mx-auto mt-2 max-w-[50ch] text-[15px] leading-relaxed text-[#c7c3f4]">{c.texteFinal ?? "Le premier appel est gratuit et sans engagement. Je te rappelle, en visio ou sur WhatsApp."}</p>
         <Link href={cta.href} className="btn mt-6 min-h-12 bg-white px-6 text-[15px] text-[#1E1B4B] hover:bg-brand-50">{cta.label}</Link>
       </section>
     </article>

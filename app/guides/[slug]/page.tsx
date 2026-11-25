@@ -483,7 +483,7 @@ function BodyMaison() {
       <p>
         Tout se joue avant l&apos;offre : chiffrer les travaux poste par poste, avec une marge pour les imprévus.{" "}
         <Link href="/accompagnement-achat-revente" className="font-medium text-brand-600 hover:underline">
-          Fais-toi accompagner par un ancien chef de chantier qui l&apos;a fait lui-même
+          Fais-toi accompagner par quelqu&apos;un qui a acheté, rénové et revendu des maisons
         </Link>{" "}: le premier appel est gratuit.
       </p>
 
@@ -702,7 +702,7 @@ function BodyDevis() {
       </ul>
       <p>
         Un doute sur un devis précis ?{" "}
-        <Link href="/relecture-devis-travaux">Fais-le relire par un ancien chef de chantier</Link>{" "}: le premier appel est
+        <Link href="/relecture-devis-travaux">Fais-le relire par quelqu&apos;un qui a écrit des devis</Link>{" "}: le premier appel est
         gratuit.
       </p>
 
@@ -882,7 +882,7 @@ function BodyDIY() {
       </p>
       <p>
         Tu fais une partie toi-même et tu veux la faire juste du premier coup ?{" "}
-        <Link href="/conseil-technique-travaux">Un conseil technique d&apos;un ancien chef de chantier</Link>{" "}: le bon
+        <Link href="/conseil-technique-travaux">Un conseil technique de quelqu&apos;un qui a rénové des maisons de ses mains</Link>{" "}: le bon
         matériau, la bonne méthode et ce qu&apos;il faut vérifier avant de refermer.
       </p>
 

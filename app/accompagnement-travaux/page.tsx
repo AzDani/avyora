@@ -169,13 +169,15 @@ export default async function AccompagnementTravaux({
             {t.qui.paragraphes.map((p) => (
               <p key={p} className="mt-3 text-[16px] leading-relaxed text-muted">{p}</p>
             ))}
-            <h3 className="mt-6 text-[15px] font-semibold text-ink">{t.qui.parcoursTitre}</h3>
+            <h3 className="mt-6 text-[17px] font-semibold text-ink">{t.qui.parcoursTitre}</h3>
+            <p className="mt-1 text-[14px] text-muted">{t.qui.parcoursSous}</p>
             <ol className="mt-3 grid gap-3 sm:grid-cols-2">
               {t.qui.parcours.map((e) => (
                 <li key={e.titre} className="rounded-field border border-line bg-surface p-4">
                   <p className="font-mono text-[12.5px] font-semibold uppercase tracking-wide text-brand-700">{e.duree}</p>
                   <p className="mt-1 text-[15px] font-semibold leading-snug text-ink">{e.titre}</p>
                   <p className="mt-1 text-[14px] leading-snug text-muted">{e.texte}</p>
+                  <p className="mt-3 border-t border-line pt-2 text-[14px] leading-snug text-ink"><span className="font-semibold text-brand-700">{t.qui.parcoursApport}</span>{e.apport}</p>
                 </li>
               ))}
             </ol>

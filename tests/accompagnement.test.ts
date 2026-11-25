@@ -175,7 +175,8 @@ describe("demanderAccompagnement (Resend simulé)", () => {
     expect(accuse.to).toBe(email);
     expect(accuse.replyTo).toBe("contact@getavyora.fr");
     expect(accuse.subject).toBe("Ta demande de rappel est bien reçue");
-    expect(accuse.html).toContain("Daniel te recontacte sous 48 h ouvrées");
+    expect(accuse.html).toContain("Daniel te recontacte</b> au téléphone");
+    expect(accuse.html).not.toMatch(/48 h|ouvrées/); // aucun délai promis (25/11/2026)
     expect(accuse.html).toContain("https://getavyora.fr/accompagnement-travaux");
     // L'accusé ne recopie ni le message ni le téléphone.
     expect(accuse.html).not.toContain("Cuisine à refaire");
@@ -380,7 +381,7 @@ describe("page /accompagnement-travaux", () => {
       for (const id of ["acc-prenom", "acc-email", "acc-telephone", "acc-message"]) expect(html).toContain(`for="${id}"`);
       expect((html.match(/<h1[\s>]/g) ?? []).length).toBe(1);
       if (locale === "fr") {
-        expect(txt).toContain("Accompagnement travaux : un ancien chef de chantier à tes côtés");
+        expect(txt).toContain("Accompagnement travaux : un ancien chef d'entreprise du bâtiment à tes côtés");
         expect(txt).toContain("Comment je peux t'aider sur ton projet");
         expect(txt).toContain("Comment puis-je t'aider ?");
         expect(txt).toContain("Demande à être rappelé, c'est gratuit");
@@ -394,7 +395,7 @@ describe("page /accompagnement-travaux", () => {
         const mots = txt.split(" ").filter((w) => /\p{L}/u.test(w)).length;
         expect(mots).toBeGreaterThan(900);
       } else {
-        expect(txt).toContain("Renovation advice: a former site manager by your side");
+        expect(txt).toContain("Renovation advice: a former building contractor by your side");
         expect(txt).toContain("Request a free call-back");
         expect(txt).not.toContain("Comment puis-je t'aider");
       }
@@ -472,7 +473,7 @@ describe("sitemap, maillage interne et confidentialité", () => {
     const guides = lire("app/guides/[slug]/page.tsx");
     expect(guides.match(/<Link href="\/accompagnement-travaux">/g)).toHaveLength(1);
     // Le guide « vérifier un devis » mène à la page de service dédiée (référencement du 20/11/2026).
-    expect(guides).toContain('<Link href="/relecture-devis-travaux">Fais-le relire par un ancien chef de chantier</Link>');
+    expect(guides).toContain('<Link href="/relecture-devis-travaux">Fais-le relire par quelqu&apos;un qui a écrit des devis</Link>');
     expect(lire("app/guides/page.tsx")).toContain(canon);
     expect(lire("app/prix-travaux/[projet]/page.tsx")).toContain(canon);
     // Pas sur la matrice [projet]/[ville] ni sur les pages villes (pages programmatiques).

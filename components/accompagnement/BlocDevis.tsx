@@ -10,7 +10,7 @@ export default function BlocDevis({ nom }: { nom: string }) {
     <aside aria-label="Tes devis" className="not-prose my-8 grid gap-3 sm:grid-cols-2" data-bloc-devis="">
       <Link href="/relecture-devis-travaux" className="group block rounded-2xl border border-line bg-surface p-5 no-underline transition-colors hover:border-brand-600">
         <span className="block text-[12px] font-semibold uppercase tracking-[0.08em] text-brand-700">Tu as déjà un devis ?</span>
-        <span className="mt-1.5 block text-[16px] font-semibold text-ink">Fais-le vérifier par un ancien chef de chantier</span>
+        <span className="mt-1.5 block text-[16px] font-semibold text-ink">Fais-le vérifier par quelqu'un qui a écrit des devis</span>
         <span className="mt-1 block text-[14px] leading-relaxed text-muted">Oublis, postes flous, prix hors marché pour {nom} : tu sais quoi corriger avant de signer. Premier appel gratuit.</span>
         <span className="mt-2 block text-[14px] font-semibold text-brand-700 group-hover:underline">Faire vérifier mon devis →</span>
       </Link>

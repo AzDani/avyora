@@ -41,13 +41,13 @@ export const META_ACCOMPAGNEMENT = {
     /** Les formulations, de la plus complète à la plus courte (titreCourt, lib/seo-og.ts : 60 caractères suffixe compris). */
     titres: ["Accompagnement travaux : conseil et avis sur devis", "Accompagnement travaux pour particuliers"],
     description:
-      "Conseil travaux par un ancien chef de chantier : avis sur tes devis, plan du chantier, suivi chaque semaine en visio. Rappel gratuit, sans engagement.",
-    titreSocial: "Un ancien chef de chantier à tes côtés pour tes travaux",
+      "Conseil travaux par un ancien chef d'entreprise du bâtiment, qui a rénové et construit ses maisons : avis sur tes devis, suivi en visio. Rappel gratuit.",
+    titreSocial: "Un ancien chef d'entreprise du bâtiment à tes côtés pour tes travaux",
   },
   en: {
-    title: "Renovation advice from a former site manager",
+    title: "Renovation advice from a former building contractor",
     description:
-      "Renovation advice from a former construction site manager: a second opinion on your quotes, a site plan, weekly check-ins by video. Free call-back.",
+      "Renovation advice from a former building contractor who renovated and built houses by hand: quote reviews, weekly video check-ins. Free call-back.",
   },
 } as const;
 
@@ -60,11 +60,11 @@ const fr = {
   nomPage: "Accompagnement travaux",
   hero: {
     eyebrow: "Conseil travaux · à distance",
-    h1: "Accompagnement travaux : un ancien chef de chantier à tes côtés",
+    h1: "Accompagnement travaux : un ancien chef d'entreprise du bâtiment à tes côtés",
     chapo:
       "Rénovation, construction ou achat d'un bien : je t'aide à mener ton projet, à choisir les bons devis et à tenir ton budget. En visio ou sur WhatsApp. Le premier appel est gratuit.",
     cta: "Demande à être rappelé, c'est gratuit",
-    rassurance: "Rappel sous 48 h ouvrées · visio ou WhatsApp · sans engagement",
+    rassurance: "Rappel gratuit · visio ou WhatsApp · sans engagement",
   },
   carte: {
     nom: "Daniel Leal",
@@ -86,12 +86,16 @@ const fr = {
     ],
     videoTitre: "Présentation de Daniel Leal, en vidéo",
     /* Le parcours, en frise (faits donnés par Dani le 16/11/2026 ; il ne veut pas nommer son ancien groupe). */
-    parcoursTitre: "Mon parcours",
+    /* « Mon parcours » répond à « pourquoi moi pour t'accompagner » (demande de Dani du 25/11/2026) : chaque étape dit
+       ce qu'elle t'apporte, la société et nos maisons d'abord, le chef de chantier et le BTS ensuite (règle du 24/11). */
+    parcoursTitre: "Pourquoi moi pour t'accompagner dans tes travaux",
+    parcoursSous: "Mon parcours, et ce que chaque étape t'apporte.",
+    parcoursApport: "Pour toi\u00a0: ",
     parcours: [
-      { duree: "2 ans", titre: "BTS Bâtiment en alternance", texte: "Dans un grand groupe du BTP : la méthode, les normes, la vie d'un gros chantier." },
-      { duree: "3 ans", titre: "Chef de chantier", texte: "Dans le même groupe : gestion des équipes, planification des travaux, gestion des aléas." },
-      { duree: "3 ans", titre: "Notre entreprise de travaux", texte: "Avec mon frère : le besoin du client, le devis, la planification, puis les travaux, réalisés par nous-mêmes." },
-      { duree: "En parallèle", titre: "Nos propres chantiers", texte: "Avec mon frère, pendant mes années de chef de chantier puis de notre société : deux maisons girondines rénovées entièrement et revendues avec une plus-value, puis une maison neuve construite de A à Z, presque entièrement de nos mains." },
+      { duree: "3 ans", titre: "Notre entreprise de travaux", texte: "Avec mon frère : le besoin du client, le devis, la planification, puis les travaux, réalisés par nous-mêmes.", apport: "Je lis ton devis comme quelqu'un qui en a écrit : je sais ce qu'un prix doit contenir et ce qu'on y oublie." },
+      { duree: "En parallèle", titre: "Nos propres chantiers", texte: "Avec mon frère, pendant mes années de chef de chantier puis de notre société : deux maisons girondines rénovées entièrement et revendues avec une plus-value, puis une maison neuve construite de A à Z, presque entièrement de nos mains.", apport: "Mes conseils techniques, je les ai appliqués de mes mains. Et je regarde un bien comme quelqu'un qui l'achète, le rénove et le revend." },
+      { duree: "3 ans", titre: "Chef de chantier", texte: "Dans un grand groupe du BTP : gestion des équipes, planification des travaux, gestion des aléas.", apport: "Ton chantier organisé : chaque artisan au bon moment, ta prochaine tâche toujours claire, les risques de retard repérés tôt." },
+      { duree: "2 ans", titre: "BTS Bâtiment en alternance", texte: "Dans ce même groupe : la méthode, les normes, la vie d'un gros chantier.", apport: "Les bonnes règles et les normes, dès le départ." },
     ],
     pourquoiTitre: "Pourquoi m'appeler avant de te lancer",
     pourquoi: [
@@ -210,7 +214,7 @@ const fr = {
     h2: "Comment ça se passe",
     liste: [
       { titre: "Tu remplis le formulaire", texte: "Une minute : ton prénom, ton e-mail, ton téléphone et ton projet en quelques mots." },
-      { titre: "Je te rappelle sous 48 h ouvrées", texte: "Au téléphone, en visio ou sur WhatsApp. Si ton projet est déjà chiffré dans AVYORA, je le regarde avant." },
+      { titre: "Je te rappelle", texte: "Au téléphone, en visio ou sur WhatsApp. Si ton projet est déjà chiffré dans AVYORA, je le regarde avant." },
       { titre: "On voit ensemble ce qui t'est utile", texte: "Un avis ponctuel ou un suivi : je t'annonce le prix exact avant tout engagement. Tu ne paies que ce qui te sert." },
     ],
   },
@@ -235,7 +239,7 @@ const fr = {
   },
   formulaire: {
     h2: "Comment puis-je t'aider ?",
-    intro: "Demande à être rappelé, c'est gratuit. Je te recontacte sous 48 h ouvrées, au téléphone, en visio ou sur WhatsApp.",
+    intro: "Demande à être rappelé, c'est gratuit. Je te recontacte au téléphone, en visio ou sur WhatsApp.",
     prenom: "Prénom",
     email: "E-mail",
     telephone: "Téléphone",
@@ -288,7 +292,7 @@ const fr = {
     succesTitre: "C'est envoyé, merci {prenom} !",
     succesTitreSansPrenom: "C'est envoyé, merci !",
     succesTexte:
-      "Je te recontacte sous 48 h ouvrées, au téléphone, en visio ou sur WhatsApp. Un e-mail de confirmation est en route : pense à regarder dans tes indésirables.",
+      "Je te recontacte au téléphone, en visio ou sur WhatsApp. Un e-mail de confirmation est en route : pense à regarder dans tes indésirables.",
   },
   faq: {
     h2: "Questions fréquentes",
@@ -350,11 +354,11 @@ const en: ContenuAccompagnement = {
   nomPage: "Renovation advice",
   hero: {
     eyebrow: "Renovation advice · remote",
-    h1: "Renovation advice: a former site manager by your side",
+    h1: "Renovation advice: a former building contractor by your side",
     chapo:
       "Renovating, building or buying a property: I help you run your project, pick the right quotes and keep to your budget. By video call or WhatsApp. The first call is free.",
     cta: "Request a free call-back",
-    rassurance: "Call-back within 2 business days · video or WhatsApp · no commitment",
+    rassurance: "Free call-back · video or WhatsApp · no commitment",
   },
   carte: {
     nom: "Daniel Leal",
@@ -375,12 +379,14 @@ const en: ContenuAccompagnement = {
       "I created AVYORA so anyone can price their work before signing; advice is the natural next step. I work remotely, by video call or WhatsApp: you show me, we look at it together, and you leave with clear answers.",
     ],
     videoTitre: "Daniel Leal's introduction video",
-    parcoursTitre: "My background",
+    parcoursTitre: "Why me to guide you through your works",
+    parcoursSous: "My background, and what each step brings you.",
+    parcoursApport: "For you: ",
     parcours: [
-      { duree: "2 years", titre: "Building degree, work-study", texte: "In a major construction group: method, standards, life on a large site." },
-      { duree: "3 years", titre: "Site manager", texte: "In the same group: managing crews, scheduling the works, handling the unexpected." },
-      { duree: "3 years", titre: "Our building company", texte: "With my brother: the client's needs, the quote, the schedule, then the works, carried out ourselves." },
-      { duree: "Alongside", titre: "Our own projects", texte: "With my brother, during my site-manager years and then our company years: two Gironde houses fully renovated and sold at a profit, then a new house built from start to finish, almost entirely with our own hands." },
+      { duree: "3 years", titre: "Our building company", texte: "With my brother: the client's needs, the quote, the schedule, then the works, carried out ourselves.", apport: "I read your quote like someone who has written them: I know what a price should include and what gets left out." },
+      { duree: "Alongside", titre: "Our own projects", texte: "With my brother, during my site-manager years and then our company years: two Gironde houses fully renovated and sold at a profit, then a new house built from start to finish, almost entirely with our own hands.", apport: "I've applied my technical advice with my own hands. And I look at a property like someone who buys, renovates and resells it." },
+      { duree: "3 years", titre: "Site manager", texte: "In a major construction group: managing crews, scheduling the works, handling the unexpected.", apport: "Your project organised: each tradesperson at the right moment, your next task always clear, risks of delay spotted early." },
+      { duree: "2 years", titre: "Building degree, work-study", texte: "In that same group: method, standards, life on a large site.", apport: "The right rules and standards, from the start." },
     ],
     pourquoiTitre: "Why call me before you start",
     pourquoi: [
@@ -498,7 +504,7 @@ const en: ContenuAccompagnement = {
     h2: "How it works",
     liste: [
       { titre: "You fill in the form", texte: "One minute: your first name, your email and your project in a few words." },
-      { titre: "I call you back within 2 business days", texte: "By phone, video or WhatsApp. If your project is already priced in AVYORA, I look at it first." },
+      { titre: "I call you back", texte: "By phone, video or WhatsApp. If your project is already priced in AVYORA, I look at it first." },
       { titre: "We see together what will help you", texte: "A one-off opinion or ongoing follow-up: I give you the exact price before any commitment. You only pay for what you need." },
     ],
   },
@@ -519,7 +525,7 @@ const en: ContenuAccompagnement = {
   },
   formulaire: {
     h2: "How can I help you?",
-    intro: "Request a call-back, it's free. I get back to you within 2 business days, by phone, video or WhatsApp.",
+    intro: "Request a call-back, it's free. I get back to you by phone, video or WhatsApp.",
     prenom: "First name",
     email: "Email",
     telephone: "Phone",
@@ -572,7 +578,7 @@ const en: ContenuAccompagnement = {
     succesTitre: "Sent, thank you {prenom}!",
     succesTitreSansPrenom: "Sent, thank you!",
     succesTexte:
-      "I'll get back to you within 2 business days, by phone, video or WhatsApp. A confirmation email is on its way: check your spam folder.",
+      "I'll get back to you by phone, video or WhatsApp. A confirmation email is on its way: check your spam folder.",
   },
   faq: {
     h2: "Frequently asked questions",

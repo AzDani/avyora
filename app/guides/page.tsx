@@ -141,7 +141,7 @@ export default function GuidesHub() {
         <strong>Tu as un devis sur la table</strong> → lis{" "}
         <Link href="/guides/verifier-devis-travaux">comment lire et vérifier un devis</Link> : les
         postes absents coûtent plus cher que les postes chers. Tu préfères un deuxième avis ?{" "}
-        <Link href="/accompagnement-travaux">Fais relire ton devis par un ancien chef de chantier</Link>.
+        <Link href="/accompagnement-travaux">Fais relire ton devis par un ancien gérant d&apos;entreprise de travaux</Link>.
       </p>
       <p>
         <strong>Tu passes à l&apos;action</strong> →{" "}

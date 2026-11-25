@@ -38,7 +38,7 @@ const fr = {
     suiviTexte: "Besoin d'un regard extérieur pendant le chantier ?",
     suiviLien: "Être suivi chaque semaine par un ancien chef de chantier",
     investTexte: "Tu hésites avant de faire une offre ?",
-    investLien: "Visite en visio avant achat, avec un ancien chef de chantier",
+    investLien: "Visite en visio avant achat, avec quelqu'un qui a acheté et rénové des maisons",
   },
   footer: {
     /* Le lien d'évitement (premier lien de la page) et le libellé de la navigation du pied de page. */
@@ -584,7 +584,7 @@ const en: Dict = {
     suiviTexte: "Need an outside eye during the work?",
     suiviLien: "Weekly follow-up by a former site manager",
     investTexte: "Not sure before making an offer?",
-    investLien: "Video walkthrough before you buy, with a former site manager",
+    investLien: "Video walkthrough before you buy, with someone who has bought and renovated houses",
   },
   footer: {
     allerAuContenu: "Skip to content",
