@@ -1049,11 +1049,11 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-tuiles .v.vide{font-family:var(--font-geist-sans);font-size:15px;letter-spacing:-.01em;color:var(--muted)}
 .av-tuiles .v.pos{color:#0f9d6b}.av-tuiles .v.neg{color:#b42318}
 .av-tuiles .s{font-size:11.5px;color:var(--muted);line-height:1.35}
-.av-tuiles .p{display:inline-flex;font-size:11px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.av-tuiles .p{display:inline-flex;font-size:11px;font-weight:600;border-radius:10px;padding:2px 9px;line-height:1.35}
 .av-tuiles .p.ok{background:#e6f7f0;color:#0f9d6b}.av-tuiles .p.w{background:#fdf1e1;color:#9a5a0b}.av-tuiles .p.r{background:#fdecec;color:#b42318}
 .av-tuiles .mini{height:6px;border-radius:99px;background:var(--line);overflow:hidden;display:flex;margin:2px 0}
 .av-tuiles .mini i{display:block;height:100%}
-.av-tuiles .mini .d{background:#0f9d6b}.av-tuiles .mini .e{background:var(--brand-500,#6366f1)}
+.av-tuiles .mini .d{background:#0f9d6b}.av-tuiles .mini .paye{background:var(--brand-500,#6366f1)}.av-tuiles .mini .paye.r{background:#b42318}.av-tuiles .mini .e{background:var(--brand-500,#6366f1)}
 .av-tuiles .go{margin-top:auto;padding-top:4px;font-size:12px;font-weight:600;color:var(--brand)}
 @media (max-width:560px){
   .av-tuiles .grille{grid-template-columns:1fr 1fr;gap:8px}
@@ -1522,11 +1522,11 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-tuiles .v.vide{font-family:var(--font-geist-sans);font-size:15px;letter-spacing:-.01em;color:var(--muted)}
 .av-tuiles .v.pos{color:#0f9d6b}.av-tuiles .v.neg{color:#b42318}
 .av-tuiles .s{font-size:11.5px;color:var(--muted);line-height:1.35}
-.av-tuiles .p{display:inline-flex;font-size:11px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.av-tuiles .p{display:inline-flex;font-size:11px;font-weight:600;border-radius:10px;padding:2px 9px;line-height:1.35}
 .av-tuiles .p.ok{background:#e6f7f0;color:#0f9d6b}.av-tuiles .p.w{background:#fdf1e1;color:#9a5a0b}.av-tuiles .p.r{background:#fdecec;color:#b42318}
 .av-tuiles .mini{height:6px;border-radius:99px;background:var(--line);overflow:hidden;display:flex;margin:2px 0}
 .av-tuiles .mini i{display:block;height:100%}
-.av-tuiles .mini .d{background:#0f9d6b}.av-tuiles .mini .e{background:var(--brand-500,#6366f1)}
+.av-tuiles .mini .d{background:#0f9d6b}.av-tuiles .mini .paye{background:var(--brand-500,#6366f1)}.av-tuiles .mini .paye.r{background:#b42318}.av-tuiles .mini .e{background:var(--brand-500,#6366f1)}
 .av-tuiles .go{margin-top:auto;padding-top:4px;font-size:12px;font-weight:600;color:var(--brand)}
 @media (max-width:560px){
   .av-tuiles .grille{grid-template-columns:1fr 1fr;gap:8px}
@@ -1976,11 +1976,11 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-tuiles .v.vide{font-family:var(--font-geist-sans);font-size:15px;letter-spacing:-.01em;color:var(--muted)}
 .av-tuiles .v.pos{color:#0f9d6b}.av-tuiles .v.neg{color:#b42318}
 .av-tuiles .s{font-size:11.5px;color:var(--muted);line-height:1.35}
-.av-tuiles .p{display:inline-flex;font-size:11px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.av-tuiles .p{display:inline-flex;font-size:11px;font-weight:600;border-radius:10px;padding:2px 9px;line-height:1.35}
 .av-tuiles .p.ok{background:#e6f7f0;color:#0f9d6b}.av-tuiles .p.w{background:#fdf1e1;color:#9a5a0b}.av-tuiles .p.r{background:#fdecec;color:#b42318}
 .av-tuiles .mini{height:6px;border-radius:99px;background:var(--line);overflow:hidden;display:flex;margin:2px 0}
 .av-tuiles .mini i{display:block;height:100%}
-.av-tuiles .mini .d{background:#0f9d6b}.av-tuiles .mini .e{background:var(--brand-500,#6366f1)}
+.av-tuiles .mini .d{background:#0f9d6b}.av-tuiles .mini .paye{background:var(--brand-500,#6366f1)}.av-tuiles .mini .paye.r{background:#b42318}.av-tuiles .mini .e{background:var(--brand-500,#6366f1)}
 .av-tuiles .go{margin-top:auto;padding-top:4px;font-size:12px;font-weight:600;color:var(--brand)}
 @media (max-width:560px){
   .av-tuiles .grille{grid-template-columns:1fr 1fr;gap:8px}
@@ -2665,11 +2665,11 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-tuiles .v.vide{font-family:var(--font-geist-sans);font-size:15px;letter-spacing:-.01em;color:var(--muted)}
 .av-tuiles .v.pos{color:#0f9d6b}.av-tuiles .v.neg{color:#b42318}
 .av-tuiles .s{font-size:11.5px;color:var(--muted);line-height:1.35}
-.av-tuiles .p{display:inline-flex;font-size:11px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.av-tuiles .p{display:inline-flex;font-size:11px;font-weight:600;border-radius:10px;padding:2px 9px;line-height:1.35}
 .av-tuiles .p.ok{background:#e6f7f0;color:#0f9d6b}.av-tuiles .p.w{background:#fdf1e1;color:#9a5a0b}.av-tuiles .p.r{background:#fdecec;color:#b42318}
 .av-tuiles .mini{height:6px;border-radius:99px;background:var(--line);overflow:hidden;display:flex;margin:2px 0}
 .av-tuiles .mini i{display:block;height:100%}
-.av-tuiles .mini .d{background:#0f9d6b}.av-tuiles .mini .e{background:var(--brand-500,#6366f1)}
+.av-tuiles .mini .d{background:#0f9d6b}.av-tuiles .mini .paye{background:var(--brand-500,#6366f1)}.av-tuiles .mini .paye.r{background:#b42318}.av-tuiles .mini .e{background:var(--brand-500,#6366f1)}
 .av-tuiles .go{margin-top:auto;padding-top:4px;font-size:12px;font-weight:600;color:var(--brand)}
 @media (max-width:560px){
   .av-tuiles .grille{grid-template-columns:1fr 1fr;gap:8px}
@@ -3335,11 +3335,11 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-tuiles .v.vide{font-family:var(--font-geist-sans);font-size:15px;letter-spacing:-.01em;color:var(--muted)}
 .av-tuiles .v.pos{color:#0f9d6b}.av-tuiles .v.neg{color:#b42318}
 .av-tuiles .s{font-size:11.5px;color:var(--muted);line-height:1.35}
-.av-tuiles .p{display:inline-flex;font-size:11px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.av-tuiles .p{display:inline-flex;font-size:11px;font-weight:600;border-radius:10px;padding:2px 9px;line-height:1.35}
 .av-tuiles .p.ok{background:#e6f7f0;color:#0f9d6b}.av-tuiles .p.w{background:#fdf1e1;color:#9a5a0b}.av-tuiles .p.r{background:#fdecec;color:#b42318}
 .av-tuiles .mini{height:6px;border-radius:99px;background:var(--line);overflow:hidden;display:flex;margin:2px 0}
 .av-tuiles .mini i{display:block;height:100%}
-.av-tuiles .mini .d{background:#0f9d6b}.av-tuiles .mini .e{background:var(--brand-500,#6366f1)}
+.av-tuiles .mini .d{background:#0f9d6b}.av-tuiles .mini .paye{background:var(--brand-500,#6366f1)}.av-tuiles .mini .paye.r{background:#b42318}.av-tuiles .mini .e{background:var(--brand-500,#6366f1)}
 .av-tuiles .go{margin-top:auto;padding-top:4px;font-size:12px;font-weight:600;color:var(--brand)}
 @media (max-width:560px){
   .av-tuiles .grille{grid-template-columns:1fr 1fr;gap:8px}
@@ -3808,11 +3808,11 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-tuiles .v.vide{font-family:var(--font-geist-sans);font-size:15px;letter-spacing:-.01em;color:var(--muted)}
 .av-tuiles .v.pos{color:#0f9d6b}.av-tuiles .v.neg{color:#b42318}
 .av-tuiles .s{font-size:11.5px;color:var(--muted);line-height:1.35}
-.av-tuiles .p{display:inline-flex;font-size:11px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.av-tuiles .p{display:inline-flex;font-size:11px;font-weight:600;border-radius:10px;padding:2px 9px;line-height:1.35}
 .av-tuiles .p.ok{background:#e6f7f0;color:#0f9d6b}.av-tuiles .p.w{background:#fdf1e1;color:#9a5a0b}.av-tuiles .p.r{background:#fdecec;color:#b42318}
 .av-tuiles .mini{height:6px;border-radius:99px;background:var(--line);overflow:hidden;display:flex;margin:2px 0}
 .av-tuiles .mini i{display:block;height:100%}
-.av-tuiles .mini .d{background:#0f9d6b}.av-tuiles .mini .e{background:var(--brand-500,#6366f1)}
+.av-tuiles .mini .d{background:#0f9d6b}.av-tuiles .mini .paye{background:var(--brand-500,#6366f1)}.av-tuiles .mini .paye.r{background:#b42318}.av-tuiles .mini .e{background:var(--brand-500,#6366f1)}
 .av-tuiles .go{margin-top:auto;padding-top:4px;font-size:12px;font-weight:600;color:var(--brand)}
 @media (max-width:560px){
   .av-tuiles .grille{grid-template-columns:1fr 1fr;gap:8px}
@@ -4262,11 +4262,11 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-tuiles .v.vide{font-family:var(--font-geist-sans);font-size:15px;letter-spacing:-.01em;color:var(--muted)}
 .av-tuiles .v.pos{color:#0f9d6b}.av-tuiles .v.neg{color:#b42318}
 .av-tuiles .s{font-size:11.5px;color:var(--muted);line-height:1.35}
-.av-tuiles .p{display:inline-flex;font-size:11px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.av-tuiles .p{display:inline-flex;font-size:11px;font-weight:600;border-radius:10px;padding:2px 9px;line-height:1.35}
 .av-tuiles .p.ok{background:#e6f7f0;color:#0f9d6b}.av-tuiles .p.w{background:#fdf1e1;color:#9a5a0b}.av-tuiles .p.r{background:#fdecec;color:#b42318}
 .av-tuiles .mini{height:6px;border-radius:99px;background:var(--line);overflow:hidden;display:flex;margin:2px 0}
 .av-tuiles .mini i{display:block;height:100%}
-.av-tuiles .mini .d{background:#0f9d6b}.av-tuiles .mini .e{background:var(--brand-500,#6366f1)}
+.av-tuiles .mini .d{background:#0f9d6b}.av-tuiles .mini .paye{background:var(--brand-500,#6366f1)}.av-tuiles .mini .paye.r{background:#b42318}.av-tuiles .mini .e{background:var(--brand-500,#6366f1)}
 .av-tuiles .go{margin-top:auto;padding-top:4px;font-size:12px;font-weight:600;color:var(--brand)}
 @media (max-width:560px){
   .av-tuiles .grille{grid-template-columns:1fr 1fr;gap:8px}
@@ -4951,11 +4951,11 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-tuiles .v.vide{font-family:var(--font-geist-sans);font-size:15px;letter-spacing:-.01em;color:var(--muted)}
 .av-tuiles .v.pos{color:#0f9d6b}.av-tuiles .v.neg{color:#b42318}
 .av-tuiles .s{font-size:11.5px;color:var(--muted);line-height:1.35}
-.av-tuiles .p{display:inline-flex;font-size:11px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.av-tuiles .p{display:inline-flex;font-size:11px;font-weight:600;border-radius:10px;padding:2px 9px;line-height:1.35}
 .av-tuiles .p.ok{background:#e6f7f0;color:#0f9d6b}.av-tuiles .p.w{background:#fdf1e1;color:#9a5a0b}.av-tuiles .p.r{background:#fdecec;color:#b42318}
 .av-tuiles .mini{height:6px;border-radius:99px;background:var(--line);overflow:hidden;display:flex;margin:2px 0}
 .av-tuiles .mini i{display:block;height:100%}
-.av-tuiles .mini .d{background:#0f9d6b}.av-tuiles .mini .e{background:var(--brand-500,#6366f1)}
+.av-tuiles .mini .d{background:#0f9d6b}.av-tuiles .mini .paye{background:var(--brand-500,#6366f1)}.av-tuiles .mini .paye.r{background:#b42318}.av-tuiles .mini .e{background:var(--brand-500,#6366f1)}
 .av-tuiles .go{margin-top:auto;padding-top:4px;font-size:12px;font-weight:600;color:var(--brand)}
 @media (max-width:560px){
   .av-tuiles .grille{grid-template-columns:1fr 1fr;gap:8px}

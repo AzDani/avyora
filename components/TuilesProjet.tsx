@@ -32,7 +32,7 @@ const TR = {
     pasCommence: "Pas encore commencé", taches: (f: number, n: number) => `${f} tâche${f > 1 ? "s" : ""} faite${f > 1 ? "s" : ""} sur ${n}`, enCours: (n: number) => `${n} en cours`,
     seulementEnCours: (c: number, n: number) => `${c} tâche${c > 1 ? "s" : ""} en cours sur ${n}`,
     aucuneDepense: "Aucune dépense", aucuneSub: "Note tes dépenses pour voir l'écart avec le prévu",
-    vsPrevu: (e: string, p: string) => `${e} · ${p} vs prévu`, pile: "Pile dans l'estimation", prevision: (p: string) => `prévision de fin · ${p} déjà payés`,
+    vsPrevu: (e: string, p: string) => `Fin prévue ${e} (${p})`, pile: "Fin prévue pile dans le budget", sur: (p: string) => `dépensés sur ${p} prévus`,
     offV: "Pas activé", offS: "Location ou achat-revente, après impôts",
     incompletV: "À compléter", incompletLoc: "Prix d'achat, loyer et revenus", incompletRev: "Prix d'achat et prix de revente",
     go: { estim: "Voir le détail", chantier: "Suivre le chantier", budget: "Mes dépenses", budgetVide: "Ajouter une dépense", invest: "Ouvrir", investOff: "Simuler", investInc: "Compléter" },
@@ -44,7 +44,7 @@ const TR = {
     pasCommence: "Not started yet", taches: (f: number, n: number) => `${f} of ${n} task${n === 1 ? "" : "s"} done`, enCours: (n: number) => `${n} in progress`,
     seulementEnCours: (c: number, n: number) => `${c} of ${n} task${n === 1 ? "" : "s"} in progress`,
     aucuneDepense: "No expenses", aucuneSub: "Log your expenses to see the gap with the plan",
-    vsPrevu: (e: string, p: string) => `${e} · ${p} vs plan`, pile: "Right on the estimate", prevision: (p: string) => `end-of-work forecast · ${p} paid so far`,
+    vsPrevu: (e: string, p: string) => `Forecast ${e} (${p})`, pile: "Forecast right on budget", sur: (p: string) => `spent of ${p} planned`,
     offV: "Not on", offS: "Rental or buy-to-resell, after tax",
     incompletV: "To complete", incompletLoc: "Purchase price, rent and income", incompletRev: "Purchase and resale price",
     go: { estim: "See details", chantier: "Track the site", budget: "My expenses", budgetVide: "Add an expense", invest: "Open", investOff: "Simulate", investInc: "Complete" },
@@ -65,11 +65,11 @@ export const CSS_TUILES = `
 .av-tuiles .v.vide{font-family:var(--font-geist-sans);font-size:15px;letter-spacing:-.01em;color:var(--muted)}
 .av-tuiles .v.pos{color:#0f9d6b}.av-tuiles .v.neg{color:#b42318}
 .av-tuiles .s{font-size:11.5px;color:var(--muted);line-height:1.35}
-.av-tuiles .p{display:inline-flex;font-size:11px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.av-tuiles .p{display:inline-flex;font-size:11px;font-weight:600;border-radius:10px;padding:2px 9px;line-height:1.35}
 .av-tuiles .p.ok{background:#e6f7f0;color:#0f9d6b}.av-tuiles .p.w{background:#fdf1e1;color:#9a5a0b}.av-tuiles .p.r{background:#fdecec;color:#b42318}
 .av-tuiles .mini{height:6px;border-radius:99px;background:var(--line);overflow:hidden;display:flex;margin:2px 0}
 .av-tuiles .mini i{display:block;height:100%}
-.av-tuiles .mini .d{background:#0f9d6b}.av-tuiles .mini .e{background:var(--brand-500,#6366f1)}
+.av-tuiles .mini .d{background:#0f9d6b}.av-tuiles .mini .paye{background:var(--brand-500,#6366f1)}.av-tuiles .mini .paye.r{background:#b42318}.av-tuiles .mini .e{background:var(--brand-500,#6366f1)}
 .av-tuiles .go{margin-top:auto;padding-top:4px;font-size:12px;font-weight:600;color:var(--brand)}
 @media (max-width:560px){
   .av-tuiles .grille{grid-template-columns:1fr 1fr;gap:8px}
@@ -121,9 +121,12 @@ export default function TuilesProjet({ donnees: d, actif, onChoisir }: { donnees
           <span className="go">{t.go.budgetVide} →</span>
         </> : <>
           <span className="k">{t.budget}</span>
-          <span className="v">{fmt(b.prevision)}</span>
+          {/* Le gros chiffre = l'argent déjà dépensé (25/11/2026, demande de Dani : l'estimation a déjà sa tuile) ;
+              la prévision de fin de chantier passe en pastille. */}
+          <span className="v">{fmt(b.paye)}</span>
+          <span className="mini" aria-hidden="true"><i className={"paye" + (b.paye > b.estimation ? " r" : "")} style={{ width: `${b.estimation > 0 ? Math.min(100, (b.paye / b.estimation) * 100) : 0}%` }} /></span>
+          <span className="s">{t.sur(fmt(b.estimation))}</span>
           <span className="s"><span className={"p " + (b.depasse || ecartPct > 0.05 ? "r" : ecart > 0.5 ? "w" : "ok")}>{Math.round(ecart) === 0 ? t.pile : t.vsPrevu(signe(ecart), (ecartPct > 0 ? "+" : ecartPct < 0 ? "−" : "") + pourcent(locale, Math.abs(ecartPct) * 100, 1))}</span></span>
-          <span className="s">{t.prevision(fmt(b.paye))}</span>
           <span className="go">{t.go.budget} →</span>
         </>)}
         {iv !== undefined && tuile("invest", !iv || iv.etat === "off" ? <>
