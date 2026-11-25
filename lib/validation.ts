@@ -74,6 +74,13 @@ export const depenseSchema = z.object({
   // 5 M€ au plus : la colonne `montant` est un real (float4), exact au centime jusqu'à ~130 000 €, à l'euro au-delà.
   // Au moins 1 centime : le montant est arrondi au centime avant l'écriture, et la base refuse 0 (CHECK de 0005).
   montant: z.coerce.number().min(0.01).max(5_000_000),
+  /** fp fourni-posé (matériaux + main-d'œuvre), mo main-d'œuvre seule, mat matériaux seuls (budget réel, 25/11/2026). */
+  nature: z.enum(["fp", "mo", "mat"]).default("fp"),
+});
+
+/** Le budget « Matériel et outillage » fixé par l'utilisateur (null : revenir à celui de l'estimation). */
+export const budgetMaterielSchema = z.object({
+  montant: z.union([z.coerce.number().min(0).max(1_000_000), z.null()]),
 });
 
 /** Suivi de chantier (POST /api/projects/[id]/statut) : clé « corps|nom » bornée, 0 à démarrer, 1 en cours, 2 terminé. */

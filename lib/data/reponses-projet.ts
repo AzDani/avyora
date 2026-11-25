@@ -47,11 +47,14 @@ export async function majStatut(id: string, cle: string, etat: 0 | 1 | 2): Promi
   return majParReecriture(id, (r) => ({ ...r, statuts: statutsApres(r.statuts, cle, etat) }));
 }
 
-/** Une clé de module hors estimation (`invest`). */
-export async function majCleReponses(id: string, cle: "invest", valeur: unknown): Promise<ResultatMaj> {
+/** La fonction SQL refuse la clé : `budgetMateriel` avant la migration 0010 (22023, « cle de reponses non autorisee »). */
+const cleRefusee = (e: ErreurPg): boolean => !!e && e.code === "22023" && /cle de reponses/.test(e.message ?? "");
+
+/** Une clé de module hors estimation (`invest`, `budgetMateriel`). */
+export async function majCleReponses(id: string, cle: "invest" | "budgetMateriel", valeur: unknown): Promise<ResultatMaj> {
   const sb = await supabaseServer();
   const { data, error } = await sb.rpc("projet_reponses_cle_maj", { p_projet: id, p_cle: cle, p_valeur: valeur });
   if (!error) return data === true ? "ok" : await sansLigne(id);
-  if (!fonctionAbsente(error)) { console.error("projet_reponses_cle_maj échouée:", error); return "erreur"; }
+  if (!fonctionAbsente(error) && !cleRefusee(error)) { console.error("projet_reponses_cle_maj échouée:", error); return "erreur"; }
   return majParReecriture(id, (r) => ({ ...r, [cle]: valeur }));
 }

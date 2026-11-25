@@ -4,7 +4,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { buildDevis, catalogueDe, presetNeuf, presetRapide, lotsAvecPerso, totauxAvecPerso, statutLigne, type Ctx, type Selection } from "@/lib/estimateur";
-import { bilanBudget, corpsDuProjet, CORPS_AUTRE, SEUIL_ATTENTION, type Depense } from "@/lib/estimateur/budget-reel";
+import { bilanBudget, corpsDuProjet, CORPS_AUTRE, CORPS_MATERIEL, SEUIL_ATTENTION, type Depense } from "@/lib/estimateur/budget-reel";
 
 const rep = (p: { ctx: Ctx; sel: Selection }, extra: Record<string, unknown> = {}) => ({ v: "estimateur", mode: "detaille", ctx: p.ctx, sel: p.sel, codePostal: p.ctx.codePostal, ...extra });
 const reno = rep(presetRapide({ type: "Maison", surface: 100, codePostal: "45000", ampleur: "complete", finition: "standard", qui: "pros" }));
@@ -18,7 +18,9 @@ describe("bilanBudget : le prévu reprend l'estimation", () => {
       const dv = buildDevis(catalogueDe(r.ctx), r.ctx, r.sel);
       const lots = lotsAvecPerso(dv.lots, undefined);
       const b = bilanBudget(r, [])!;
-      expect(b.lignes.map((l) => l.corps).sort()).toEqual(lots.map((l) => l.corps).sort());
+      // « Matériel et outillage » est toujours une ligne (budget à part) : à 0 € tant que rien n'est fixé ni estimé.
+      const avecMateriel = lots.some((l) => l.corps === CORPS_MATERIEL) ? lots : [...lots, { corps: CORPS_MATERIEL }];
+      expect(b.lignes.map((l) => l.corps).sort()).toEqual(avecMateriel.map((l) => l.corps).sort());
       expect(b.prevu).toBeCloseTo(lots.reduce((s, l) => s + l.ttc, 0), 1);
       expect(b.estimation).toBeCloseTo(totauxAvecPerso(dv.totaux, undefined, r.ctx.aleas).ttc, 1);
       // Sans dépense : prévision = estimation, aucune alerte.
@@ -136,7 +138,16 @@ describe("routes /api/projects/[id]/depenses", () => {
   it("ajoute une dépense valide sur un corps du projet", async () => {
     const r = await post({ corpsEtat: corps(), libelle: "Facture", montant: 1234.5 });
     expect(r.status).toBe(200);
-    expect(S.ajout).toEqual([[ID, { corps: corps(), libelle: "Facture", montant: 1234.5 }]]);
+    expect(S.ajout).toEqual([[ID, { corps: corps(), libelle: "Facture", montant: 1234.5, nature: "fp" }]]);
+  });
+  it("la nature est gardée ; le matériel est toujours « matériaux »", async () => {
+    expect((await post({ corpsEtat: corps(), libelle: "Main-d'œuvre", montant: 800, nature: "mo" })).status).toBe(200);
+    expect((await post({ corpsEtat: CORPS_MATERIEL, libelle: "Perceuse", montant: 120, nature: "fp" })).status).toBe(200);
+    expect((await post({ corpsEtat: corps(), libelle: "x", montant: 1, nature: "cadeau" })).status).toBe(400);
+    expect(S.ajout).toEqual([
+      [ID, { corps: corps(), libelle: "Main-d'œuvre", montant: 800, nature: "mo" }],
+      [ID, { corps: CORPS_MATERIEL, libelle: "Perceuse", montant: 120, nature: "mat" }],
+    ]);
   });
   it("« Autre » est accepté ; un corps inventé non", async () => {
     expect((await post({ corpsEtat: CORPS_AUTRE, libelle: "Benne", montant: 300 })).status).toBe(200);
@@ -177,4 +188,47 @@ describe("lireMontant : saisie en FR comme en EN", async () => {
     ["1,500", 1500], ["1,500.50", 1500.5], ["12.5", 12.5], ["1 500 €", 1500], ["1.500.000", 1500000],
   ])("« %s » → %s", (t, v) => expect(lireMontant(t as string)).toBeCloseTo(v as number, 2));
   it.each(["", "abc", "-5", "1,5,a"])("« %s » illisible", (t) => expect(Number.isNaN(lireMontant(t))).toBe(true));
+});
+
+
+describe("budget réel : la nature des dépenses et le matériel (25/11/2026)", () => {
+  const b0 = bilanBudget(reno, [])!;
+  const gros = [...b0.lignes].filter((l) => !l.materiel).sort((a, x) => x.prevu - a.prevu)[0];
+  const d = (corps: string, montant: number, nature?: "fp" | "mo" | "mat"): Depense => ({ ...dep(corps, montant), ...(nature ? { nature } : {}) });
+
+  it("le réel de chaque corps se lit par nature ; sans nature, c'est du fourni-posé ; le reste ne descend pas sous 0", () => {
+    const b = bilanBudget(reno, [d(gros.corps, 1000), d(gros.corps, 300, "mo"), d(gros.corps, 200, "mat")])!;
+    const l = b.lignes.find((x) => x.corps === gros.corps)!;
+    expect(l.parNature).toEqual({ fp: 1000, mo: 300, mat: 200 });
+    expect(l.reel).toBeCloseTo(1500, 2);
+    expect(l.reste).toBeCloseTo(gros.prevu - 1500, 1);
+    const trop = bilanBudget(reno, [d(gros.corps, gros.prevu + 50)])!.lignes.find((x) => x.corps === gros.corps)!;
+    expect(trop.reste).toBe(0);
+  });
+
+  it("le prévu d'un corps se partage entre artisans et « je fais moi-même »", () => {
+    for (const l of b0.lignes) expect(l.prevuArtisan + l.prevuToi).toBeCloseTo(l.prevu, 1);
+    const cle = Object.keys(reno.sel).find((k) => reno.sel[k]?.on && k.startsWith(gros.corps + "|"))!;
+    const moiMeme = { ...reno, sel: { ...reno.sel, [cle]: { ...reno.sel[cle], self: true } } };
+    const l = bilanBudget(moiMeme, [])!.lignes.find((x) => x.corps === gros.corps)!;
+    expect(l.prevuToi).toBeGreaterThan(0);
+  });
+
+  it("« Matériel et outillage » : toujours là et proposé à la saisie ; sans budget, une dépense est hors estimation", () => {
+    const m = b0.lignes.find((l) => l.materiel)!;
+    expect(m).toMatchObject({ corps: CORPS_MATERIEL, prevu: 0, reel: 0 });
+    expect(corpsDuProjet(reno).at(-1)).toBe(CORPS_MATERIEL);
+    const b = bilanBudget(reno, [d(CORPS_MATERIEL, 250, "mat")])!;
+    expect(b.lignes.find((l) => l.materiel)!.etat).toBe("hors_estimation");
+    expect(b.alertes).toContainEqual({ type: "hors_estimation", corps: CORPS_MATERIEL, montant: 250 });
+  });
+
+  it("budget matériel fixé : il devient le prévu du matériel et s'ajoute à l'estimation ; « estimation » le remet à zéro", () => {
+    const b = bilanBudget({ ...reno, budgetMateriel: 600 }, [d(CORPS_MATERIEL, 450, "mat")])!;
+    const m = b.lignes.find((l) => l.materiel)!;
+    expect(m).toMatchObject({ prevu: 600, reel: 450, reste: 150, etat: "ok" });
+    expect(b.budgetMateriel).toBe(600);
+    expect(b.estimation).toBeCloseTo(b0.estimation + 600, 1);
+    expect(bilanBudget({ ...reno, budgetMateriel: "estimation" }, [])!.budgetMateriel).toBeNull();
+  });
 });

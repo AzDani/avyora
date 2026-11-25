@@ -4,12 +4,13 @@ import { ajouterDepense, compterDepenses, MAX_DEPENSES } from "@/lib/data/depens
 import { getUser, estPro } from "@/lib/auth";
 import { verifierLimite } from "@/lib/ratelimit";
 import { valider, jsonBody, depenseSchema } from "@/lib/validation";
-import { corpsDuProjet, CORPS_AUTRE } from "@/lib/estimateur/budget-reel";
+import { corpsDuProjet, CORPS_AUTRE, CORPS_MATERIEL } from "@/lib/estimateur/budget-reel";
 
 /**
  * Ajoute une dépense réelle à un projet (module M5). Pro (pendant la bêta : tout compte confirmé),
  * propriétaire ou membre du projet (RLS). Le corps d'état doit être l'un de ceux de l'estimation, ou
- * « Autre » : la comparaison prévu / réel reste lisible.
+ * « Autre », ou « Matériel et outillage » (toujours proposé) : la comparaison prévu / réel reste lisible. La
+ * nature dit ce que couvre la dépense (fourni-posé, main-d'œuvre, matériaux) ; le matériel est toujours « matériaux ».
  */
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -29,7 +30,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   if ((await compterDepenses(id)) >= MAX_DEPENSES) return NextResponse.json({ error: "Nombre maximal de dépenses atteint" }, { status: 409 });
 
-  const d = await ajouterDepense(id, { corps: v.data.corpsEtat, libelle: v.data.libelle, montant: v.data.montant });
+  const nature = v.data.corpsEtat === CORPS_MATERIEL ? "mat" : v.data.nature;
+  const d = await ajouterDepense(id, { corps: v.data.corpsEtat, libelle: v.data.libelle, montant: v.data.montant, nature });
   if (!d) return NextResponse.json({ error: "Enregistrement impossible" }, { status: 500 });
   return NextResponse.json({ depense: d });
 }
