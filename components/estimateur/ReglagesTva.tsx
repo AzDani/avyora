@@ -24,8 +24,10 @@ export const REGLAGES_TVA_CSS = `
 .av-estim .rtva .rtva-btn:focus-visible{outline:2px solid var(--accent-600);outline-offset:1px}
 `;
 
-export function ReglagesTva({ ctx, setCtx, cat, sel, setSel }: {
+export function ReglagesTva({ ctx, setCtx, cat, sel, setSel, visite }: {
   ctx: Ctx; setCtx: (f: (c: Ctx) => Ctx) => void; cat: Lot[]; sel: Selection; setSel: (f: (s: Selection) => Selection) => void;
+  /** La cible de la visite guidée (`data-visite`). */
+  visite?: string;
 }) {
   const tv = dictTva(useLocale()).reglages;
   const [demande, setDemande] = useState(false);
@@ -33,7 +35,7 @@ export function ReglagesTva({ ctx, setCtx, cat, sel, setSel }: {
   const qui = quiFait(cat, ctx, sel);
   const n = nbRetouches(sel);
   return (
-    <div className="rtva">
+    <div className="rtva" data-visite={visite}>
       <Intertitre>{tv.payeurT}</Intertitre>
       <Segment aria={tv.payeurT} valeur={pro ? "pro" : "part"} onChoix={(v) => setCtx((c) => choisirPayeur(c, v === "pro"))}
         options={[{ v: "part", label: tv.particulier }, { v: "pro", label: tv.pro }]} />

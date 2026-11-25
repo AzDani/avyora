@@ -359,7 +359,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
       // Téléphone : la grille passe sur une colonne, plus haute que l'écran ; ses quatre premières cases.
       { id: "pieces", cible: "neuf-d-pieces", cibleMobile: premiersEnfants("neuf-d-pieces"), ...tv.pieces },
       { id: "technique", cible: "neuf-d-technique", ...tv.technique },
-      { id: "finition", cible: ["neuf-d-finition", "neuf-d-pilotage"], ...tv.finition },
+      { id: "finition", cible: ["neuf-d-finition", "neuf-d-pilotage", "neuf-d-tva"], ...tv.finition },
       { id: "postes", cible: [CIBLES_LISTE_VISITE.outils, CIBLES_LISTE_VISITE.premierLot], ...tv.postes },
       { id: "soi", cible: "neuf-d-nouveaux", ...tv.soi },
       // Dans la vue « Mon devis », le bouton de la barre devient « ← Modifier » : la bulle le nomme ainsi.
@@ -435,7 +435,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
               <Intertitre>{B.tvaT}</Intertitre>
               <div className="locnote">{gras(d.tvaNote)}</div>
               {/* HT / TTC (25/11/2026) : qui paie, l'affichage et qui fait sont gardés dans l'état du neuf. */}
-              <ReglagesTva ctx={ctx} cat={CATALOG_NEUF} sel={sel} setSel={majSel}
+              <ReglagesTva ctx={ctx} cat={CATALOG_NEUF} sel={sel} setSel={majSel} visite="neuf-d-tva"
                 setCtx={(f) => setEtat((e) => {
                   const c = f(ctx);
                   const { payeur: _p, affichage: _a, ...reste } = e;

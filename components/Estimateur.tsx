@@ -247,7 +247,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
       // Logement entier : la grille de compteurs ; pièces ciblées : les pastilles des pièces.
       // Téléphone : la grille passe sur une colonne, plus haute que l'écran ; ses quatre premières cases.
       { id: "pieces", cible: "detail-pieces", cibleMobile: premiersEnfants("detail-pieces"), repli: "detail-pieces-choix", ...tv.pieces },
-      { id: "finition", cible: "detail-finition", ...tv.finition },
+      { id: "finition", cible: ["detail-finition", "detail-tva"], ...tv.finition },
       { id: "postes", cible: [CIBLES_LISTE_VISITE.outils, CIBLES_LISTE_VISITE.premierLot], ...tv.postes },
       { id: "soi", cible: CIBLES_LISTE_VISITE.choixLigne, repli: lotOuvert ? CIBLES_LISTE_VISITE.ligneOuverte : CIBLES_LISTE_VISITE.premierLot, ...tv.soi },
       { id: "total", cible: ["detail-total", "detail-jauge"], place: ["haut"], ...tv.total },
@@ -382,7 +382,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
               <Segment aria={B.tvaT} valeur={ctx.fiscal === "pro" ? "pro" : "habitation"} onChoix={(f) => patchCtx({ fiscal: f })}
                 options={[{ v: "habitation", label: B.tvaHabitation }, { v: "pro", label: B.tvaPro }]} />
               <div className="locnote">{gras(B.tvaNote)}</div>
-              <ReglagesTva ctx={ctx} setCtx={setCtx} cat={CATALOG} sel={sel} setSel={setSel} />
+              <ReglagesTva ctx={ctx} setCtx={setCtx} cat={CATALOG} sel={sel} setSel={setSel} visite="detail-tva" />
 
               <Intertitre>{B.budgetT}</Intertitre>
               <div className="depart">
