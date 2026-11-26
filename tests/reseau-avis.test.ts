@@ -287,3 +287,19 @@ describe("la base, les pages et les textes", () => {
     expect(corps).not.toMatch(/sort\(/);
   });
 });
+
+describe("les motifs de refus d'une réponse d'artisan (26/11/2026)", () => {
+  it("une liste à part, qui parle de la réponse ; l'admin et l'action l'utilisent", async () => {
+    const { MOTIFS_REFUS_REPONSE, estMotifReponse, labelMotifReponse } = await import("@/lib/reseau/avis");
+    expect(MOTIFS_REFUS_REPONSE.map(([k]) => k)).toEqual(["injurieux", "donnees", "hors_sujet", "publicite"]);
+    expect(labelMotifReponse("hors_sujet")).toMatch(/la réponse ne parle pas/);
+    expect(estMotifReponse("photo")).toBe(false);
+    expect(estMotifReponse("publicite")).toBe(true);
+    const fs = await import("node:fs");
+    const act = fs.readFileSync("lib/actions/avis.ts", "utf8");
+    const bloc = act.slice(act.indexOf("export async function modererReponse"), act.indexOf("revalidatePath(\"/avis-artisans\"", act.indexOf("export async function modererReponse")));
+    expect(bloc).toContain("!estMotifReponse(motif)");
+    expect(bloc).not.toMatch(/labelMotif\(motif\)/);
+    expect(fs.readFileSync("components/admin/reseau/ModerationAvis.tsx", "utf8")).toContain("motifs={MOTIFS_REFUS_REPONSE}");
+  });
+});

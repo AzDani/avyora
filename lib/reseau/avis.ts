@@ -34,6 +34,20 @@ export type MotifRefus = (typeof MOTIFS_REFUS)[number][0];
 export const estMotif = (v: unknown): v is MotifRefus => MOTIFS_REFUS.some(([k]) => k === v);
 export const labelMotif = (v: string | null | undefined) => (v ? MOTIFS_REFUS.find(([k]) => k === v)?.[1] ?? v : "");
 
+/**
+ * Les motifs de refus de la RÉPONSE d'un artisan à un avis (26/11/2026) : ceux des avis ne collaient pas (« l'avis ne
+ * parle pas… », « photo inadaptée » pour un texte sans photo). Le libellé est enregistré et envoyé à l'artisan.
+ */
+export const MOTIFS_REFUS_REPONSE = [
+  ["injurieux", "Insultes ou propos injurieux envers le client"],
+  ["donnees", "Données personnelles du client (nom complet, adresse, téléphone)"],
+  ["hors_sujet", "Hors sujet : la réponse ne parle pas de l'avis ni des travaux"],
+  ["publicite", "Publicité ou démarchage (promotion, lien, autre numéro de contact)"],
+] as const;
+export type MotifRefusReponse = (typeof MOTIFS_REFUS_REPONSE)[number][0];
+export const estMotifReponse = (v: unknown): v is MotifRefusReponse => MOTIFS_REFUS_REPONSE.some(([k]) => k === v);
+export const labelMotifReponse = (v: string | null | undefined) => (v ? MOTIFS_REFUS_REPONSE.find(([k]) => k === v)?.[1] ?? v : "");
+
 const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
 
 /** Un texte saisi : sans caractère de contrôle (les retours à la ligne restent), espaces retirés, coupé à `max`. */

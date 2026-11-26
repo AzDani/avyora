@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { modererAvis, modererReponse, retirerRealisation, traiterMajArtisan } from "@/lib/actions/avis";
-import { MOTIFS_REFUS } from "@/lib/reseau/avis";
+import { MOTIFS_REFUS, MOTIFS_REFUS_REPONSE } from "@/lib/reseau/avis";
 
 /**
  * Les boutons de modération de Daniel (/admin/avis, 25/11/2026). Refuser demande un motif de la liste (envoyé à
@@ -23,12 +23,12 @@ function useAction() {
   return { enCours, erreur, lancer };
 }
 
-function ChoixMotif({ onValider, enCours, libelle }: { onValider: (motif: string) => void; enCours: boolean; libelle: string }) {
-  const [motif, setMotif] = useState<string>(MOTIFS_REFUS[0][0]);
+function ChoixMotif({ onValider, enCours, libelle, motifs = MOTIFS_REFUS }: { onValider: (motif: string) => void; enCours: boolean; libelle: string; motifs?: readonly (readonly [string, string])[] }) {
+  const [motif, setMotif] = useState<string>(motifs[0][0]);
   return (
     <div className="flex w-full flex-wrap items-center gap-2">
       <select aria-label="Motif du refus" value={motif} onChange={(e) => setMotif(e.target.value)} className="min-h-10 min-w-[220px] flex-1 rounded-xl border border-line-strong bg-surface px-3 text-[13.5px] text-ink">
-        {MOTIFS_REFUS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+        {motifs.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
       </select>
       <button type="button" disabled={enCours} onClick={() => onValider(motif)} className="btn min-h-10 border border-[#f3c9c4] bg-surface px-4 text-[13.5px] text-[#b42318]">{libelle}</button>
     </div>
@@ -55,7 +55,7 @@ export function BoutonsReponse({ miseId }: { miseId: string }) {
     <div className="mt-2 flex flex-wrap items-center gap-2">
       <button type="button" disabled={enCours} onClick={() => lancer(() => modererReponse(miseId, "publier"))} className="btn min-h-10 bg-[#0b7a53] px-4 text-[13.5px] text-white hover:bg-[#096845]">Publier la réponse</button>
       {!refus && <button type="button" disabled={enCours} onClick={() => setRefus(true)} className="btn min-h-10 border border-[#f3c9c4] bg-surface px-4 text-[13.5px] text-[#b42318]">Refuser…</button>}
-      {refus && <ChoixMotif enCours={enCours} libelle="Refuser et prévenir l'artisan" onValider={(m) => lancer(() => modererReponse(miseId, "refuser", m))} />}
+      {refus && <ChoixMotif enCours={enCours} libelle="Refuser et prévenir l'artisan" motifs={MOTIFS_REFUS_REPONSE} onValider={(m) => lancer(() => modererReponse(miseId, "refuser", m))} />}
       {erreur && <p role="alert" className="w-full text-[13px] text-[#b42318]">{erreur}</p>}
     </div>
   );

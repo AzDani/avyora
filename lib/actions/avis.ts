@@ -11,7 +11,7 @@ import { DESTINATAIRE_DEFAUT } from "@/lib/accompagnement/constantes";
 import { BUCKET_ARTISANS, TABLE_ARTISANS, TABLE_DEMANDES, TABLE_MER, TABLE_REALISATIONS, candidatureDe } from "@/lib/data/reseau";
 import { MIMES_ACCEPTES, TAILLE_MAX, aujourdhuiParis } from "@/lib/reseau/candidature";
 import {
-  auteurAffiche, avisModifiable, cheminPhotoValide, estMotif, labelMotif, lireReponse, nettoyerTexte, prefixeGalerie, prefixePhotosAvis,
+  auteurAffiche, avisModifiable, cheminPhotoValide, estMotif, estMotifReponse, labelMotif, labelMotifReponse, lireReponse, nettoyerTexte, prefixeGalerie, prefixePhotosAvis,
   reponseModifiable, validerAvis, validerRealisation, type ErreursAvis, type ErreursRealisation, type StatutAvis, type StatutReponse,
 } from "@/lib/reseau/avis";
 import { normaliserPortable } from "@/lib/telephone";
@@ -375,18 +375,18 @@ export async function modererReponse(miseId: string, decision: "publier" | "refu
   const ad = await admin();
   if (!ad) return { ok: false, erreur: "Réservé à l'admin." };
   if (typeof miseId !== "string" || !UUID.test(miseId) || (decision !== "publier" && decision !== "refuser")) return { ok: false, erreur: "Demande invalide." };
-  if (decision === "refuser" && !estMotif(motif)) return { ok: false, erreur: "Choisis un motif." };
+  if (decision === "refuser" && !estMotifReponse(motif)) return { ok: false, erreur: "Choisis un motif." };
   const sb = supabaseAdmin();
   const ligne = decision === "publier"
     ? { reponse_statut: "publie", reponse_modere_le: new Date().toISOString(), reponse_motif: null }
-    : { reponse_statut: "refuse", reponse_modere_le: new Date().toISOString(), reponse_motif: labelMotif(motif) };
+    : { reponse_statut: "refuse", reponse_modere_le: new Date().toISOString(), reponse_motif: labelMotifReponse(motif) };
   const { data, error } = await sb.from(TABLE_MER).update(ligne).eq("id", miseId).eq("reponse_statut", "en_attente").select("artisan_id");
   if (error) return { ok: false, erreur: RESSAIE };
   if (!data?.length) return { ok: false, erreur: "Cette réponse a déjà été traitée : recharge la page." };
   if (decision === "refuser") {
     const { data: art } = await sb.from(TABLE_ARTISANS).select("contact_nom, email").eq("id", String(data[0].artisan_id)).maybeSingle();
     if (art) {
-      const mail = emailAvisArtisan({ nomArtisan: String(art.contact_nom), reponseRefusee: labelMotif(motif), espaceUrl: `${urlSite()}/espace-artisan/avis` });
+      const mail = emailAvisArtisan({ nomArtisan: String(art.contact_nom), reponseRefusee: labelMotifReponse(motif), espaceUrl: `${urlSite()}/espace-artisan/avis` });
       await envoyerEmailSuivi({ to: String(art.email), subject: mail.subject, html: mail.html, replyTo: destinataireInterne() });
     }
   }
