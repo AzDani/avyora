@@ -121,7 +121,7 @@ describe("C9 · onglet « Plan 3D » de l'en-tête desktop, et pied de page", ()
     }
   });
 
-  it("allumé : premier lien de la nav (avant Projets), blanc plein, pastille ; sans lui, l'en-tête d'avant au caractère près", async () => {
+  it("allumé (en-tête v2, 26/11/2026) : l'onglet suit le volet « Estimer », blanc plein, pastille ; sans lui, le même en-tête", async () => {
     for (const locale of LOCALES) {
       const t = dict(locale).nav;
       for (const user of ["anonyme", "gratuit", "pro", "admin"] as const) {
@@ -134,42 +134,38 @@ describe("C9 · onglet « Plan 3D » de l'en-tête desktop, et pied de page", ()
         expect(onglet).toContain("<svg");
         expect(onglet).not.toContain("aria-current");
         const nav = apres.header.slice(apres.header.indexOf(`<nav aria-label="${t.navPrincipale}"`));
-        expect(nav.indexOf("data-onglet-plan")).toBeLessThan(nav.indexOf('href="/projets"'));
-        expect(nav.indexOf("<a")).toBe(nav.indexOf("<a data-onglet-plan"));
-        /* le reste de l'en-tête dit les mêmes mots, dans le même ordre (seule la mise en page compacte change) ; depuis
-           l'onglet « Accompagnement » (16/11/2026), FR · EN et le mot « Déconnexion » (icône seule) en sont sortis :
-           ce qui reste (sans les deux onglets, l'interrupteur éteint n'a ni l'un ni l'autre) est une sous-suite de l'en-tête
-           interrupteur éteint. */
-        const mots = (h: string) => texte(h).split("|").map((m) => m.trim()).filter(Boolean);
-        const reste = mots(retirerUne(retirerUne(apres.header, ONGLET), /<a data-onglet-accompagnement=""[\s\S]*?<\/a>/));
-        const ref = mots(avant.header);
-        let k = 0;
-        for (const m of ref) if (m === reste[k]) k++;
-        expect(k, reste.join(" | ")).toBe(reste.length);
-        expect(ref.filter((m) => !reste.includes(m)).every((m) => ["FR", "EN", "·", t.deconnexion].includes(m))).toBe(true);
+        expect(nav.indexOf('data-volet="estimer"')).toBeGreaterThan(-1);
+        expect(nav.indexOf('data-volet="estimer"')).toBeLessThan(nav.indexOf("data-onglet-plan"));
+        expect(nav.indexOf("data-onglet-plan")).toBeLessThan(nav.indexOf("data-onglet-accompagnement"));
+        // Volets fermés au chargement : sans l'onglet, l'en-tête est celui de l'interrupteur éteint, au caractère près.
+        expect(retirerUne(apres.header, ONGLET)).toBe(avant.header);
       }
     }
   });
 
-  it("allumé : la largeur (mesurée à 1 024 et 1 280 px avec l'onglet « Accompagnement ») — nav inline dès lg, menu en dessous ; compte dans son menu, langue au pied", async () => {
+  it("allumé : la largeur — nav inline dès lg, menu en dessous ; à droite « Mon espace » (volet fermé) et une seule action", async () => {
     for (const locale of LOCALES) {
       const t = dict(locale).nav;
       for (const user of ["anonyme", "gratuit", "admin"] as const) {
         const { header } = await layout({ plans: true, locale, user });
-        expect(header).toContain(`<nav aria-label="${t.navPrincipale}" class="hidden items-center gap-1 text-sm lg:flex">`); // traduit (revue anglais, constat 128)
+        expect(header).toContain(`<nav aria-label="${t.navPrincipale}" class="ml-5 hidden flex-1 items-center gap-0.5 text-sm lg:flex">`); // traduit (revue anglais, constat 128)
         expect(header).toContain('<div class="lg:hidden">');
         expect(header).not.toContain('role="group" aria-label="Language"'); // FR · EN : au pied de page et dans le menu
         expect(header).toContain(`data-onglet-accompagnement="" class="inline-flex shrink-0`);
-        if (user === "anonyme") continue;
+        expect(header).toContain('data-volet="estimer"');
+        if (user === "anonyme") {
+          expect(header).toContain(`>${t.estimerGratuitement}</a>`);
+          expect(header).not.toContain('data-volet="mon-espace"');
+          expect(header).not.toContain('href="/projets"');
+          continue;
+        }
         const prenom = user === "gratuit" ? "Camille" : "admin";
-        // Depuis le 26/11/2026 (l'en-tête débordait de 73 px pour un artisan) : Mon compte, Avis artisans, Admin et
-        // Déconnexion sont dans le menu du compte, fermé au chargement ; seul son bouton est dans la page.
-        expect(header).toContain(`aria-label="${t.monCompte} · ${prenom}"`);
-        expect(header).toContain('data-menu-compte=""');
-        expect(header).not.toContain(`>${prenom}</span>`);
-        expect(header).not.toContain(`aria-label="${t.deconnexion}"`);
+        expect(header).toContain('data-volet="mon-espace"');
+        expect(header).toContain(`aria-label="${t.monEspace} · ${prenom}"`);
+        // Le contenu du volet (compte, admin, déconnexion) n'est rendu qu'à l'ouverture.
         expect(header).not.toContain('href="/admin"');
-        expect(header).not.toContain('href="/avis-artisans"');
+        expect(header).not.toContain(`>${t.deconnexion}<`);
+        expect(header).toContain(`${t.nouveauProjet}</a>`);
       }
     }
   });
@@ -196,7 +192,7 @@ describe("C9 · onglet « Plan 3D » de l'en-tête desktop, et pied de page", ()
 describe("C9 · menu mobile", () => {
   const LIGNE = /<a data-onglet-plan="" class="[^"]*" data-clic-plan="nav_mobile" href="\/logiciel-plan-maison">[\s\S]*?<\/a>/;
 
-  it("allumé : une ligne contrastée juste sous « Nouveau projet », pas un 2ᵉ bouton plein ; sans elle, le menu d'avant", async () => {
+  it("allumé (en-tête v2) : une ligne avec sa pastille dans la section « Estimer », pas un 2ᵉ bouton plein ; sans elle, le même menu", async () => {
     for (const locale of LOCALES) {
       for (const user of ["anonyme", "gratuit", "pro", "admin"] as const) {
         const rendu: string[] = [];
@@ -207,13 +203,12 @@ describe("C9 · menu mobile", () => {
         }
         expect(rendu[0]).not.toContain("logiciel-plan-maison");
         const ligne = rendu[1].match(LIGNE)?.[0] ?? "";
-        expect(ligne).toContain("bg-brand-50");
-        expect(ligne).toContain("text-brand-700");
-        expect(ligne).not.toContain("bg-brand-600");
         expect(ligne).toContain(dict(locale).nav.planPastille);
-        const iNouveau = rendu[1].indexOf('href="/projets/nouveau"'), iLigne = rendu[1].indexOf("data-onglet-plan"), iProjets = rendu[1].indexOf('href="/projets"');
-        expect(iNouveau).toBeLessThan(iLigne);
-        expect(iLigne).toBeLessThan(iProjets);
+        expect(ligne).not.toContain("bg-brand-600");
+        const iNeuf = rendu[1].indexOf('href="/projets/nouveau?nature=neuf"'), iLigne = rendu[1].indexOf("data-onglet-plan"), iAccomp = rendu[1].indexOf("data-onglet-accompagnement");
+        expect(iNeuf).toBeGreaterThan(-1);
+        expect(iNeuf).toBeLessThan(iLigne);
+        expect(iLigne).toBeLessThan(iAccomp);
         expect(retirerUne(rendu[1], LIGNE)).toBe(rendu[0]);
       }
     }

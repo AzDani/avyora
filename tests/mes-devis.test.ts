@@ -40,17 +40,22 @@ describe("ce qui attend le client dans ses demandes de devis", () => {
 });
 
 describe("les chemins vers « Mes demandes de devis »", () => {
-  it("l'en-tête : « Mes devis » avec pastille pour qui a une demande ; le reste dans le menu du compte", () => {
+  it("l'en-tête v2 : « Mon espace » (une pastille qui additionne) porte Mes demandes de devis et l'espace artisan", () => {
     const nav = lire("components/auth/AuthNav.tsx");
-    expect(nav).toMatch(/\{devis && \(\s*<Link\s+href="\/demandes-devis"/);
-    expect(nav).toContain("<MenuCompte");
+    expect(nav).toContain("const pastille = (devis?.aFaire ?? 0) + aRepondre;");
+    expect(nav).toMatch(/\{devis && \(\s*<Link href="\/demandes-devis"/);
+    expect(nav).toContain('data="mon-espace"');
+    for (const lien of ['href="/projets"', 'href="/mon-espace/compte"', 'href="/admin"', "action={logout}", 'href="/espace-artisan"']) expect(nav).toContain(lien);
+    // « Avis artisans » est passé à gauche, dans le volet Artisans (ce qu'AVYORA propose).
     expect(nav).not.toContain('href="/avis-artisans"');
-    const menu = lire("components/auth/MenuCompte.tsx");
-    for (const lien of ['href="/mon-espace/compte"', 'href="/avis-artisans"', 'href="/admin"', "action={logout}"]) expect(menu).toContain(lien);
-    expect(menu).toMatch(/e\.key === "Escape"/);
+    expect(lire("components/entete/NavPrincipale.tsx")).toContain('href="/avis-artisans"');
+    const volet = lire("components/entete/Volet.tsx");
+    expect(volet).toMatch(/e\.key === "Escape"/);
+    expect(volet).toContain('addEventListener("mousedown"');
   });
   it("le menu mobile, « Mes projets », la fiche projet et l'ancre de chaque demande", () => {
     expect(lire("components/MobileMenu.tsx")).toMatch(/\{devis && \(\s*<Link href="\/demandes-devis"/);
+    expect(lire("components/MobileMenu.tsx")).toContain("const pastille = (artisan?.aRepondre ?? 0) + (devis?.aFaire ?? 0);");
     expect(lire("app/projets/page.tsx")).toContain("<BandeauDevis compact resume={devis} />");
     const bandeau = lire("components/reseau/BandeauDevis.tsx");
     expect(bandeau).toContain("Mes demandes de devis");

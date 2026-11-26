@@ -2,14 +2,13 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import { AuthNav } from "@/components/auth/AuthNav";
+import NavPrincipale from "@/components/entete/NavPrincipale";
 import { MobileNav } from "@/components/MobileNav";
 import { FEATURES } from "@/lib/features";
 import { Analytics } from "@vercel/analytics/react";
 import { getT } from "@/lib/i18n/server";
 import { LangProvider } from "@/components/i18n/LangProvider";
 import LangSwitch from "@/components/i18n/LangSwitch";
-import OngletPlan from "@/components/plans/OngletPlan";
-import OngletAccompagnement from "@/components/accompagnement/OngletAccompagnement";
 import SuiviClicsPlan from "@/components/plans/SuiviClicsPlan";
 import { clicPlan } from "@/lib/plans/mesure";
 import ConsentementCookies from "@/components/ConsentementCookies";
@@ -172,47 +171,18 @@ export default async function RootLayout({
         <header data-entete className="sticky top-0 z-40 bg-canvas px-3 pb-2 pt-3 sm:px-4 sm:pt-4">
           <div className="mx-auto flex h-16 max-w-5xl items-center justify-between rounded-2xl border border-white/10 bg-[#1E1B4B] px-4 shadow-[0_10px_30px_-12px_rgba(30,27,75,0.55)] sm:px-6">
             <Wordmark />
-            {/* Desktop : navigation inline. Éditeur de plan allumé (C9), avec les onglets « Plan 3D » puis « Accompagnement »
-                (16/11/2026) : elle commence à lg (mesuré à 1 024 et 1 280 px, visiteur et connecté) ; en dessous, le menu,
-                qui porte les mêmes lignes. Éteint : dès sm, comme avant. */}
-            <nav aria-label={t.nav.navPrincipale} className={FEATURES.plans ? "hidden items-center gap-1 text-sm lg:flex" : "hidden items-center gap-1 text-sm sm:flex"}>
-              {/* Éditeur de plan (C9) : premier lien, mis en avant, seulement interrupteur allumé. */}
-              {FEATURES.plans && <OngletPlan label={t.nav.plan} pastille={t.nav.planPastille} />}
-              {/* Le conseil de Daniel : son propre onglet, juste après le plan (16/11/2026). Interrupteur plans éteint (repli),
-                  l'en-tête d'avant au caractère près : la ligne reste au menu et au pied de page. */}
-              {FEATURES.plans && <OngletAccompagnement label={t.nav.accompagnementCourt} />}
-              <Link
-                href="/projets"
-                className="rounded-lg px-3 py-1.5 text-indigo-200/90 transition-colors hover:bg-white/10 hover:text-white"
-              >
-                {t.nav.projets}
-              </Link>
-              {FEATURES.artisans && (
-                <Link
-                  href="/artisans"
-                  className="rounded-lg px-3 py-1.5 text-indigo-200/90 transition-colors hover:bg-white/10 hover:text-white"
-                >
-                  Artisans
-                </Link>
-              )}
+            {/* L'en-tête v2 (décision de Dani du 26/11/2026) : à gauche ce qu'AVYORA propose (Estimer, Plan 3D, Artisans,
+                Accompagnement : components/entete/NavPrincipale.tsx), à droite ce qui est à moi (« Mon espace ») et une
+                seule action (components/auth/AuthNav.tsx). En ligne dès lg ; en dessous, le menu, qui porte les mêmes
+                lignes. FR · EN est au pied de chaque page et dans le menu. */}
+            <nav aria-label={t.nav.navPrincipale} className="ml-5 hidden flex-1 items-center gap-0.5 text-sm lg:flex">
+              <NavPrincipale />
+              <div className="flex-1" />
               <AuthNav />
-              {/* Éditeur de plan allumé : avec l'onglet « Accompagnement » (16/11/2026), l'en-tête (max-w-5xl) débordait de
-                  82 px pour un visiteur (mesuré à 1 280 px). FR · EN quitte l'en-tête : il reste au pied de chaque page
-                  et dans le menu. La navigation inline commence à lg ; en dessous, le menu (qui porte les mêmes lignes,
-                  « Plan 3D » et « Accompagnement travaux » en tête). */}
-              {FEATURES.plans ? null : (
-                <>
-                  <span className="mx-1 h-4 w-px bg-white/15" aria-hidden="true" />
-                  <LangSwitch tone="dark" />
-                </>
-              )}
-              <Link href="/projets/nouveau" className="btn btn-primary ml-1 py-2">
-                {t.nav.nouveauProjet}
-              </Link>
             </nav>
 
-            {/* Mobile (< sm) : menu hamburger */}
-            <div className={FEATURES.plans ? "lg:hidden" : "sm:hidden"}>
+            {/* Sous lg : le menu */}
+            <div className="lg:hidden">
               <MobileNav />
             </div>
           </div>

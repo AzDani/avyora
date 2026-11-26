@@ -456,12 +456,15 @@ describe("sitemap, maillage interne et confidentialité", () => {
   it("liens posés : pied de page, menu mobile, accueil, guides, fiche projet prix, et pages privées avec leur source", () => {
     const canon = 'href="/accompagnement-travaux"';
     expect(lire("app/layout.tsx")).toContain(canon);
-    // L'onglet de l'en-tête (desktop) et la ligne contrastée du menu mobile, juste après le plan (16/11/2026).
+    // L'onglet de l'en-tête (desktop) et la ligne contrastée du menu mobile. En-tête v2 (26/11/2026) : l'onglet est le
+    // dernier de la navigation de gauche (après Estimer, Plan 3D, Artisans), la ligne vient après les sections du menu.
     expect(lire("components/accompagnement/OngletAccompagnement.tsx")).toContain('PAGE_ACCOMPAGNEMENT = "/accompagnement-travaux"');
-    expect(lire("app/layout.tsx")).toMatch(/<OngletPlan [^\n]*\n(?:[^\n]*\n){2}\s*\{FEATURES\.plans && <OngletAccompagnement label=\{t\.nav\.accompagnementCourt\} \/>\}/);
+    const nav = lire("components/entete/NavPrincipale.tsx");
+    expect(nav).toContain("<OngletAccompagnement label={n.accompagnementCourt} />");
+    expect(nav.indexOf("<OngletAccompagnement")).toBeGreaterThan(nav.indexOf("<OngletPlan"));
     const menu = lire("components/MobileMenu.tsx");
     expect(menu.indexOf("href={PAGE_ACCOMPAGNEMENT}")).toBeGreaterThan(menu.indexOf("href={VITRINE_PLAN}"));
-    expect(menu.indexOf("href={PAGE_ACCOMPAGNEMENT}")).toBeLessThan(menu.indexOf('href="/projets"'));
+    expect(menu).toContain('className="mt-2 flex items-center gap-2 rounded-lg bg-brand-50');
     // L'accueil V2 (24/11/2026) : le bouton de rappel ouvre le héros et revient dans l'appel final, l'accompagnement est
     // la première offre (mise en avant) de « Ce que je te propose », FR et EN.
     const accueil = lire("app/page.tsx");

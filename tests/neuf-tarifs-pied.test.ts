@@ -28,6 +28,7 @@ async function charger(neuf: boolean, locale: Locale) {
   vi.doMock("next/script", () => ({ default: vide }));
   vi.doMock("@vercel/analytics/react", () => ({ Analytics: vide }));
   vi.doMock("@/components/auth/AuthNav", () => ({ AuthNav: vide }));
+  vi.doMock("@/components/entete/NavPrincipale", () => ({ default: vide }));
   vi.doMock("@/components/MobileNav", () => ({ MobileNav: vide }));
   vi.doMock("@/components/i18n/LangSwitch", () => ({ default: vide }));
   vi.doMock("@/app/globals.css", () => ({}));
@@ -46,7 +47,7 @@ const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/'/g, "&#x27;").repl
 
 beforeEach(() => {
   for (const m of ["@/lib/features", "@/lib/i18n/server", "@/lib/auth", "next/font/google", "next/script",
-    "@vercel/analytics/react", "@/components/auth/AuthNav", "@/components/MobileNav", "@/components/i18n/LangSwitch", "@/app/globals.css"]) vi.doUnmock(m);
+    "@vercel/analytics/react", "@/components/auth/AuthNav", "@/components/entete/NavPrincipale", "@/components/MobileNav", "@/components/i18n/LangSwitch", "@/app/globals.css"]) vi.doUnmock(m);
 });
 
 describe("/tarifs · 6ᵉ puce Pro", () => {

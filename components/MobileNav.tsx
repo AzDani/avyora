@@ -14,7 +14,7 @@ export async function MobileNav() {
     <MobileMenu
       isLoggedIn={!!user} prenom={prenom} isAdmin={estAdmin(user)} isPro={estPro(user)}
       artisan={artisan.artisan ? { aRepondre: artisan.aRepondre } : undefined}
-      devis={devis ? { aFaire: devis.aFaire } : undefined}
+      devis={devis ? { aFaire: devis.aFaire, avisADonner: devis.avisADonner, avisARevoir: devis.avisARevoir } : undefined}
     />
   );
 }
