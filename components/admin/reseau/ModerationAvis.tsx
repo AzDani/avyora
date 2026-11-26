@@ -68,8 +68,27 @@ export function BoutonsSignalement({ miseId }: { miseId: string }) {
     <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-line pt-3">
       <button type="button" disabled={enCours} onClick={() => lancer(() => modererAvis(miseId, "garder"))} className="btn btn-outline min-h-10 px-4 text-[13.5px]">Garder l&apos;avis en ligne</button>
       <button type="button" disabled={enCours} onClick={() => (confirmer ? lancer(() => modererAvis(miseId, "retirer")) : setConfirmer(true))} className="btn min-h-10 border border-[#f3c9c4] bg-surface px-4 text-[13.5px] text-[#b42318]">
-        {confirmer ? "Confirmer : retirer l'avis" : "Retirer l'avis"}
+        {confirmer ? "Confirmer : retirer et effacer l'avis" : "Retirer l'avis"}
       </button>
+      {erreur && <p role="alert" className="w-full text-[13px] text-[#b42318]">{erreur}</p>}
+    </div>
+  );
+}
+
+export function BoutonRetirerAvis({ miseId }: { miseId: string }) {
+  const { enCours, erreur, lancer } = useAction();
+  const [confirmer, setConfirmer] = useState(false);
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-line pt-3">
+      {confirmer ? (
+        <>
+          <button type="button" disabled={enCours} onClick={() => lancer(() => modererAvis(miseId, "retirer"))} className="btn min-h-10 border border-[#f3c9c4] bg-surface px-4 text-[13.5px] text-[#b42318]">Confirmer : retirer et effacer</button>
+          <button type="button" onClick={() => setConfirmer(false)} className="text-[13px] font-semibold text-muted underline">Annuler</button>
+          <span className="w-full text-[12.5px] text-faint">Le texte, la note, les photos et la réponse de l&apos;artisan sont effacés. Impossible de revenir en arrière.</span>
+        </>
+      ) : (
+        <button type="button" onClick={() => setConfirmer(true)} className="text-[13px] font-semibold text-[#b42318] underline">Retirer et effacer…</button>
+      )}
       {erreur && <p role="alert" className="w-full text-[13px] text-[#b42318]">{erreur}</p>}
     </div>
   );

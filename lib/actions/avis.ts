@@ -112,7 +112,7 @@ export async function envoyerAvis(miseId: string, brut: unknown): Promise<{ ok: 
   if (!user) return { ok: false, erreur: SESSION };
   const m = await miseDuClient(miseId, user.id);
   if (!m) return { ok: false, erreur: "Cet artisan n'a pas accepté ta demande : tu ne peux pas encore donner ton avis." };
-  if (!avisModifiable(m.avis_statut)) return { ok: false, erreur: "Ton avis est publié : il ne peut plus être modifié." };
+  if (!avisModifiable(m.avis_statut)) return { ok: false, erreur: m.avis_statut === "retire" ? "Ton avis a été retiré." : "Ton avis est publié : il ne peut plus être modifié." };
   const v = validerAvis(brut);
   if (!v.ok) return { ok: false, erreurs: v.erreurs };
   if (!(await photosPresentes(prefixePhotosAvis(user.id), v.a.photos))) return { ok: false, erreurs: { photos: "Une photo n'a pas été envoyée : retire-la et ajoute-la de nouveau." } };
@@ -315,7 +315,8 @@ async function admin(): Promise<{ id: string } | null> {
 
 /**
  * Publier, refuser (motif de la liste, envoyé à l'auteur) ou retirer un avis. Publier prévient le client et l'artisan
- * (qui peut répondre). Retirer : seulement un avis publié (demande de l'auteur, signalement fondé).
+ * (qui peut répondre). Retirer : seulement un avis publié (demande de l'auteur, signalement fondé) ; son texte, sa
+ * note, ses photos et la réponse de l'artisan sont alors effacés.
  */
 export async function modererAvis(miseId: string, decision: "publier" | "refuser" | "retirer" | "garder", motif?: string): Promise<{ ok: boolean; erreur?: string }> {
   const ad = await admin();
@@ -329,9 +330,19 @@ export async function modererAvis(miseId: string, decision: "publier" | "refuser
     : decision === "refuser" ? { depuis: "en_attente", ligne: { avis_statut: "refuse", avis_modere_le: maintenant, avis_motif: labelMotif(motif) } }
     : decision === "retirer" ? { depuis: "publie", ligne: { avis_statut: "retire", avis_modere_le: maintenant, avis_signale_le: null, avis_signalement: null } }
     : { depuis: "publie", ligne: { avis_signale_le: null, avis_signalement: null } };
-  const { data, error } = await sb.from(TABLE_MER).update(maj.ligne).eq("id", miseId).eq("avis_statut", maj.depuis).select("id, demande_id, artisan_id, avis_note");
+  const { data, error } = await sb.from(TABLE_MER).update(maj.ligne).eq("id", miseId).eq("avis_statut", maj.depuis).select("id, demande_id, artisan_id, avis_note, avis_photos");
   if (error) return { ok: false, erreur: RESSAIE };
   if (!data?.length) return { ok: false, erreur: "Cet avis a déjà été traité : recharge la page." };
+
+  // Retirer = effacer (26/11/2026) : la demande de retrait de son auteur est son droit à l'effacement. Une fois
+  // « retire », la base laisse vider le contenu (le verrou ne protège que les avis publiés) ; les photos partent du stockage.
+  if (decision === "retirer") {
+    await sb.from(TABLE_MER).update({
+      avis_note: null, avis_commentaire: null, avis_mois: null, avis_photos: [], avis_auteur: null, avis_le: null,
+      reponse_texte: null, reponse_statut: null, reponse_le: null, reponse_motif: null,
+    }).eq("id", miseId).eq("avis_statut", "retire");
+    await retirerFichiers(((data[0].avis_photos as string[] | null) ?? []).filter((c) => c.startsWith("avis/")));
+  }
 
   if (decision === "publier" || decision === "refuser") {
     const m = data[0];

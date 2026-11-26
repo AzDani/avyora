@@ -235,13 +235,17 @@ describe("Daniel publie ou refuse ; l'artisan répond", () => {
     expect(mails[0].html).toContain("Données personnelles");
   });
 
-  it("retirer : seulement un avis publié", async () => {
-    const b = base({ "reseau_mises_en_relation:update": [{ id: MISE }] });
-    const { m } = await charger(CLIENT, b, true);
-    await m.modererAvis(MISE, "retirer");
-    const up = b.ops.find((o) => o.op === "update")!;
+  it("retirer : seulement un avis publié, et il est effacé", async () => {
+    const b2 = base({ "reseau_mises_en_relation:update": [{ id: MISE, avis_photos: [PHOTO("u-client")] }] });
+    const { m: m2 } = await charger(CLIENT, b2, true);
+    expect(await m2.modererAvis(MISE, "retirer")).toEqual({ ok: true });
+    const [up, efface] = b2.ops.filter((o) => o.op === "update");
     expect(up.valeur).toMatchObject({ avis_statut: "retire" });
     expect(up.filtres).toContainEqual(["eq", "avis_statut", "publie"]);
+    // Retirer = effacer : texte, note, photos (stockage compris) et réponse de l'artisan.
+    expect(efface.valeur).toMatchObject({ avis_note: null, avis_commentaire: null, avis_photos: [], avis_auteur: null, reponse_texte: null });
+    expect(efface.filtres).toContainEqual(["eq", "avis_statut", "retire"]);
+    expect(b2.ops.find((o) => o.op === "remove")!.valeur).toEqual([PHOTO("u-client")]);
   });
 
   it("répondre : seulement un artisan VALIDÉ", async () => {
@@ -257,6 +261,8 @@ describe("la base, les pages et les textes", () => {
   it("la migration fige un avis publié et garde les tables fermées", () => {
     expect(sql).toMatch(/avis publié : il ne peut plus être modifié/);
     expect(sql).toMatch(/new\.avis_note is distinct from old\.avis_note/);
+    // Le contrôle du contenu ne vaut que pour un avis PUBLIÉ : retiré, il peut être effacé.
+    expect(sql.slice(sql.indexOf("if old.avis_statut = 'publie'"), sql.indexOf("if old.avis_statut = 'retire'"))).toMatch(/avis publié : il ne peut plus être modifié/);
     expect(sql).toMatch(/revoke all on public\.reseau_realisations from anon, authenticated/);
     expect(sql).toMatch(/cardinality\(avis_photos\) <= 6/);
     expect(lire("supabase/migrations/0012_reseau_avis_galerie_retour.sql")).toMatch(/drop trigger if exists trg_reseau_avis_fige/);

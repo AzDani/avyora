@@ -2,7 +2,7 @@ import Link from "next/link";
 import { aModerer, realisationsRecentes } from "@/lib/data/reseau";
 import { labelMois } from "@/lib/reseau/avis";
 import { Etoiles } from "@/components/reseau/avis/Affichage";
-import { BoutonRetirerRealisation, BoutonsAvis, BoutonsReponse, BoutonsSignalement } from "@/components/admin/reseau/ModerationAvis";
+import { BoutonRetirerAvis, BoutonRetirerRealisation, BoutonsAvis, BoutonsReponse, BoutonsSignalement } from "@/components/admin/reseau/ModerationAvis";
 import type { AvisAModerer } from "@/lib/data/reseau";
 
 export const dynamic = "force-dynamic";
@@ -92,6 +92,12 @@ export default async function AdminAvis() {
           <section className="space-y-3" aria-labelledby="signales">
             <h2 id="signales" className="text-[17px] font-semibold text-ink">Avis signalés par un artisan <span className="num text-muted">({m.signales.length})</span></h2>
             {m.signales.length === 0 ? <p className="text-[14px] text-muted">Aucun signalement.</p> : m.signales.map((a) => <Avis key={a.miseId} a={a}><BoutonsSignalement miseId={a.miseId} /></Avis>)}
+          </section>
+
+          <section className="space-y-3" aria-labelledby="publies">
+            <h2 id="publies" className="text-[17px] font-semibold text-ink">Avis publiés <span className="num text-muted">({m.publies.length}{m.publies.length === 50 ? " derniers" : ""})</span></h2>
+            <p className="text-[13px] text-muted">Un avis publié n&apos;est plus modifiable. Tu peux le retirer (demande de son auteur, erreur) : il est alors effacé.</p>
+            {m.publies.length === 0 ? <p className="text-[14px] text-muted">Aucun avis publié.</p> : m.publies.map((a) => <Avis key={a.miseId} a={a}><BoutonRetirerAvis miseId={a.miseId} /></Avis>)}
           </section>
         </>
       )}

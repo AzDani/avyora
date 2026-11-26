@@ -222,9 +222,10 @@ export async function demandesDuClient(clientId: string): Promise<DemandeClient[
       return {
         miseId: m.id, statut: m.statut, reponduLe: m.repondu_le,
         devisEnvoyeLe: m.devis_envoye_le, issue: m.issue,
-        avis: m.avis_note
+        // Un avis retiré (effacé) reste connu par son statut : le client voit « retiré », pas « Donner mon avis ».
+        avis: m.avis_note || m.avis_statut
           ? {
-              note: m.avis_note, commentaire: m.avis_commentaire, statut: m.avis_statut, motif: m.avis_motif, mois: m.avis_mois,
+              note: m.avis_note ?? 0, commentaire: m.avis_commentaire, statut: m.avis_statut, motif: m.avis_motif, mois: m.avis_mois,
               photos: (m.avis_photos ?? []).map((c) => ({ chemin: c, url: urlsAvis.get(c) ?? null })), publieLe: m.avis_publie_le,
             }
           : null,
@@ -513,15 +514,17 @@ export type AvisAModerer = {
 export type ReponseAModerer = { miseId: string; artisanNom: string; auteur: string; note: number; texteAvis: string; reponse: string; le: string | null };
 
 /** Ce qui attend Daniel (admin) : avis à valider, réponses d'artisans à valider, avis publiés signalés par l'artisan. */
-export async function aModerer(): Promise<{ avis: AvisAModerer[]; reponses: ReponseAModerer[]; signales: AvisAModerer[] }> {
+export async function aModerer(): Promise<{ avis: AvisAModerer[]; reponses: ReponseAModerer[]; signales: AvisAModerer[]; publies: AvisAModerer[] }> {
   const sb = supabaseAdmin();
-  const [a, r, s] = await Promise.all([
+  const [a, r, s, p] = await Promise.all([
     sb.from(TABLE_MER).select(COLONNES_MER).eq("avis_statut", "en_attente").order("avis_le", { ascending: true }).limit(200),
     sb.from(TABLE_MER).select(COLONNES_MER).eq("reponse_statut", "en_attente").eq("avis_statut", "publie").order("reponse_le", { ascending: true }).limit(200),
     sb.from(TABLE_MER).select(COLONNES_MER).eq("avis_statut", "publie").not("avis_signale_le", "is", null).order("avis_signale_le", { ascending: true }).limit(200),
+    // Les derniers avis publiés : pour en retirer un (demande de son auteur, erreur), 26/11/2026.
+    sb.from(TABLE_MER).select(COLONNES_MER).eq("avis_statut", "publie").order("avis_publie_le", { ascending: false }).limit(50),
   ]);
   if (a.error) throw new Error(a.error.message);
-  const toutes = [...((a.data ?? []) as LigneMer[]), ...((r.data ?? []) as LigneMer[]), ...((s.data ?? []) as LigneMer[])];
+  const toutes = [...((a.data ?? []) as LigneMer[]), ...((r.data ?? []) as LigneMer[]), ...((s.data ?? []) as LigneMer[]), ...((p.data ?? []) as LigneMer[])];
   const idsArt = [...new Set(toutes.map((m) => m.artisan_id))];
   const idsDem = [...new Set(toutes.map((m) => m.demande_id))];
   const [{ data: arts }, { data: dems }, urls] = await Promise.all([
@@ -548,6 +551,7 @@ export async function aModerer(): Promise<{ avis: AvisAModerer[]; reponses: Repo
       texteAvis: m.avis_commentaire ?? "", reponse: m.reponse_texte ?? "", le: m.reponse_le,
     })),
     signales: ((s.data ?? []) as LigneMer[]).map(versAvis),
+    publies: ((p.data ?? []) as LigneMer[]).map(versAvis),
   };
 }
 
