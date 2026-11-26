@@ -151,7 +151,7 @@ describe("C9 · onglet « Plan 3D » de l'en-tête desktop, et pied de page", ()
     }
   });
 
-  it("allumé : la largeur (mesurée à 1 024 et 1 280 px avec l'onglet « Accompagnement ») — nav inline dès lg, menu en dessous ; prénom en icône sous xl, Déconnexion en icône, langue au pied", async () => {
+  it("allumé : la largeur (mesurée à 1 024 et 1 280 px avec l'onglet « Accompagnement ») — nav inline dès lg, menu en dessous ; compte dans son menu, langue au pied", async () => {
     for (const locale of LOCALES) {
       const t = dict(locale).nav;
       for (const user of ["anonyme", "gratuit", "admin"] as const) {
@@ -162,11 +162,14 @@ describe("C9 · onglet « Plan 3D » de l'en-tête desktop, et pied de page", ()
         expect(header).toContain(`data-onglet-accompagnement="" class="inline-flex shrink-0`);
         if (user === "anonyme") continue;
         const prenom = user === "gratuit" ? "Camille" : "admin";
+        // Depuis le 26/11/2026 (l'en-tête débordait de 73 px pour un artisan) : Mon compte, Avis artisans, Admin et
+        // Déconnexion sont dans le menu du compte, fermé au chargement ; seul son bouton est dans la page.
         expect(header).toContain(`aria-label="${t.monCompte} · ${prenom}"`);
-        expect(header).toContain(`<span class="hidden truncate xl:inline">${prenom}</span>`);
-        expect(header).toContain(`aria-label="${t.deconnexion}"`);
-        expect(header).not.toContain(`>${t.deconnexion}</span>`);
-        if (user === "admin") expect(header).toContain('<span class="hidden lg:inline">Admin</span>');
+        expect(header).toContain('data-menu-compte=""');
+        expect(header).not.toContain(`>${prenom}</span>`);
+        expect(header).not.toContain(`aria-label="${t.deconnexion}"`);
+        expect(header).not.toContain('href="/admin"');
+        expect(header).not.toContain('href="/avis-artisans"');
       }
     }
   });

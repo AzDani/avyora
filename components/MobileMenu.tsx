@@ -19,7 +19,7 @@ import { betaActive, lienInscriptionBeta } from "@/lib/beta";
  * Clavier (menu déroulant accessible) : à l'ouverture, le focus va sur le premier lien du panneau ; Échap ferme et
  * rend le focus au bouton Menu, comme un clic sur le fond. Le bouton fait 44 × 44 px (cible tactile).
  */
-export default function MobileMenu({ isLoggedIn, prenom, isAdmin, isPro, artisan }: { isLoggedIn: boolean; prenom?: string; isAdmin?: boolean; isPro?: boolean; artisan?: { aRepondre: number } }) {
+export default function MobileMenu({ isLoggedIn, prenom, isAdmin, isPro, artisan, devis }: { isLoggedIn: boolean; prenom?: string; isAdmin?: boolean; isPro?: boolean; artisan?: { aRepondre: number }; devis?: { aFaire: number } }) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
   const t = useT();
@@ -55,8 +55,9 @@ export default function MobileMenu({ isLoggedIn, prenom, isAdmin, isPro, artisan
         onClick={() => setOpen((o) => !o)}
         className="relative grid h-11 w-11 place-items-center rounded-lg text-indigo-100 transition-colors hover:bg-white/10"
       >
-        {/* Un artisan avec des demandes à répondre : un point orange sur le bouton du menu (25/11/2026). */}
-        {!!artisan?.aRepondre && !open && <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-[#f59e0b] ring-2 ring-[#1E1B4B]" aria-hidden="true" />}
+        {/* Un artisan avec des demandes à répondre (25/11/2026), ou un client avec un avis à donner (26/11) : un point orange
+            sur le bouton du menu. */}
+        {(!!artisan?.aRepondre || !!devis?.aFaire) && !open && <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-[#f59e0b] ring-2 ring-[#1E1B4B]" aria-hidden="true" />}
         {open ? (
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <path d="M5 5l10 10M15 5 5 15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
@@ -120,6 +121,13 @@ export default function MobileMenu({ isLoggedIn, prenom, isAdmin, isPro, artisan
             <Link href="/projets" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-surface-2">
               {t.nav.projets}
             </Link>
+            {/* Les demandes de devis du client (26/11/2026) : seulement pour qui en a fait une, avec ce qui l'attend. */}
+            {devis && (
+              <Link href="/demandes-devis" onClick={close} className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-surface-2">
+                <span className="flex-1">Mes demandes de devis</span>
+                {devis.aFaire > 0 && <span className="num rounded-full bg-[#f59e0b] px-1.5 text-[11px] font-bold leading-5 text-[#1e1b4b]">{devis.aFaire}<span className="sr-only"> à faire</span></span>}
+              </Link>
+            )}
             {isLoggedIn && (
               <Link href="/avis-artisans" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-surface-2">
                 Avis artisans

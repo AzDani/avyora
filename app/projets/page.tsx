@@ -8,6 +8,7 @@ import ClaimPlan from "@/components/plans/ClaimPlan";
 import ProUpsell from "@/components/ProUpsell";
 import RappelPortable from "@/components/RappelPortable";
 import BandeauDevis from "@/components/reseau/BandeauDevis";
+import { resumeDevisDuClient } from "@/lib/data/reseau";
 import { COOKIE_RAPPEL_PORTABLE } from "@/lib/telephone";
 import { cookies } from "next/headers";
 import { getUser, estPro } from "@/lib/auth";
@@ -123,6 +124,8 @@ async function lireCookie(nom: string): Promise<string | undefined> {
 
 export default async function ProjetsPage() {
   const [user, actifs, archivesRows, locale] = await Promise.all([getUser(), listProjets(false), listProjets(true), getLocale()]);
+  // Les demandes de devis du client (26/11/2026) : la carte « Mes demandes de devis ». Une panne n'affiche que le lien.
+  const devis = user && locale === "fr" ? await resumeDevisDuClient(user.id).catch(() => null) : null;
   const s = TR[locale];
   const isPro = !!user && estPro(user);
   // Bêta gratuite (lib/beta.ts) : un compte créé avant la fin de la bêta porte la pastille « Membre fondateur ».
@@ -191,8 +194,8 @@ export default async function ProjetsPage() {
 
       {!isPro && <ProUpsell />}
 
-      {/* Réseau AVYORA (phase 2) : retrouver ses demandes de devis. En France seulement. */}
-      {locale === "fr" && <BandeauDevis compact />}
+      {/* Réseau AVYORA : retrouver ses demandes de devis et ce qui l'attend (carte depuis le 26/11/2026). En France seulement. */}
+      {locale === "fr" && <BandeauDevis compact resume={devis} />}
 
       <ListeProjets projets={projets} archives={archives} {...(plans ? { plans: plans.liste } : {})} />
 

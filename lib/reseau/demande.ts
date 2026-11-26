@@ -158,3 +158,46 @@ export function placesRestantes(statuts: StatutMiseEnRelation[]): number {
   const enCours = statuts.filter((s) => s === "envoyee" || s === "acceptee").length;
   return Math.max(0, Math.min(MAX_ARTISANS - enCours, MAX_CONTACTES - statuts.length));
 }
+
+/* ─── Le résumé des demandes d'un client (en-tête, « Mes projets », fiche projet ; 26/11/2026) ─────────────────────── */
+
+/** Une réponse d'artisan, réduite à ce qu'il faut pour savoir ce qui attend le client. */
+export type LigneSuiviClient = {
+  demandeId: string; statut: StatutMiseEnRelation; reponduLe: string | null; avisStatut: string | null; avisNote: number | null;
+};
+export type ResumeDevisClient = {
+  demandes: number;
+  /** Les artisans qui ont accepté (leurs coordonnées sont dans « Mes demandes de devis »). */
+  acceptes: number;
+  /** Avis à donner : accepté depuis 14 jours (comme l'e-mail de demande d'avis) et 90 jours au plus, sans avis. */
+  avisADonner: number;
+  /** Avis refusés par Daniel : le client peut les corriger. */
+  avisARevoir: number;
+  /** Demandes où un artisan a refusé ou n'a pas répondu, et où il reste de la place pour en choisir un autre. */
+  aRemplacer: number;
+  /** Les projets déjà envoyés aux artisans (la fiche projet montre alors « Voir ma demande »). */
+  projets: Record<string, string>;
+  /** Ce qui attend le client (la pastille de l'en-tête) : avis à donner ou à corriger. */
+  aFaire: number;
+};
+const JOUR_MS = 86_400_000;
+export const AVIS_FENETRE_JOURS = 90;
+
+/** Ce qui attend le client dans ses demandes de devis. `demandes` : ses demandes (id et projet). Module pur. */
+export function resumeDevisClient(
+  demandes: { id: string; projetId: string | null }[],
+  lignes: LigneSuiviClient[],
+  maintenant: number = Date.now(),
+): ResumeDevisClient {
+  const acceptees = lignes.filter((l) => l.statut === "acceptee");
+  const age = (iso: string | null) => (iso ? (maintenant - new Date(iso).getTime()) / JOUR_MS : 0);
+  const avisADonner = acceptees.filter((l) => !l.avisStatut && !l.avisNote && age(l.reponduLe) >= SONDAGE_JOURS && age(l.reponduLe) <= AVIS_FENETRE_JOURS).length;
+  const avisARevoir = acceptees.filter((l) => l.avisStatut === "refuse").length;
+  const aRemplacer = demandes.filter((d) => {
+    const s = lignes.filter((l) => l.demandeId === d.id).map((l) => l.statut);
+    return s.some((x) => x === "refusee" || x === "expiree") && placesRestantes(s) > 0;
+  }).length;
+  const projets: Record<string, string> = {};
+  for (const d of demandes) if (d.projetId && !projets[d.projetId]) projets[d.projetId] = d.id;
+  return { demandes: demandes.length, acceptes: acceptees.length, avisADonner, avisARevoir, aRemplacer, projets, aFaire: avisADonner + avisARevoir };
+}

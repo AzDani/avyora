@@ -7,6 +7,7 @@ import { getUser, estPro } from "@/lib/auth";
 import ProjetActions from "@/components/ProjetActions";
 import EstimationResultat from "@/components/EstimationResultat";
 import BandeauDevis from "@/components/reseau/BandeauDevis";
+import { resumeDevisDuClient } from "@/lib/data/reseau";
 import ResultatRapide from "@/components/ResultatRapide";
 import ResultatRapideNeuf from "@/components/neuf/ResultatRapideNeuf";
 import { regionLabel, estNeuf, type Ctx, type Selection, type Ampleur, type QuiRealise } from "@/lib/estimateur";
@@ -57,6 +58,8 @@ export default async function ProjetPage({ params }: { params: Promise<{ id: str
 
   const user = await getUser();
   const locale = await getLocale();
+  // Ce projet a-t-il déjà été envoyé aux artisans ? Alors « Voir ma demande » plutôt qu'un doublon (26/11/2026).
+  const devis = user && locale === "fr" ? await resumeDevisDuClient(user.id).catch(() => null) : null;
   const s = TR[locale];
   const reponses = projet.reponses as { ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; codePostal?: string; mode?: string; ampleur?: Ampleur; qui?: QuiRealise };
   const isRapide = reponses.mode === "rapide";
@@ -110,8 +113,9 @@ export default async function ProjetPage({ params }: { params: Promise<{ id: str
           : <ResultatRapide reponses={reponses} projectId={projet.id} isPro={estPro(user)} />)
         : <EstimationResultat reponses={reponses} projectId={projet.id} depenses={depenses} invest={invest} />}
 
-      {/* Réseau AVYORA (phase 2) : demander des devis à partir de ce projet, une fois l'estimation lue. En France seulement. */}
-      {locale === "fr" && <BandeauDevis projetId={String(projet.id)} />}
+      {/* Réseau AVYORA : demander des devis à partir de ce projet, une fois l'estimation lue, ou revoir la demande déjà
+          envoyée. En France seulement. */}
+      {locale === "fr" && <BandeauDevis projetId={String(projet.id)} resume={devis} />}
     </div>
   );
 }

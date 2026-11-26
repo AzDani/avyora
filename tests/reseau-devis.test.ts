@@ -242,7 +242,7 @@ describe("branchements", () => {
     for (const f of ["components/reseau/FormulaireDemandeDevis.tsx", "components/reseau/FormulaireCandidature.tsx"]) expect(lire(f)).toContain("await nettoyerImage(");
   });
   it("points d'entrée, admin et robots", () => {
-    expect(lire("app/projets/[id]/page.tsx")).toContain('{locale === "fr" && <BandeauDevis projetId={String(projet.id)} />}');
+    expect(lire("app/projets/[id]/page.tsx")).toContain('{locale === "fr" && <BandeauDevis projetId={String(projet.id)} resume={devis} />}');
     expect(lire("components/admin/AdminNav.tsx")).toContain('href: "/admin/devis"');
     expect(lire("app/robots.ts")).toContain('"/demandes-devis"');
     expect(lire("app/reseau-artisans/page.tsx")).toMatch(/reçu le moins de demandes/);

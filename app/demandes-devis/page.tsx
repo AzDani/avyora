@@ -28,7 +28,7 @@ function Demande({ d, pro }: { d: DemandeClient; pro: boolean }) {
   const places = placesRestantes(d.reponses.map((r) => r.statut));
   const aRemplacer = d.reponses.length === 0 || d.reponses.some((r) => r.statut === "refusee" || r.statut === "expiree");
   return (
-    <article className="rounded-3xl border border-line bg-surface p-5 sm:p-6">
+    <article id={`demande-${d.id}`} className="scroll-mt-24 rounded-3xl border border-line bg-surface p-5 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <h2 className="text-[16.5px] font-semibold text-ink">{d.metiers.map(labelMetier).join(", ")}</h2>

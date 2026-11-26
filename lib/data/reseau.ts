@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { BUCKET_ARTISANS, aujourdhuiParis } from "@/lib/reseau/candidature";
-import { ordreEquitable, type ArtisanPropose, type EstimationJointe, type Issue, type StatutMiseEnRelation } from "@/lib/reseau/demande";
+import { ordreEquitable, resumeDevisClient, type ArtisanPropose, type ResumeDevisClient, type EstimationJointe, type Issue, type StatutMiseEnRelation } from "@/lib/reseau/demande";
 import { COLONNES_ARTISAN, lireArtisan, lireDocument, type Artisan, type DocumentArtisan } from "@/lib/reseau/artisan";
 import { typeCompte } from "@/lib/compte/type";
 import { lireMaj, resumeNotes, type MajDemandee, type ResumeNotes, type StatutAvis, type StatutReponse } from "@/lib/reseau/avis";
@@ -580,6 +580,25 @@ export const etatArtisanEntete = cache(async (userId: string, comptePro = false)
   if (data.statut !== "valide") return { artisan: true, aRepondre: 0, candidature: true };
   const { count } = await sb.from(TABLE_MER).select("id", { count: "exact", head: true }).eq("artisan_id", String(data.id)).eq("statut", "envoyee");
   return { artisan: true, aRepondre: count ?? 0, candidature: true };
+});
+
+/**
+ * Le résumé des demandes de devis d'un client (26/11/2026) : pour le lien « Mes devis » de l'en-tête et sa pastille,
+ * la carte de « Mes projets » et la fiche projet. null s'il n'a jamais demandé de devis. Mis en cache pour la requête
+ * (l'en-tête, le menu mobile et la page le lisent sans refaire les lectures). `clientId` vient de getUser().
+ */
+export const resumeDevisDuClient = cache(async (clientId: string): Promise<ResumeDevisClient | null> => {
+  if (!UUID_RE.test(clientId)) return null;
+  const sb = supabaseAdmin();
+  const { data, error } = await sb.from(TABLE_DEMANDES).select("id, projet_id").eq("client_id", clientId).order("created_at", { ascending: false }).limit(100);
+  if (error) throw new Error(error.message);
+  const demandes = ((data ?? []) as { id: string; projet_id: string | null }[]).map((d) => ({ id: String(d.id), projetId: d.projet_id ? String(d.projet_id) : null }));
+  if (!demandes.length) return null;
+  const { data: mer, error: e2 } = await sb.from(TABLE_MER).select("demande_id, statut, repondu_le, avis_statut, avis_note").in("demande_id", demandes.map((d) => d.id));
+  if (e2) throw new Error(e2.message);
+  const lignes = ((mer ?? []) as { demande_id: string; statut: StatutMiseEnRelation; repondu_le: string | null; avis_statut: string | null; avis_note: number | null }[])
+    .map((m) => ({ demandeId: String(m.demande_id), statut: m.statut, reponduLe: m.repondu_le, avisStatut: m.avis_statut, avisNote: m.avis_note }));
+  return resumeDevisClient(demandes, lignes);
 });
 
 /** La mise à jour demandée par un artisan validé (nouvelle décennale, métiers, zone), ou null. */
