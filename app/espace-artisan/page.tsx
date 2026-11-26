@@ -13,6 +13,9 @@ import { candidatureModifiable, LIBELLES_STATUT, type Artisan } from "@/lib/rese
 import { labelMetier } from "@/lib/reseau/metiers";
 import { resumeDepartements } from "@/lib/reseau/departements";
 import FormulaireCandidature, { type ValeursCandidature } from "@/components/reseau/FormulaireCandidature";
+import { typeCompte } from "@/lib/compte/type";
+import ChoixTypeCompte from "@/components/compte/ChoixTypeCompte";
+import PasserEnPro from "@/components/compte/PasserEnPro";
 
 /**
  * L'espace de l'artisan qui postule au Réseau AVYORA (décisions de Dani du 17/11/2026). Sans compte : l'inscription,
@@ -72,8 +75,34 @@ export default async function EspaceArtisan() {
   const { user, artisan: a } = session;
   if (a?.statut === "valide") return <Accueil a={a} prenom={(a.contactNom || "").split(" ")[0]} />;
 
-  const meta = (user.user_metadata ?? {}) as { nom?: string; profil?: { telephone?: string } };
+  const meta = (user.user_metadata ?? {}) as { nom?: string; profil?: { telephone?: string }; pro?: { societe?: string; metier?: string; siret?: string | null; siretVerif?: { nom?: string } | null } };
   const modifiable = candidatureModifiable(a);
+
+  // Le réseau est réservé aux professionnels du bâtiment (26/11/2026) : sans candidature, un compte qui n'a pas dit
+  // qu'il est pro répond d'abord à « Tu es… », un particulier voit comment passer en compte pro (SIRET vérifié).
+  const type = typeCompte(user);
+  if (!a && type !== "pro") {
+    return (
+      <div className="mx-auto max-w-2xl space-y-5 py-2" lang="fr">
+        <div>
+          <p className="eyebrow">Réseau AVYORA</p>
+          <h1 className="mt-1 text-[28px] font-semibold tracking-tight text-ink sm:text-[32px]">Le réseau est réservé aux professionnels du bâtiment</h1>
+          <p className="mt-2 max-w-[62ch] text-[15px] leading-relaxed text-muted">
+            {type === "particulier"
+              ? "Ton compte est un compte particulier. Si tu es un professionnel du bâtiment, passe en compte pro avec le SIRET de ton entreprise : il est vérifié automatiquement, puis tu pourras postuler."
+              : "Dis-nous d'abord si tu es particulier ou professionnel du bâtiment."}
+          </p>
+        </div>
+        <section className="rounded-3xl border border-line bg-surface p-5">
+          {type === "particulier" ? <PasserEnPro nomInitial={typeof meta.nom === "string" ? meta.nom : ""} /> : <ChoixTypeCompte titre={false} />}
+        </section>
+        <p className="text-[13px] text-muted">
+          <Link href="/reseau-artisans" className="font-semibold text-brand-700 hover:underline">Comment fonctionne le réseau</Link> ·{" "}
+          <Link href="/reseau-artisans#criteres" className="font-semibold text-brand-700 hover:underline">Nos critères</Link>
+        </p>
+      </div>
+    );
+  }
 
   if (modifiable) {
     const docs = await documentsDe(user.id);
@@ -85,9 +114,13 @@ export default async function EspaceArtisan() {
           decennaleAssureur: a.decennaleAssureur, decennalePolice: a.decennalePolice, decennaleFin: a.decennaleFin,
         }
       : {
-          siret: "", nomCommercial: "", contactNom: typeof meta.nom === "string" ? meta.nom.slice(0, 120) : "",
+          // Prérempli depuis le questionnaire du pro (26/11/2026) : SIRET, nom, portable, métier principal ; la société
+          // devient le nom commercial seulement si elle diffère de la raison sociale du répertoire.
+          siret: meta.pro?.siret ?? "",
+          nomCommercial: meta.pro?.societe && meta.pro.siretVerif?.nom && meta.pro.societe.toLowerCase() !== meta.pro.siretVerif.nom.toLowerCase() ? meta.pro.societe.slice(0, 120) : "",
+          contactNom: typeof meta.nom === "string" ? meta.nom.slice(0, 120) : "",
           telephone: meta.profil?.telephone ? afficherPortable(meta.profil.telephone) : "",
-          metiers: [], departements: [], presentation: "", siteWeb: "", lienAvis: "", decennaleAssureur: "", decennalePolice: "", decennaleFin: "",
+          metiers: meta.pro?.metier ? [meta.pro.metier] : [], departements: [], presentation: "", siteWeb: "", lienAvis: "", decennaleAssureur: "", decennalePolice: "", decennaleFin: "",
         };
     return (
       <div className="mx-auto max-w-3xl space-y-6 py-2" lang="fr">

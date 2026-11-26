@@ -7,6 +7,9 @@ import CompteActions from "@/components/CompteActions";
 import AbonnementSection from "@/components/AbonnementSection";
 import UsernameForm from "@/components/UsernameForm";
 import OnboardingForm from "@/components/OnboardingForm";
+import ChoixTypeCompte from "@/components/compte/ChoixTypeCompte";
+import PasserEnPro from "@/components/compte/PasserEnPro";
+import { typeCompte } from "@/lib/compte/type";
 import type { ProfilData } from "@/lib/actions/profil";
 import { getLocale } from "@/lib/i18n/server";
 
@@ -38,6 +41,8 @@ export default async function ComptePage() {
   const user = await getUser();
   if (!user) redirect("/connexion?next=/mon-espace/compte");
   const profil = (user.user_metadata?.profil ?? undefined) as Partial<ProfilData> | undefined;
+  const type = typeCompte(user);
+  const pro = (user.user_metadata?.pro ?? null) as { societe?: string } | null;
   const username = (user.user_metadata?.username ?? "") as string;
   const locale = await getLocale();
   const s = TR[locale];
@@ -80,6 +85,30 @@ export default async function ComptePage() {
       />
 
       <UsernameForm initial={username} />
+
+      {/* Particulier ou pro (26/11/2026) : un particulier passe en compte pro avec un SIRET du bâtiment vérifié. */}
+      <section id="pro" className="scroll-mt-28 rounded-3xl border border-line bg-surface p-5 sm:p-6" lang="fr">
+        <h2 className="text-[17px] font-semibold text-ink">Type de compte</h2>
+        {type === "pro" ? (
+          <p className="mt-1.5 text-[14.5px] leading-relaxed text-muted">
+            <b className="text-ink">Professionnel du bâtiment</b>
+            {pro?.societe ? ` · ${pro.societe}` : ""}. Tu as tous les outils d&apos;AVYORA, et tu peux rejoindre le Réseau AVYORA :{" "}
+            <Link href="/espace-artisan" className="font-semibold text-brand-700 hover:underline">ton espace artisan</Link>.
+          </p>
+        ) : type === "particulier" ? (
+          <>
+            <p className="mt-1.5 text-[14.5px] leading-relaxed text-muted">
+              <b className="text-ink">Particulier</b>. Tu es un professionnel du bâtiment ? Passe en compte pro pour pouvoir rejoindre le Réseau AVYORA : tu gardes les mêmes outils.
+            </p>
+            <details className="mt-3 rounded-2xl border border-line bg-surface-2 px-4 py-3">
+              <summary className="cursor-pointer text-[14px] font-semibold text-brand-700">Passer en compte professionnel</summary>
+              <div className="mt-3"><PasserEnPro nomInitial={typeof user.user_metadata?.nom === "string" ? user.user_metadata.nom : ""} /></div>
+            </details>
+          </>
+        ) : (
+          <div className="mt-3"><ChoixTypeCompte titre={false} /></div>
+        )}
+      </section>
 
       <OnboardingForm contexte="compte" initial={profil} />
 

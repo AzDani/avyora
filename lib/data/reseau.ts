@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { BUCKET_ARTISANS, aujourdhuiParis } from "@/lib/reseau/candidature";
 import { ordreEquitable, type ArtisanPropose, type EstimationJointe, type Issue, type StatutMiseEnRelation } from "@/lib/reseau/demande";
 import { COLONNES_ARTISAN, lireArtisan, lireDocument, type Artisan, type DocumentArtisan } from "@/lib/reseau/artisan";
+import { typeCompte } from "@/lib/compte/type";
 import { lireMaj, resumeNotes, type MajDemandee, type ResumeNotes, type StatutAvis, type StatutReponse } from "@/lib/reseau/avis";
 
 /**
@@ -567,15 +568,18 @@ export async function compteAModerer(): Promise<number> {
   return (a.count ?? 0) + (r.count ?? 0) + (s.count ?? 0);
 }
 
-/** Pour l'en-tête : le compte est-il un artisan du réseau, et combien de demandes l'attendent ? Mémorisé par requête. */
-export const etatArtisanEntete = cache(async (userId: string): Promise<{ artisan: boolean; aRepondre: number }> => {
-  if (!UUID_RE.test(userId)) return { artisan: false, aRepondre: 0 };
+/**
+ * Pour l'en-tête : le compte est-il un artisan du réseau (candidature, ou compte pro qui peut encore postuler depuis le
+ * 26/11/2026), et combien de demandes l'attendent ? Mémorisé par requête.
+ */
+export const etatArtisanEntete = cache(async (userId: string, comptePro = false): Promise<{ artisan: boolean; aRepondre: number; candidature: boolean }> => {
+  if (!UUID_RE.test(userId)) return { artisan: false, aRepondre: 0, candidature: false };
   const sb = supabaseAdmin();
   const { data } = await sb.from(TABLE_ARTISANS).select("id, statut").eq("user_id", userId).maybeSingle();
-  if (!data) return { artisan: false, aRepondre: 0 };
-  if (data.statut !== "valide") return { artisan: true, aRepondre: 0 };
+  if (!data) return { artisan: comptePro, aRepondre: 0, candidature: false };
+  if (data.statut !== "valide") return { artisan: true, aRepondre: 0, candidature: true };
   const { count } = await sb.from(TABLE_MER).select("id", { count: "exact", head: true }).eq("artisan_id", String(data.id)).eq("statut", "envoyee");
-  return { artisan: true, aRepondre: count ?? 0 };
+  return { artisan: true, aRepondre: count ?? 0, candidature: true };
 });
 
 /** La mise à jour demandée par un artisan validé (nouvelle décennale, métiers, zone), ou null. */
@@ -590,10 +594,15 @@ export async function majDemandeeDe(artisanId: string): Promise<MajDemandee | nu
  * du réseau va sur son espace (25/11/2026), les autres sur leurs projets. Une intention précise est toujours gardée ;
  * une panne de lecture garde « /projets ».
  */
-export async function arriveeApresConnexion(userId: string | null | undefined, next: string): Promise<string> {
-  if (next !== "/projets" || !userId) return next;
+export async function arriveeApresConnexion(
+  user: { id: string; app_metadata?: Record<string, unknown> | null } | null | undefined,
+  next: string,
+): Promise<string> {
+  if (next !== "/projets" || !user) return next;
+  // Un compte qui n'a pas encore dit s'il est particulier ou pro (comptes d'avant le 26/11/2026) : la question, une fois.
+  if (!typeCompte(user)) return "/onboarding";
   try {
-    return (await etatArtisanEntete(userId)).artisan ? "/espace-artisan" : next;
+    return (await etatArtisanEntete(user.id)).candidature ? "/espace-artisan" : next;
   } catch {
     return next;
   }

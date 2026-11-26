@@ -805,7 +805,9 @@ describe("/auth/callback et /auth/confirm : le retour du lien", () => {
     appelsMaj.length = 0;
     marques.length = 0;
     sorties.length = 0;
-    const reponse = async () => ({ data: { user, session: user ? {} : null }, error: erreur });
+    // Un compte qui a déjà dit s'il est particulier ou pro (26/11/2026) ; sans type, l'arrivée par défaut est /onboarding.
+    const u = user ? { ...user, app_metadata: { type_compte: "particulier", ...((user.app_metadata as Record<string, unknown> | undefined) ?? {}) } } : null;
+    const reponse = async () => ({ data: { user: u, session: u ? {} : null }, error: erreur });
     vi.doMock("next/headers", () => ({ headers: async () => new Headers(), cookies: async () => magasin() }));
     vi.doMock("@/lib/supabase/server", () => ({
       supabaseServer: async () => ({
@@ -1063,7 +1065,8 @@ describe("/auth/confirm puis le bouton de /auth/confirmer : le lien au format to
           getUser: async () => { lectures++; return o.avant ? { data: { user: { id: o.avant } }, error: null } : { data: { user: null }, error: { name: "AuthSessionMissingError" } }; },
           verifyOtp: async (p: unknown) => {
             verifs.push(p);
-            return { data: { user: o.user ?? null, session: o.user ? {} : null }, error: o.erreur ?? null };
+            const u = o.user ? { ...o.user, app_metadata: { type_compte: "particulier", ...((o.user.app_metadata as Record<string, unknown> | undefined) ?? {}) } } : null;
+            return { data: { user: u, session: u ? {} : null }, error: o.erreur ?? null };
           },
           updateUser: async (p: unknown) => { maj.push(p); return { data: {}, error: null }; },
           signOut: async (p: unknown) => { sorties.push(p); return { error: null }; },

@@ -11,6 +11,7 @@ import BandeauDevis from "@/components/reseau/BandeauDevis";
 import { COOKIE_RAPPEL_PORTABLE } from "@/lib/telephone";
 import { cookies } from "next/headers";
 import { getUser, estPro } from "@/lib/auth";
+import { typeCompte } from "@/lib/compte/type";
 import { getLocale } from "@/lib/i18n/server";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 import { FEATURES } from "@/lib/features";
@@ -144,6 +145,13 @@ export default async function ProjetsPage() {
       {/* Le plan dessiné sans compte part AVANT l'estimation : il obtient son id du compte d'abord. */}
       {FEATURES.plans && <ClaimPlan pro={isPro} />}
       <ClaimDraft />
+      {/* Les comptes d'avant le 26/11/2026 n'ont pas dit s'ils sont particulier ou pro : une question, une fois. */}
+      {user && !typeCompte(user) && (
+        <Link href="/onboarding" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-50 px-4 py-3.5 text-[14px] text-brand-900 hover:border-brand-600" lang="fr">
+          <span><b>Une question pour toi :</b> es-tu particulier ou professionnel du bâtiment ?</span>
+          <span className="font-semibold text-brand-700">Répondre →</span>
+        </Link>
+      )}
 
       {projets.length > 0 ? (
         <header className="av-hero animate-rise">

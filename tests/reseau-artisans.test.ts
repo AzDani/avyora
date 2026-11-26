@@ -162,10 +162,12 @@ function fausseBase(reponses: { artisan?: Record<string, unknown> | null; lectur
   return { sb, ops, storage };
 }
 
-async function chargerReseau(user: { id: string; email?: string } | null, base: ReturnType<typeof fausseBase>, siret: "actif" | "ferme" = "actif") {
+async function chargerReseau(user: { id: string; email?: string; app_metadata?: Record<string, unknown> } | null, base: ReturnType<typeof fausseBase>, siret: "actif" | "ferme" = "actif") {
   const mails: unknown[] = [];
   vi.resetModules();
-  vi.doMock("@/lib/auth", () => ({ getUser: async () => user, getAdmin: async () => null }));
+  // Un compte PRO par défaut (le réseau leur est réservé depuis le 26/11/2026), sauf s'il dit autre chose.
+  const u = user ? { app_metadata: { type_compte: "pro" }, ...user } : null;
+  vi.doMock("@/lib/auth", () => ({ getUser: async () => u, getAdmin: async () => null }));
   vi.doMock("@/lib/supabase/admin", () => ({ supabaseAdmin: () => base.sb }));
   vi.doMock("@/lib/audit", () => ({ journaliser: async () => {} }));
   vi.doMock("@/lib/ratelimit", () => ({ verifierLimite: async () => true }));

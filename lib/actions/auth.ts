@@ -130,7 +130,7 @@ export async function login(_prev: AuthState, formData: FormData): Promise<AuthS
   await oublierVerification();
   await journaliser("connexion_reussie", { userId: data.user?.id, email });
   // Un artisan du réseau sans intention précise arrive sur son espace (25/11/2026).
-  redirect(await arriveeApresConnexion(data.user?.id, cheminInterne(next)));
+  redirect(await arriveeApresConnexion(data.user, cheminInterne(next)));
 }
 
 // ── Inscription ──
@@ -310,7 +310,7 @@ export async function confirmerLien(): Promise<void> {
         redirect(`/auth/verifier?next=${encodeURIComponent(lien.next)}${mdpDesactive ? "&mdp=desactive" : ""}`);
       }
       await oublierVerification();
-      const dest = await arriveeApresConnexion(user?.id, lien.next);
+      const dest = await arriveeApresConnexion(user, lien.next);
       redirect(mdpDesactive ? lienMdpDesactive(dest) : dest);
     }
   }

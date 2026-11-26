@@ -63,7 +63,9 @@ describe("le questionnaire affiche le champ portable", () => {
     const html = renderToStaticMarkup(createElement(F));
     expect(html).toContain("Ton numéro de portable");
     expect(html).toMatch(/<input[^>]*type="tel"[^>]*autoComplete="tel"|<input[^>]*type="tel"/);
-    expect(html.indexOf("Ton numéro de portable")).toBeLessThan(html.indexOf("Tu es…"));
+    // « Tu es… » a quitté ce formulaire (26/11/2026) : le type de compte a sa rubrique, passer pro demande un SIRET.
+    expect(html).not.toContain("Tu es…");
+    expect(html).not.toContain("Ton âge");
     expect(html).toContain("Jamais revendu, pas de démarchage.");
     vi.doUnmock("next/navigation"); vi.doUnmock("@/components/i18n/LangProvider"); vi.doUnmock("@/lib/actions/profil");
   });

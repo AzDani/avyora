@@ -9,6 +9,7 @@ import { verifierLimite } from "@/lib/ratelimit";
 import { emailArtisan, emailCandidatureArtisan, envoyerEmailSuivi } from "@/lib/email";
 import { DESTINATAIRE_DEFAUT } from "@/lib/accompagnement/constantes";
 import { BUCKET_ARTISANS, TABLE_ARTISANS, TABLE_DOCUMENTS, candidatureDe, documentsDe } from "@/lib/data/reseau";
+import { estComptePro } from "@/lib/compte/type";
 import { candidatureModifiable, lireDocument, type DocumentArtisan } from "@/lib/reseau/artisan";
 import {
   DOCS, MIMES_ACCEPTES, TAILLE_MAX, TYPES_DOCUMENTS, documentsManquants, mimeAccepte, validerCandidature,
@@ -25,7 +26,7 @@ import { resumeDepartements } from "@/lib/reseau/departements";
  * modifie que tant qu'elle n'est pas envoyée, ou quand Daniel a demandé un complément (`candidatureModifiable`).
  */
 
-type Erreur = "session" | "verrouille" | "limite" | "type" | "taille" | "trop" | "introuvable" | "serveur";
+type Erreur = "session" | "verrouille" | "limite" | "type" | "taille" | "trop" | "introuvable" | "serveur" | "pro";
 
 function urlSite(): string {
   return process.env.NEXT_PUBLIC_SITE_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
@@ -56,8 +57,11 @@ const estType = (t: unknown): t is TypeDocument => typeof t === "string" && (TYP
  * (25/11/2026) : sa nouvelle attestation décennale ou RC pro, depuis « Mon dossier » (10 au plus : les anciennes
  * restent pour l'historique) ; Daniel vérifie la nouvelle décennale avant de changer la date.
  */
-async function peutDeposer(userId: string, type: TypeDocument): Promise<{ ok: true; max: number } | { ok: false; erreur: Erreur }> {
+async function peutDeposer(user: { id: string; app_metadata?: Record<string, unknown> | null }, type: TypeDocument): Promise<{ ok: true; max: number } | { ok: false; erreur: Erreur }> {
+  const userId = user.id;
   const m = await modifiable(userId);
+  // Une NOUVELLE candidature : seulement un compte pro (26/11/2026). Une candidature déjà commencée continue.
+  if (m.ok && !m.existante && !estComptePro(user)) return { ok: false, erreur: "pro" };
   if (m.ok) return { ok: true, max: DOCS[type].max };
   if (m.erreur !== "verrouille" || (type !== "decennale" && type !== "rc_pro")) return m;
   try {
@@ -89,7 +93,7 @@ export async function preparerEnvoiDocument(f: { type: string; taille: number; m
   if (!user) return { ok: false, erreur: "session" };
   if (!estType(f?.type) || typeof f.mime !== "string" || !mimeAccepte(f.type, f.mime)) return { ok: false, erreur: "type" };
   if (!(typeof f.taille === "number" && f.taille > 0 && f.taille <= TAILLE_MAX)) return { ok: false, erreur: "taille" };
-  const m = await peutDeposer(user.id, f.type);
+  const m = await peutDeposer(user, f.type);
   if (!m.ok) return m;
   const deja = (await documentsDe(user.id)).filter((d) => d.type === f.type).length;
   if (deja >= m.max) return { ok: false, erreur: "trop" };
@@ -109,7 +113,7 @@ export async function enregistrerDocument(f: { type: string; chemin: string; nom
   const prefixe = `${user.id}/${f.type}/`;
   const fichier = f.chemin.slice(prefixe.length);
   if (!f.chemin.startsWith(prefixe) || !/^[0-9a-f-]{36}\.(pdf|jpg|png|webp)$/.test(fichier)) return { ok: false, erreur: "introuvable" };
-  const m = await peutDeposer(user.id, f.type);
+  const m = await peutDeposer(user, f.type);
   if (!m.ok) return m;
 
   const sb = supabaseAdmin();
@@ -165,6 +169,8 @@ export async function soumettreCandidature(brut: unknown): Promise<{ ok: true } 
   const m = await modifiable(user.id);
   if (!m.ok) return m;
   const existante = m.existante;
+  // Le réseau est réservé aux professionnels du bâtiment (26/11/2026) : une nouvelle candidature exige un compte pro.
+  if (!existante && !estComptePro(user)) return { ok: false, erreur: "pro" };
 
   const v = validerCandidature(brut);
   const docs = await documentsDe(user.id);

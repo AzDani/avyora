@@ -5,11 +5,12 @@ import { getT } from "@/lib/i18n/server";
 import { FEATURES } from "@/lib/features";
 import { betaActive, lienInscriptionBeta } from "@/lib/beta";
 import { etatArtisanEntete } from "@/lib/data/reseau";
+import { estComptePro } from "@/lib/compte/type";
 
 /** Le compte est-il un artisan du réseau (et combien de demandes l'attendent) ? Une panne n'affiche rien. */
-async function etatArtisan(userId: string) {
+async function etatArtisan(userId: string, pro: boolean) {
   try {
-    return await etatArtisanEntete(userId);
+    return await etatArtisanEntete(userId, pro);
   } catch {
     return { artisan: false, aRepondre: 0 };
   }
@@ -45,7 +46,7 @@ export async function AuthNav() {
   }
 
   const prenom = (user.user_metadata?.nom as string) || user.email?.split("@")[0] || t.nav.monCompte;
-  const artisan = await etatArtisan(user.id);
+  const artisan = await etatArtisan(user.id, estComptePro(user));
   /* Éditeur de plan allumé (C9) : l'onglet « Plan 3D » prend de la place. Mesuré à 768 et 1 024 px : le prénom passe
      en icône seule sous xl, « Admin » et « Déconnexion » sous lg (leur nom reste dans aria-label et title). Éteint :
      le bloc d'avant, au caractère près. */

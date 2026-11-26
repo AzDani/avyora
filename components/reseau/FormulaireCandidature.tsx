@@ -34,6 +34,7 @@ const ERREURS_FICHIER: Record<string, string> = {
   trop: "Tu as atteint le nombre maximum de fichiers pour cette rubrique.",
   introuvable: "Le fichier n'est pas arrivé : réessaie.",
   serveur: "L'envoi a échoué : réessaie.",
+  pro: "Le réseau est réservé aux comptes professionnels : passe en compte pro depuis Mon compte.",
 };
 
 const champ = "min-h-11 w-full rounded-xl border border-line-strong bg-surface px-3 py-2 text-[15px] text-ink outline-none placeholder:text-faint focus:border-brand-600 aria-[invalid=true]:border-[#b42318]";
@@ -284,7 +285,7 @@ export default function FormulaireCandidature({
       if (r.ok) { router.refresh(); window.scrollTo({ top: 0 }); return; }
       if (r.erreurs) setErreurs(r.erreurs);
       else setErreurs({});
-      setGlobal(r.erreurs ? "" : r.erreur === "limite" ? "Trop d'envois en peu de temps : réessaie dans une heure." : r.erreur === "verrouille" ? "Ta candidature est déjà envoyée." : r.erreur === "session" ? "Ta session a expiré : reconnecte-toi." : "L'envoi a échoué : réessaie dans un instant.");
+      setGlobal(r.erreurs ? "" : r.erreur === "limite" ? "Trop d'envois en peu de temps : réessaie dans une heure." : r.erreur === "verrouille" ? "Ta candidature est déjà envoyée." : r.erreur === "session" ? "Ta session a expiré : reconnecte-toi." : r.erreur === "pro" ? "Le réseau est réservé aux comptes professionnels : passe en compte pro depuis Mon compte." : "L'envoi a échoué : réessaie dans un instant.");
       requestAnimationFrame(() => resume.current?.focus());
     } catch {
       setGlobal("L'envoi a échoué : réessaie dans un instant.");

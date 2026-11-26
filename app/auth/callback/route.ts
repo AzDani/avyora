@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       cookieStore.set(COOKIE_VERIFIER, "", { path: "/", maxAge: 0, httpOnly: true, sameSite: "lax" });
       // Mot de passe remplacé par sécurité : la page qui le dit, puis l'intention.
       // Un artisan du réseau sans intention précise arrive sur son espace (25/11/2026).
-      const dest = await arriveeApresConnexion(data.user?.id, next);
+      const dest = await arriveeApresConnexion(data.user, next);
       return NextResponse.redirect(`${origin}${mdpDesactive ? lienMdpDesactive(dest) : dest}`);
     }
   }

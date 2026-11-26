@@ -6,6 +6,8 @@ import { useLocale } from "@/components/i18n/LangProvider";
 import { enregistrerProfil, sauterOnboarding, type ProfilData } from "@/lib/actions/profil";
 import { FEATURES } from "@/lib/features";
 import { normaliserPortable, afficherPortable } from "@/lib/telephone";
+import { estRegion } from "@/lib/compte/type";
+import { OptionsRegions } from "@/components/compte/Communs";
 
 // Régions françaises : noms propres conservés tels quels (identiques FR/EN) et utilisés
 // aussi comme valeur enregistrée. Seul « Outre-mer », qui n'est pas un nom propre, a un libellé anglais (la valeur
@@ -260,11 +262,19 @@ export default function OnboardingForm({ initial, contexte = "onboarding" }: { i
         <p id={q("tel-aide")} className="mt-1.5 text-[12.5px] leading-snug text-muted">{s.telAide}</p>
         {errTel && <p id={q("tel-err")} role="alert" className="mt-1 text-[13px] font-medium" style={{ color: "#b42318" }}>{errTel}</p>}
       </div>
-      <div className="q"><div className="lab" id={q("tues")}>{s.qTuEs} <span className="multi">{s.multi}</span></div><Multi labelId={q("tues")} opts={s.tues} sel={tuEs} set={wrap(setTuEs)} /></div>
+      {/* « Tu es… » n'est plus ici (26/11/2026) : le type de compte (particulier / pro) a sa propre rubrique, et passer
+          en pro demande un SIRET. `tuEs` reste enregistré tel quel pour l'admin. L'âge est retiré (décision de Dani). */}
       <div className="q"><div className="lab" id={q("objectif")}>{s.qObjectif}</div><Single labelId={q("objectif")} opts={s.objectif.map((o) => o.l)} sel={s.objectif.find((o) => o.v === objectif)?.l ?? ""} set={(l) => wrap(setObjectif)(s.objectif.find((o) => o.l === l)?.v ?? "")} /></div>
       <div className="q"><div className="lab" id={q("maturite")}>{s.qMaturite} <span className="multi">{s.multi}</span></div><Multi labelId={q("maturite")} opts={s.maturite.filter((o) => FEATURES.neuf || !("neuf" in o) || maturite.includes(o.v))} sel={maturite} set={wrap(setMaturite)} /></div>
-      <div className="q"><div className="lab" id={q("region")}>{s.qRegion}</div><Single labelId={q("region")} opts={REGIONS} sel={region} set={wrap(setRegion)} libelle={(r) => LIBELLE_REGION[locale][r] ?? r} /></div>
-      <div className="q"><div className="lab" id={q("age")}>{s.qAge}</div><Single labelId={q("age")} opts={s.ages.map((o) => o.l)} sel={s.ages.find((o) => o.v === age)?.l ?? ""} set={(l) => wrap(setAge)(s.ages.find((o) => o.l === l)?.v ?? "")} /></div>
+      <div className="q">
+        <label className="lab" htmlFor={q("region")}>{s.qRegion}</label>
+        {/* Toutes les régions de France, l'outre-mer en bas (26/11/2026). Une ancienne valeur hors liste reste affichée. */}
+        <select id={q("region")} className="input mt-2" value={region === "PACA" ? "Provence-Alpes-Côte d'Azur" : region} onChange={(e) => wrap(setRegion)(e.target.value)}>
+          <option value="">—</option>
+          {region && region !== "PACA" && !estRegion(region) && <option value={region}>{LIBELLE_REGION[locale][region] ?? region}</option>}
+          <OptionsRegions />
+        </select>
+      </div>
       <div className="q"><div className="lab" id={q("canal")}>{s.qCanal}</div><Single labelId={q("canal")} opts={s.canaux.map((o) => o.l)} sel={s.canaux.find((o) => o.v === canal)?.l ?? ""} set={(l) => wrap(setCanal)(s.canaux.find((o) => o.l === l)?.v ?? "")} /></div>
 
       <div className="acts">

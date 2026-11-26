@@ -32,7 +32,7 @@ export default function Confidentialite() {
         </thead>
         <tbody>
           <tr><td>Compte</td><td>e-mail, prénom, mot de passe (haché), plan d&apos;abonnement</td></tr>
-          <tr><td>Profil (questionnaire de bienvenue)</td><td>numéro de portable, type de profil, objectif, avancement du projet, région, tranche d&apos;âge, comment tu as connu AVYORA — modifiables ou effaçables depuis « Mon compte »</td></tr>
+          <tr><td>Profil (questionnaire de bienvenue)</td><td>type de compte (particulier ou professionnel du bâtiment), prénom, numéro de portable, profil et objectif, projet, avancement du projet, région, comment tu as connu AVYORA (la tranche d&apos;âge n&apos;est plus demandée) ; pour un professionnel&nbsp;: nom de la société, prénom et nom, métier principal et SIRET facultatif, vérifié auprès du répertoire des entreprises — modifiables ou effaçables depuis « Mon compte »</td></tr>
           <tr><td>Projets &amp; estimations</td><td>type de bien, surface, code postal, choix de travaux, statuts de suivi, dépenses de chantier saisies</td></tr>
           <tr><td>Plans</td><td>plans de maison dessinés dans l&apos;éditeur et enregistrés dans le compte</td></tr>
           <tr><td>Demande d&apos;accompagnement</td><td>prénom, e-mail, téléphone, type de projet, besoins cochés, message libre — formulaire de la page « Accompagnement travaux », sans compte</td></tr>
