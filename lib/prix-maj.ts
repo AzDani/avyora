@@ -42,6 +42,6 @@ export const LEGAL_MAJ: Record<"mentions-legales" | "cgu" | "cgv" | "confidentia
   "mentions-legales": "2026-11-12",
   cgu: "2026-11-12",
   cgv: "2026-11-24",
-  confidentialite: "2026-11-23",
+  confidentialite: "2026-11-25",
   cookies: "2026-11-12",
 };

@@ -8,6 +8,7 @@ import { validerMotDePasse } from "@/lib/password";
 import { getT } from "@/lib/i18n/server";
 import { journaliser } from "@/lib/audit";
 import { cheminInterne } from "@/lib/next-url";
+import { arriveeApresConnexion } from "@/lib/data/reseau";
 import { suivreServeur } from "@/lib/track-server";
 import { empreinteAdresse } from "@/lib/empreinte";
 import {
@@ -128,7 +129,8 @@ export async function login(_prev: AuthState, formData: FormData): Promise<AuthS
   // La personne entre avec SES identifiants : une arrivée « à vérifier » d'avant (lien d'un autre) ne la concerne plus.
   await oublierVerification();
   await journaliser("connexion_reussie", { userId: data.user?.id, email });
-  redirect(cheminInterne(next));
+  // Un artisan du réseau sans intention précise arrive sur son espace (25/11/2026).
+  redirect(await arriveeApresConnexion(data.user?.id, cheminInterne(next)));
 }
 
 // ── Inscription ──
@@ -308,7 +310,8 @@ export async function confirmerLien(): Promise<void> {
         redirect(`/auth/verifier?next=${encodeURIComponent(lien.next)}${mdpDesactive ? "&mdp=desactive" : ""}`);
       }
       await oublierVerification();
-      redirect(mdpDesactive ? lienMdpDesactive(lien.next) : lien.next);
+      const dest = await arriveeApresConnexion(user?.id, lien.next);
+      redirect(mdpDesactive ? lienMdpDesactive(dest) : dest);
     }
   }
   const retour = new URLSearchParams({ erreur: "lien_invalide" });

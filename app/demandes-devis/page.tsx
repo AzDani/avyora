@@ -46,7 +46,7 @@ function Demande({ d, pro }: { d: DemandeClient; pro: boolean }) {
           {d.reponses.map((r) => (
             <li key={r.miseId} className="rounded-2xl border border-line p-3.5">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-[14.5px] font-semibold text-ink">{r.artisan.nom}</span>
+                <span className="text-[14.5px] font-semibold text-ink">{r.artisan.nom} <Link href={`/avis-artisans/${r.artisan.id}`} className="ml-1 text-[12.5px] font-semibold text-brand-700 hover:underline">Sa fiche et ses avis</Link></span>
                 <span className={"rounded-full px-2.5 py-0.5 text-[12px] font-semibold " + TON[r.statut]}>{LIBELLES_MER[r.statut]}</span>
               </div>
               {r.statut === "acceptee" && r.devisEnvoyeLe && (
@@ -60,7 +60,7 @@ function Demande({ d, pro }: { d: DemandeClient; pro: boolean }) {
                   <a href={`mailto:${r.contact.email}`} className="btn btn-ghost min-h-10 px-3 text-[13px]">{r.contact.email}</a>
                 </div>
               )}
-              {r.statut === "acceptee" && <SuiviArtisan miseId={r.miseId} nom={r.artisan.nom} issue={r.issue} avis={r.avis} />}
+              {r.statut === "acceptee" && <SuiviArtisan miseId={r.miseId} nom={r.artisan.nom} artisanId={r.artisan.id} issue={r.issue} avis={r.avis} />}
             </li>
           ))}
         </ul>

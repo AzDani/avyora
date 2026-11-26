@@ -9,6 +9,7 @@ import { afficherPortable } from "@/lib/telephone";
 import { dateCourte } from "@/lib/admin/outils";
 import ContactRapide from "@/components/admin/ContactRapide";
 import PanneauDecision, { BoutonReverifierSiret } from "@/components/admin/reseau/PanneauDecision";
+import { BoutonsMaj } from "@/components/admin/reseau/ModerationAvis";
 import { PastilleDecennale, PastilleSiret, PastilleStatut } from "@/components/admin/reseau/Pastilles";
 
 export const dynamic = "force-dynamic";
@@ -82,6 +83,27 @@ export default async function FicheArtisan({ params }: { params: Promise<{ id: s
           <p className="mt-3 rounded-xl bg-surface-2 px-3 py-2 text-[13px] text-muted"><b className="text-ink">Ton dernier message à l&apos;artisan :</b> {a.messageAdmin}</p>
         )}
       </header>
+
+      {/* La mise à jour demandée par l'artisan validé depuis son espace (25/11/2026). */}
+      {a.majDemandee && (
+        <section className="rounded-3xl border border-brand-200 bg-brand-50 p-5" data-maj-demandee="">
+          <h2 className="text-[15px] font-semibold text-brand-900">
+            {a.majDemandee.type === "decennale" ? "Nouvelle décennale à vérifier" : "Modification demandée"}
+            {a.majDemandee.le && <span className="ml-2 text-[12.5px] font-normal text-muted">le {dateCourte(a.majDemandee.le)}</span>}
+          </h2>
+          {a.majDemandee.type === "decennale" ? (
+            <p className="mt-1.5 text-[14px] text-ink">
+              {a.majDemandee.assureur} · contrat {a.majDemandee.police} · valable jusqu&apos;au <b>{dateCourte(a.majDemandee.fin)}</b>. Vérifie la dernière attestation déposée (Documents), puis applique.
+            </p>
+          ) : (
+            <p className="mt-1.5 whitespace-pre-line text-[14px] text-ink">{a.majDemandee.texte}</p>
+          )}
+          {a.majDemandee.type === "message" && (
+            <p className="mt-1 text-[12.5px] text-muted">Pour changer ses métiers ou sa zone : « Demander un complément » rouvre son dossier.</p>
+          )}
+          <BoutonsMaj artisanId={a.id} decennale={a.majDemandee.type === "decennale"} />
+        </section>
+      )}
 
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-5">

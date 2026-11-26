@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
-import { getUser } from "@/lib/auth";
 import { lienInscriptionBeta } from "@/lib/beta";
 import { afficherPortable } from "@/lib/telephone";
-import { candidatureDe, demandesRecues, documentsDe, urlsSignees, type DemandeRecue } from "@/lib/data/reseau";
-import DemandesRecues from "@/components/reseau/DemandesRecues";
+import { avisRecus, demandesRecues, documentsDe, statsMisesEnRelation, urlsSignees } from "@/lib/data/reseau";
+import { sessionArtisan, dateLimite, dateCourte } from "@/lib/reseau/espace";
+import { ALERTE_DECENNALE_JOURS, joursAvant, noteFr, resumeNotes } from "@/lib/reseau/avis";
+import { EXPIRATION_JOURS } from "@/lib/reseau/demande";
+import { aujourdhuiParis } from "@/lib/reseau/candidature";
+import { Recap } from "@/components/reseau/espace/RecapDossier";
 import { candidatureModifiable, LIBELLES_STATUT, type Artisan } from "@/lib/reseau/artisan";
 import { labelMetier } from "@/lib/reseau/metiers";
 import { resumeDepartements } from "@/lib/reseau/departements";
@@ -50,35 +53,15 @@ function Etapes({ a }: { a: Artisan }) {
   );
 }
 
-function Recap({ a }: { a: Artisan }) {
-  const lignes: [string, string][] = [
-    ["Entreprise", `${a.raisonSociale}${a.nomCommercial ? ` (${a.nomCommercial})` : ""}`],
-    ["SIRET", a.siret.replace(/(\d{3})(\d{3})(\d{3})(\d{5})/, "$1 $2 $3 $4")],
-    ["Métiers", a.metiers.map(labelMetier).join(", ")],
-    ["Zone", resumeDepartements(a.departements, 6)],
-    ["Décennale", `${a.decennaleAssureur}, valable jusqu'au ${dateLongue(a.decennaleFin)}`],
-    ["Portable", afficherPortable(a.telephone)],
-  ];
-  return (
-    <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
-      {lignes.map(([k, val]) => (
-        <div key={k}>
-          <dt className="text-[12px] text-faint">{k}</dt>
-          <dd className="mt-0.5 text-[14px] text-ink">{val}</dd>
-        </div>
-      ))}
-    </dl>
-  );
-}
-
 export default async function EspaceArtisan() {
-  const user = await getUser();
-  if (!user) redirect(lienInscriptionBeta("/espace-artisan", "artisan"));
-
-  let a: Artisan | null;
+  let session: Awaited<ReturnType<typeof sessionArtisan>> | "panne";
   try {
-    a = await candidatureDe(user.id);
+    session = await sessionArtisan();
   } catch {
+    session = "panne";
+  }
+  if (session === null) redirect(lienInscriptionBeta("/espace-artisan", "artisan"));
+  if (session === "panne") {
     return (
       <div className="mx-auto max-w-2xl py-6">
         <h1 className="text-[26px] font-semibold tracking-tight text-ink">Espace artisan</h1>
@@ -86,6 +69,8 @@ export default async function EspaceArtisan() {
       </div>
     );
   }
+  const { user, artisan: a } = session;
+  if (a?.statut === "valide") return <Accueil a={a} prenom={(a.contactNom || "").split(" ")[0]} />;
 
   const meta = (user.user_metadata ?? {}) as { nom?: string; profil?: { telephone?: string } };
   const modifiable = candidatureModifiable(a);
@@ -145,9 +130,6 @@ export default async function EspaceArtisan() {
     suspendu: "Ta participation est suspendue",
   };
   const st = cand.statut as Exclude<Artisan["statut"], "a_completer">;
-  // Les demandes de devis reçues (phase 2) : seulement pour un artisan validé.
-  let demandes: DemandeRecue[] | null = [];
-  if (st === "valide") demandes = await demandesRecues(cand.id).catch(() => null);
   return (
     <div className="mx-auto max-w-3xl space-y-5 py-2" lang="fr">
       <div>
@@ -172,14 +154,138 @@ export default async function EspaceArtisan() {
           <Etapes a={cand} />
         </section>
       )}
-      {st === "valide" && (demandes ? <DemandesRecues demandes={demandes} /> : (
-        <p role="alert" className="rounded-2xl bg-[#fdf0ef] p-4 text-[14px] text-[#8a1f15]">Tes demandes ne s&apos;affichent pas pour l&apos;instant. Recharge la page dans un instant.</p>
-      ))}
       <section className="rounded-3xl border border-line bg-surface p-5 sm:p-6" aria-labelledby="recap">
         <h2 id="recap" className="mb-4 text-[16px] font-semibold text-ink">Ton dossier</h2>
         <Recap a={cand} />
         <p className="mt-4 text-[12.5px] text-faint">Une information a changé (assurance renouvelée, nouveau numéro) ? Écris à contact@getavyora.fr : Daniel rouvrira ton dossier.</p>
       </section>
+    </div>
+  );
+}
+
+/* ─── L'accueil de l'artisan validé (25/11/2026) : ce qu'il doit faire maintenant, puis ses chiffres ─── */
+
+function Priorite({ href, titre, texte, lien, ton = "normal" }: { href: string; titre: string; texte: string; lien: string; ton?: "urgent" | "normal" | "alerte" }) {
+  return (
+    <div className={"flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border bg-surface p-4 " + (ton === "urgent" ? "border-brand-600 shadow-[0_10px_26px_-14px_rgba(79,70,229,.45)]" : ton === "alerte" ? "border-[#f3d9b1]" : "border-line")}>
+      <div className="min-w-0 flex-1">
+        <p className="text-[15px] font-semibold text-ink">{titre}</p>
+        <p className="mt-0.5 text-[13px] leading-snug text-muted">{texte}</p>
+      </div>
+      <Link href={href} className={"btn min-h-10 w-full px-4 text-[13.5px] sm:w-auto " + (ton === "urgent" ? "btn-primary" : "btn-outline")}>{lien}</Link>
+    </div>
+  );
+}
+
+async function Accueil({ a, prenom }: { a: Artisan; prenom: string }) {
+  const [demandes, stats, avis] = await Promise.all([
+    demandesRecues(a.id).catch(() => null),
+    statsMisesEnRelation(a.id).catch(() => null),
+    avisRecus(a.id).catch(() => null),
+  ]);
+  const aRepondre = (demandes ?? []).filter((d) => d.statut === "envoyee");
+  const devisAEnvoyer = (demandes ?? []).filter((d) => d.statut === "acceptee" && !d.devisEnvoyeLe && !d.nonRetenu);
+  const sansReponse = (avis?.publies ?? []).filter((x) => !x.maReponse);
+  const jours = joursAvant(a.decennaleFin, aujourdhuiParis());
+  const resume = resumeNotes((avis?.publies ?? []).map((x) => x.note));
+  const repondues = stats ? stats.acceptees + stats.refusees + stats.expirees : 0;
+  const taux = stats && repondues ? Math.round(((stats.acceptees + stats.refusees) / repondues) * 100) : null;
+  const plusAncienne = aRepondre.length ? aRepondre.reduce((m, d) => (d.envoyeeLe < m.envoyeeLe ? d : m)) : null;
+  const nom = a.nomCommercial || a.raisonSociale;
+  const CHIP: Record<string, string> = { rep: "bg-brand-600 text-white", cours: "bg-brand-50 text-brand-700", ok: "bg-[#e3f5ed] text-[#0b5e40]", fin: "border border-line bg-surface-2 text-muted" };
+  const etat = (d: NonNullable<typeof demandes>[number]) =>
+    d.statut === "envoyee" ? ["rep", "À répondre"] : d.signe ? ["ok", "Signé ✓"] : d.statut === "acceptee" && !d.nonRetenu ? ["cours", "En cours"] : ["fin", "Terminée"];
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <p className="eyebrow">Espace artisan</p>
+        <h1 className="mt-1 text-[28px] font-semibold tracking-tight text-ink sm:text-[32px]">Bonjour {prenom || nom}</h1>
+        <p className="mt-2 max-w-[62ch] text-[15px] leading-relaxed text-muted">
+          {nom} fait partie du Réseau AVYORA{a.valideLe ? ` depuis le ${dateLongue(a.valideLe)}` : ""}. Les clients de ta zone peuvent te choisir pour leurs demandes de devis.
+        </p>
+      </div>
+      {a.messageAdmin && (
+        <div className="rounded-2xl border border-line bg-surface p-4">
+          <p className="text-[13px] font-semibold text-muted">Le message de Daniel</p>
+          <p className="mt-1 whitespace-pre-line text-[14.5px] leading-relaxed text-ink">{a.messageAdmin}</p>
+        </div>
+      )}
+
+      <section aria-label="À faire maintenant" className="space-y-2.5">
+        {demandes === null && <p role="alert" className="rounded-2xl bg-[#fdf0ef] p-4 text-[14px] text-[#8a1f15]">Tes demandes ne s&apos;affichent pas pour l&apos;instant. Recharge la page dans un instant.</p>}
+        {plusAncienne && (
+          <Priorite ton="urgent" href="/espace-artisan/demandes" lien={aRepondre.length > 1 ? "Voir les demandes" : "Voir la demande"}
+            titre={`${aRepondre.length} demande${aRepondre.length > 1 ? "s" : ""} à répondre`}
+            texte={`Réponds avant le ${dateLimite(plusAncienne.envoyeeLe, EXPIRATION_JOURS)} : sans réponse, la demande part à un autre artisan.`} />
+        )}
+        {devisAEnvoyer.length > 0 && (
+          <Priorite href="/espace-artisan/demandes?onglet=cours" lien="Voir"
+            titre={`${devisAEnvoyer.length} devis à envoyer`}
+            texte="Tu as accepté, le client attend ton devis. Dis-nous quand il est parti : le client le voit dans son suivi." />
+        )}
+        {sansReponse.length > 0 && (
+          <Priorite href="/espace-artisan/avis" lien="Répondre"
+            titre={`${sansReponse.length} avis sans réponse`}
+            texte="Une réponse courte et courtoise rassure les prochains clients." />
+        )}
+        {jours <= ALERTE_DECENNALE_JOURS && (
+          <Priorite ton="alerte" href="/espace-artisan/dossier" lien="Mettre à jour"
+            titre={jours < 0 ? "Ta décennale a expiré" : `Ta décennale arrive à échéance le ${dateLongue(a.decennaleFin)}`}
+            texte={jours < 0 ? "Tu ne reçois plus de demandes. Envoie ta nouvelle attestation pour revenir dans les listes." : "Envoie la nouvelle attestation pour continuer à recevoir des demandes."} />
+        )}
+        {demandes !== null && !plusAncienne && !devisAEnvoyer.length && !sansReponse.length && jours > ALERTE_DECENNALE_JOURS && (
+          <p className="rounded-2xl border border-dashed border-line-strong bg-surface-2 p-4 text-[14px] text-muted">
+            Rien à faire pour l&apos;instant. Quand un client de ta zone te choisit, tu reçois un e-mail et la demande apparaît ici.
+          </p>
+        )}
+      </section>
+
+      {stats && (
+        <section aria-labelledby="chiffres" className="rounded-3xl border border-line bg-surface p-5">
+          <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 id="chiffres" className="text-[16px] font-semibold text-ink">Tes chiffres</h2>
+            <span className="text-[12.5px] text-faint">depuis ton entrée dans le réseau</span>
+          </div>
+          <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-4">
+            {([
+              [String(stats.recues), "demandes reçues"],
+              [taux == null ? "–" : `${taux} %`, "de réponse"],
+              [String(stats.devisEnvoyes), "devis envoyés"],
+              [resume.n ? `${noteFr(resume.moyenne)} ★` : "–", resume.n ? `sur ${resume.n} avis` : "pas encore d'avis"],
+            ] as const).map(([v, k]) => (
+              <div key={k} className="bg-surface px-3.5 py-3">
+                <dt className="sr-only">{k}</dt>
+                <dd className="num text-[23px] font-semibold tracking-tight text-ink">{v}</dd>
+                <dd className="mt-0.5 text-[12.5px] text-muted">{k}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
+
+      {demandes && demandes.length > 0 && (
+        <section aria-labelledby="dernieres" className="rounded-3xl border border-line bg-surface p-5">
+          <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 id="dernieres" className="text-[16px] font-semibold text-ink">Dernières demandes</h2>
+            <Link href="/espace-artisan/demandes" className="text-[13.5px] font-semibold text-brand-700 hover:underline">Tout voir →</Link>
+          </div>
+          <ul className="divide-y divide-line">
+            {demandes.slice(0, 4).map((d) => {
+              const [ton, label] = etat(d);
+              return (
+                <li key={d.miseId} className="flex items-center justify-between gap-3 py-2.5">
+                  <span className="min-w-0">
+                    <span className="block truncate text-[14px] font-semibold text-ink">{d.demande.metiers.map(labelMetier).join(", ")}</span>
+                    <span className="block text-[12.5px] text-muted">{d.demande.ville ? `${d.demande.ville} · ` : ""}{d.demande.code_postal} · reçue le {dateCourte(d.envoyeeLe)}</span>
+                  </span>
+                  <span className={"shrink-0 rounded-full px-2.5 py-0.5 text-[12px] font-semibold " + CHIP[ton]}>{label}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }

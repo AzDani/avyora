@@ -169,7 +169,7 @@ export async function envoyerDemandeDevis(brut: unknown): Promise<{ ok: true; id
   const travaux = d.metiers.map(labelMetier);
   const lieu = `${d.ville ? `${d.ville}, ` : ""}${nomDepartement(dep)} (${d.codePostal})`;
   for (const a of choisis) {
-    const m = emailNouvelleDemandeArtisan({ nomArtisan: a.contact_nom, travaux, lieu, delai: labelDelai(d.delai || null), avecEstimation: !!estimation, espaceUrl: `${urlSite()}/espace-artisan#demandes` });
+    const m = emailNouvelleDemandeArtisan({ nomArtisan: a.contact_nom, travaux, lieu, delai: labelDelai(d.delai || null), avecEstimation: !!estimation, espaceUrl: `${urlSite()}/espace-artisan/demandes` });
     await envoyerEmailSuivi({ to: a.email, subject: m.subject, html: m.html, replyTo: destinataireInterne() });
   }
   const recap = emailDemandeEnvoyee({ prenom: d.prenom, artisans: choisis.map((a) => a.nom), suiviUrl: `${urlSite()}/demandes-devis` });
@@ -224,7 +224,7 @@ export async function repondreDemande(miseId: string, reponse: "accepter" | "ref
     await envoyerEmailSuivi({ to: String(dem.email), subject: m.subject, html: m.html, replyTo: statut === "acceptee" ? artisan.email : destinataireInterne() });
   }
   await journaliser("reponse_devis", { userId: user.id, payload: { mise: miseId, statut } });
-  revalidatePath("/espace-artisan");
+  revalidatePath("/espace-artisan", "layout");
   return { ok: true };
 }
 
@@ -252,7 +252,7 @@ export async function marquerDevisEnvoye(miseId: string): Promise<{ ok: boolean;
     .select("id");
   if (error) return { ok: false, erreur: "Réessaie dans un instant." };
   if (!data?.length) return { ok: false, erreur: "C'est déjà noté." };
-  revalidatePath("/espace-artisan");
+  revalidatePath("/espace-artisan", "layout");
   return { ok: true };
 }
 
@@ -339,7 +339,7 @@ export async function ajouterArtisans(demandeId: string, ids: string[]): Promise
 
   const lieu = `${d.ville ? `${d.ville}, ` : ""}${nomDepartement(String(d.departement))} (${d.code_postal})`;
   for (const a of lignes) {
-    const m = emailNouvelleDemandeArtisan({ nomArtisan: a.contact_nom, travaux: metiers.map(labelMetier), lieu, delai: labelDelai((d.delai as string | null) ?? null), avecEstimation: !!d.estimation, espaceUrl: `${urlSite()}/espace-artisan#demandes` });
+    const m = emailNouvelleDemandeArtisan({ nomArtisan: a.contact_nom, travaux: metiers.map(labelMetier), lieu, delai: labelDelai((d.delai as string | null) ?? null), avecEstimation: !!d.estimation, espaceUrl: `${urlSite()}/espace-artisan/demandes` });
     await envoyerEmailSuivi({ to: a.email, subject: m.subject, html: m.html, replyTo: destinataireInterne() });
   }
   await journaliser("demande_devis", { userId: user.id, payload: { demande: demandeId, ajoutes: lignes.length } });

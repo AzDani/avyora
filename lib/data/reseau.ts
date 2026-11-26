@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { BUCKET_ARTISANS, aujourdhuiParis } from "@/lib/reseau/candidature";
 import { ordreEquitable, type ArtisanPropose, type EstimationJointe, type Issue, type StatutMiseEnRelation } from "@/lib/reseau/demande";
 import { COLONNES_ARTISAN, lireArtisan, lireDocument, type Artisan, type DocumentArtisan } from "@/lib/reseau/artisan";
+import { lireMaj, resumeNotes, type MajDemandee, type ResumeNotes, type StatutAvis, type StatutReponse } from "@/lib/reseau/avis";
 
 /**
  * Lectures du Réseau AVYORA (tables `reseau_artisans` et `reseau_documents`, migration 0007 ; à ne pas confondre avec
@@ -86,8 +87,8 @@ export async function getArtisanAdmin(id: string): Promise<{ artisan: Artisan; d
 export async function supprimerFichiersArtisan(userId: string): Promise<void> {
   if (!/^[0-9a-f-]{36}$/i.test(userId)) return;
   const st = supabaseAdmin().storage.from(BUCKET_ARTISANS);
-  // Le dossier de candidature (attestations, photos de chantiers) et les photos de ses demandes de devis.
-  for (const dossier of [`${userId}/decennale`, `${userId}/rc_pro`, `${userId}/photo`, `demandes/${userId}`]) {
+  // Le dossier de candidature (attestations, photos de chantiers), sa galerie, les photos de ses demandes de devis et de ses avis.
+  for (const dossier of [`${userId}/decennale`, `${userId}/rc_pro`, `${userId}/photo`, `${userId}/galerie`, `demandes/${userId}`, `avis/${userId}`]) {
     const { data } = await st.list(dossier, { limit: 1000 });
     const chemins = (data ?? []).filter((o) => o.name).map((o) => `${dossier}/${o.name}`);
     if (chemins.length) await st.remove(chemins);
@@ -137,7 +138,16 @@ export async function artisansDisponibles(departement: string, metiers: string[]
     if (p.length < 3) photosPar.set(d.user_id, [...p, d.chemin]);
   }
   const ordonnes = ordreEquitable(lignes, recues, clientId).slice(0, 30);
-  const urls = await urlsSignees(ordonnes.flatMap((l) => photosPar.get(l.user_id) ?? []));
+  const [urls, resumes, { data: reals }] = await Promise.all([
+    urlsSignees(ordonnes.flatMap((l) => photosPar.get(l.user_id) ?? [])),
+    // Les avis publiés et la galerie (migration 0012) : une panne ne bloque pas le choix des artisans.
+    resumesAvis(ordonnes.map((l) => l.id)).catch(() => new Map<string, ResumeNotes>()),
+    Promise.resolve()
+      .then(() => sb.from(TABLE_REALISATIONS).select("artisan_id").in("artisan_id", ordonnes.map((l) => l.id)).is("retiree_le", null).limit(5000))
+      .catch(() => ({ data: [] as { artisan_id: string }[] })),
+  ]);
+  const nbReal = new Map<string, number>();
+  for (const r of (reals ?? []) as { artisan_id: string }[]) nbReal.set(r.artisan_id, (nbReal.get(r.artisan_id) ?? 0) + 1);
   return ordonnes.map((l) => ({
     id: l.id,
     nom: l.nom_commercial || l.raison_sociale,
@@ -147,6 +157,9 @@ export async function artisansDisponibles(departement: string, metiers: string[]
     siteWeb: l.site_web,
     lienAvis: l.lien_avis,
     photos: (photosPar.get(l.user_id) ?? []).map((c) => urls.get(c)).filter((u): u is string => !!u),
+    note: resumes.get(l.id)?.moyenne ?? null,
+    nbAvis: resumes.get(l.id)?.n ?? 0,
+    nbRealisations: nbReal.get(l.id) ?? 0,
   }));
 }
 
@@ -161,16 +174,25 @@ const COLONNES_DEMANDE = "id, client_id, projet_id, metiers, code_postal, depart
 type LigneMer = {
   id: string; demande_id: string; artisan_id: string; statut: StatutMiseEnRelation; envoyee_le: string; repondu_le: string | null;
   devis_envoye_le: string | null; issue: Issue | null; avis_note: number | null; avis_commentaire: string | null; avis_le: string | null;
+  /** Avis publics (migration 0012). `avis_statut` vide = ancien avis privé (avant le 25/11/2026), jamais publié. */
+  avis_statut: StatutAvis | null; avis_mois: string | null; avis_photos: string[] | null; avis_auteur: string | null; avis_motif: string | null;
+  avis_publie_le: string | null; avis_signale_le: string | null; avis_signalement: string | null;
+  reponse_texte: string | null; reponse_statut: StatutReponse | null; reponse_le: string | null; reponse_motif: string | null;
 };
-const COLONNES_MER = "id, demande_id, artisan_id, statut, envoyee_le, repondu_le, devis_envoye_le, issue, avis_note, avis_commentaire, avis_le";
+const COLONNES_MER = "id, demande_id, artisan_id, statut, envoyee_le, repondu_le, devis_envoye_le, issue, avis_note, avis_commentaire, avis_le, avis_statut, avis_mois, avis_photos, avis_auteur, avis_motif, avis_publie_le, avis_signale_le, avis_signalement, reponse_texte, reponse_statut, reponse_le, reponse_motif";
 
 export type ReponseArtisan = {
   miseId: string; statut: StatutMiseEnRelation; reponduLe: string | null;
   /** Phase 3 : le devis annoncé par l'artisan, l'issue et l'avis donnés par le client. */
-  devisEnvoyeLe: string | null; issue: Issue | null; avis: { note: number; commentaire: string | null } | null;
+  devisEnvoyeLe: string | null; issue: Issue | null; avis: AvisClient | null;
   artisan: { id: string; nom: string; metiers: string[] };
   /** Seulement si l'artisan a ACCEPTÉ. */
   contact: { nom: string; telephone: string; email: string } | null;
+};
+/** L'avis du client sur un artisan, tel qu'il le revoit dans le suivi de sa demande. */
+export type AvisClient = {
+  note: number; commentaire: string | null; statut: StatutAvis | null; motif: string | null; mois: string | null;
+  photos: { chemin: string; url: string | null }[]; publieLe: string | null;
 };
 export type DemandeClient = Omit<LigneDemande, "client_id" | "photos"> & { photos: string[]; reponses: ReponseArtisan[] };
 
@@ -188,7 +210,10 @@ export async function demandesDuClient(clientId: string): Promise<DemandeClient[
     ? await sb.from(TABLE_ARTISANS).select("id, raison_sociale, nom_commercial, metiers, contact_nom, telephone, email").in("id", ids)
     : { data: [] };
   const parId = new Map(((arts ?? []) as { id: string; raison_sociale: string; nom_commercial: string | null; metiers: string[]; contact_nom: string; telephone: string; email: string }[]).map((a) => [a.id, a]));
-  const urls = await urlsSignees(demandes.flatMap((d) => d.photos ?? []), 3600);
+  const [urls, urlsAvis] = await Promise.all([
+    urlsSignees(demandes.flatMap((d) => d.photos ?? []), 3600),
+    urlsSignees(mer.flatMap((m) => m.avis_photos ?? []), 3600),
+  ]);
   return demandes.map(({ client_id: _c, ...d }) => ({
     ...d,
     photos: (d.photos ?? []).map((c) => urls.get(c)).filter((u): u is string => !!u),
@@ -196,7 +221,13 @@ export async function demandesDuClient(clientId: string): Promise<DemandeClient[
       const a = parId.get(m.artisan_id);
       return {
         miseId: m.id, statut: m.statut, reponduLe: m.repondu_le,
-        devisEnvoyeLe: m.devis_envoye_le, issue: m.issue, avis: m.avis_note ? { note: m.avis_note, commentaire: m.avis_commentaire } : null,
+        devisEnvoyeLe: m.devis_envoye_le, issue: m.issue,
+        avis: m.avis_note
+          ? {
+              note: m.avis_note, commentaire: m.avis_commentaire, statut: m.avis_statut, motif: m.avis_motif, mois: m.avis_mois,
+              photos: (m.avis_photos ?? []).map((c) => ({ chemin: c, url: urlsAvis.get(c) ?? null })), publieLe: m.avis_publie_le,
+            }
+          : null,
         artisan: { id: m.artisan_id, nom: a ? a.nom_commercial || a.raison_sociale : "Artisan", metiers: a?.metiers ?? [] },
         contact: m.statut === "acceptee" && a ? { nom: a.contact_nom, telephone: a.telephone, email: a.email } : null,
       };
@@ -207,8 +238,12 @@ export async function demandesDuClient(clientId: string): Promise<DemandeClient[
 export type DemandeRecue = {
   miseId: string; statut: StatutMiseEnRelation; envoyeeLe: string; reponduLe: string | null;
   devisEnvoyeLe: string | null;
-  /** Le client a signé avec lui (le reste de l'issue et l'avis ne lui sont pas montrés). */
+  /** Le client a signé avec lui. */
   signe: boolean;
+  /** Le client a choisi un autre artisan (montré à l'artisan depuis le 25/11/2026). */
+  nonRetenu: boolean;
+  /** Où en est le client (devis reçu, signé, pas retenu), seulement sur une demande acceptée. */
+  issue: Issue | null;
   demande: Omit<LigneDemande, "client_id" | "prenom" | "telephone" | "email" | "photos" | "projet_id" | "adresse"> & { photos: string[] };
   /** Les coordonnées du client et l'adresse du chantier : seulement si l'artisan a ACCEPTÉ. */
   client: { prenom: string; telephone: string; email: string; adresse: string | null } | null;
@@ -231,7 +266,7 @@ export async function demandesRecues(artisanId: string): Promise<DemandeRecue[]>
     const { client_id: _c, prenom, telephone, email, photos, projet_id: _p, adresse, ...reste } = d;
     return [{
       miseId: m.id, statut: m.statut, envoyeeLe: m.envoyee_le, reponduLe: m.repondu_le,
-      devisEnvoyeLe: m.devis_envoye_le, signe: m.statut === "acceptee" && m.issue === "signe",
+      devisEnvoyeLe: m.devis_envoye_le, signe: m.statut === "acceptee" && m.issue === "signe", nonRetenu: m.statut === "acceptee" && m.issue === "non_retenu", issue: m.statut === "acceptee" ? m.issue : null,
       demande: { ...reste, photos: (photos ?? []).map((c) => urls.get(c)).filter((u): u is string => !!u) },
       client: m.statut === "acceptee" ? { prenom, telephone, email, adresse: adresse ?? null } : null,
     }];
@@ -283,4 +318,279 @@ export async function statsMisesEnRelation(artisanId: string): Promise<StatsArti
     noteMoyenne: lignes.length ? Math.round((lignes.reduce((a, l) => a + l.avis_note, 0) / lignes.length) * 10) / 10 : null,
     avis: lignes.map((l) => ({ note: l.avis_note, commentaire: l.avis_commentaire, le: l.avis_le, prenom: prenoms.get(l.demande_id) ?? "Client" })),
   };
+}
+
+/* ─── Avis publics et galerie (migration 0012, décisions du 25/11/2026) ─────────── */
+
+export const TABLE_REALISATIONS = "reseau_realisations";
+
+/** La commune d'une adresse du répertoire (« 923 ROUTE … 33620 MARCENAIS » → « Marcenais ») : jamais la rue. */
+export function communeDe(adresse?: string | null, codePostal?: string | null): string | null {
+  const a = String(adresse ?? "");
+  const cp = String(codePostal ?? "");
+  const i = cp ? a.lastIndexOf(cp) : -1;
+  const brut = (i >= 0 ? a.slice(i + cp.length) : a.split(/\b\d{5}\b/).pop() ?? "").trim();
+  if (!brut) return null;
+  return brut.toLocaleLowerCase("fr-FR").replace(/(^|[\s'-])(\p{L})/gu, (_, sep: string, l: string) => sep + l.toLocaleUpperCase("fr-FR")).slice(0, 80);
+}
+
+export type AvisPublic = {
+  id: string; auteur: string; note: number; texte: string; mois: string | null; publieLe: string;
+  photos: string[]; reponse: { texte: string; le: string } | null;
+};
+
+/** Les avis PUBLIÉS sur un artisan, du plus récent au plus ancien, avec leurs photos (URL signées 1 h). */
+export async function avisPublies(artisanId: string, limite = 200): Promise<AvisPublic[]> {
+  if (!UUID_RE.test(artisanId)) return [];
+  const { data, error } = await supabaseAdmin()
+    .from(TABLE_MER)
+    .select(COLONNES_MER)
+    .eq("artisan_id", artisanId)
+    .eq("avis_statut", "publie")
+    .order("avis_publie_le", { ascending: false })
+    .limit(limite);
+  if (error) throw new Error(error.message);
+  const lignes = (data ?? []) as LigneMer[];
+  const urls = await urlsSignees(lignes.flatMap((l) => l.avis_photos ?? []), 3600);
+  return lignes.map((l) => ({
+    id: l.id, auteur: l.avis_auteur || "Client", note: l.avis_note ?? 0, texte: l.avis_commentaire ?? "", mois: l.avis_mois,
+    publieLe: l.avis_publie_le ?? l.avis_le ?? "",
+    photos: (l.avis_photos ?? []).map((c) => urls.get(c)).filter((u): u is string => !!u),
+    reponse: l.reponse_statut === "publie" && l.reponse_texte ? { texte: l.reponse_texte, le: l.reponse_le ?? "" } : null,
+  }));
+}
+
+/** La note moyenne et la répartition des avis publiés de plusieurs artisans (id → résumé). */
+export async function resumesAvis(ids: string[]): Promise<Map<string, ResumeNotes>> {
+  const ok = ids.filter((i) => UUID_RE.test(i));
+  const out = new Map<string, ResumeNotes>(ok.map((i) => [i, resumeNotes([])]));
+  if (!ok.length) return out;
+  const { data, error } = await supabaseAdmin().from(TABLE_MER).select("artisan_id, avis_note").in("artisan_id", ok).eq("avis_statut", "publie").limit(10000);
+  if (error) throw new Error(error.message);
+  const notes = new Map<string, number[]>();
+  for (const r of (data ?? []) as { artisan_id: string; avis_note: number }[]) notes.set(r.artisan_id, [...(notes.get(r.artisan_id) ?? []), r.avis_note]);
+  for (const [id, n] of notes) out.set(id, resumeNotes(n));
+  return out;
+}
+
+export type Realisation = {
+  id: string; artisanId: string; titre: string; description: string; ville: string | null; mois: string | null;
+  photos: { chemin: string; url: string | null }[]; creeLe: string; retireeLe: string | null; retireeMotif: string | null;
+};
+type LigneRealisation = {
+  id: string; artisan_id: string; titre: string; description: string; ville: string | null; mois: string | null; photos: string[];
+  created_at: string; retiree_le: string | null; retiree_motif: string | null;
+};
+const COLONNES_REAL = "id, artisan_id, titre, description, ville, mois, photos, created_at, retiree_le, retiree_motif";
+
+async function lireRealisations(lignes: LigneRealisation[]): Promise<Realisation[]> {
+  const urls = await urlsSignees(lignes.flatMap((l) => l.photos ?? []), 3600);
+  return lignes.map((l) => ({
+    id: l.id, artisanId: l.artisan_id, titre: l.titre, description: l.description, ville: l.ville, mois: l.mois,
+    photos: (l.photos ?? []).map((c) => ({ chemin: c, url: urls.get(c) ?? null })), creeLe: l.created_at, retireeLe: l.retiree_le, retireeMotif: l.retiree_motif,
+  }));
+}
+
+/** La galerie d'un artisan, les plus récentes d'abord ; `toutes` garde les réalisations retirées par Daniel (son espace). */
+export async function realisationsDe(artisanId: string, opts: { toutes?: boolean } = {}): Promise<Realisation[]> {
+  if (!UUID_RE.test(artisanId)) return [];
+  let q = supabaseAdmin().from(TABLE_REALISATIONS).select(COLONNES_REAL).eq("artisan_id", artisanId).order("created_at", { ascending: false }).limit(200);
+  if (!opts.toutes) q = q.is("retiree_le", null);
+  const { data, error } = await q;
+  if (error) throw new Error(error.message);
+  return lireRealisations((data ?? []) as LigneRealisation[]);
+}
+
+/** Les dernières réalisations publiées, tous artisans (admin : pour en retirer une). */
+export async function realisationsRecentes(limite = 30): Promise<(Realisation & { artisanNom: string })[]> {
+  const sb = supabaseAdmin();
+  const { data, error } = await sb.from(TABLE_REALISATIONS).select(COLONNES_REAL).is("retiree_le", null).order("created_at", { ascending: false }).limit(limite);
+  if (error) throw new Error(error.message);
+  const lignes = (data ?? []) as LigneRealisation[];
+  const ids = [...new Set(lignes.map((l) => l.artisan_id))];
+  const { data: arts } = ids.length ? await sb.from(TABLE_ARTISANS).select("id, raison_sociale, nom_commercial").in("id", ids) : { data: [] };
+  const noms = new Map(((arts ?? []) as { id: string; raison_sociale: string; nom_commercial: string | null }[]).map((a) => [a.id, a.nom_commercial || a.raison_sociale]));
+  return (await lireRealisations(lignes)).map((r) => ({ ...r, artisanNom: noms.get(r.artisanId) ?? "Artisan" }));
+}
+
+export type ArtisanPublic = {
+  id: string; nom: string; metiers: string[]; departements: string[]; commune: string | null; presentation: string | null;
+  siteWeb: string | null; rge: boolean; valideLe: string | null; resume: ResumeNotes; nbRealisations: number;
+};
+
+/**
+ * Les artisans du réseau visibles par les membres Pro (onglet « Avis artisans ») : validés, décennale en cours ;
+ * filtrés par département et métier (« tous corps d'état » fait tout), les mieux notés d'abord, puis par nombre d'avis.
+ * Jamais leurs coordonnées : elles ne passent qu'après une demande acceptée.
+ */
+export async function artisansPublics(filtre: { departement?: string | null; metier?: string | null } = {}): Promise<ArtisanPublic[]> {
+  const sb = supabaseAdmin();
+  let q = sb
+    .from(TABLE_ARTISANS)
+    .select("id, raison_sociale, nom_commercial, metiers, departements, presentation, site_web, rge, valide_le, siret_verif")
+    .eq("statut", "valide")
+    .gte("decennale_fin", aujourdhuiParis())
+    .limit(500);
+  if (filtre.departement) q = q.contains("departements", [filtre.departement]);
+  if (filtre.metier) q = q.overlaps("metiers", [...new Set([filtre.metier, "tce"])]);
+  const { data, error } = await q;
+  if (error) throw new Error(error.message);
+  const lignes = (data ?? []) as { id: string; raison_sociale: string; nom_commercial: string | null; metiers: string[]; departements: string[]; presentation: string | null; site_web: string | null; rge: boolean; valide_le: string | null; siret_verif: { adresse?: string; codePostal?: string } | null }[];
+  if (!lignes.length) return [];
+  const ids = lignes.map((l) => l.id);
+  const [resumes, { data: reals }] = await Promise.all([
+    resumesAvis(ids),
+    sb.from(TABLE_REALISATIONS).select("artisan_id").in("artisan_id", ids).is("retiree_le", null).limit(10000),
+  ]);
+  const nbReal = new Map<string, number>();
+  for (const r of (reals ?? []) as { artisan_id: string }[]) nbReal.set(r.artisan_id, (nbReal.get(r.artisan_id) ?? 0) + 1);
+  return lignes
+    .map((l) => ({
+      id: l.id, nom: l.nom_commercial || l.raison_sociale, metiers: l.metiers, departements: l.departements,
+      commune: communeDe(l.siret_verif?.adresse, l.siret_verif?.codePostal), presentation: l.presentation, siteWeb: l.site_web, rge: !!l.rge,
+      valideLe: l.valide_le, resume: resumes.get(l.id) ?? resumeNotes([]), nbRealisations: nbReal.get(l.id) ?? 0,
+    }))
+    .sort((a, b) => (b.resume.moyenne ?? -1) - (a.resume.moyenne ?? -1) || b.resume.n - a.resume.n || a.nom.localeCompare(b.nom, "fr"));
+}
+
+/** La fiche publique (Pro) d'un artisan validé ; null s'il n'est pas (ou plus) dans le réseau. */
+export async function ficheArtisan(id: string): Promise<ArtisanPublic | null> {
+  if (!UUID_RE.test(id)) return null;
+  const sb = supabaseAdmin();
+  const { data } = await sb
+    .from(TABLE_ARTISANS)
+    .select("id, raison_sociale, nom_commercial, metiers, departements, presentation, site_web, rge, valide_le, siret_verif, statut")
+    .eq("id", id)
+    .eq("statut", "valide")
+    .maybeSingle();
+  if (!data) return null;
+  const l = data as { id: string; raison_sociale: string; nom_commercial: string | null; metiers: string[]; departements: string[]; presentation: string | null; site_web: string | null; rge: boolean; valide_le: string | null; siret_verif: { adresse?: string; codePostal?: string } | null };
+  const [resumes, { count }] = await Promise.all([
+    resumesAvis([l.id]),
+    sb.from(TABLE_REALISATIONS).select("id", { count: "exact", head: true }).eq("artisan_id", l.id).is("retiree_le", null),
+  ]);
+  return {
+    id: l.id, nom: l.nom_commercial || l.raison_sociale, metiers: l.metiers, departements: l.departements,
+    commune: communeDe(l.siret_verif?.adresse, l.siret_verif?.codePostal), presentation: l.presentation, siteWeb: l.site_web, rge: !!l.rge,
+    valideLe: l.valide_le, resume: resumes.get(l.id) ?? resumeNotes([]), nbRealisations: count ?? 0,
+  };
+}
+
+export type AvisRecu = AvisPublic & {
+  statut: StatutAvis; signaleLe: string | null;
+  /** La réponse de l'artisan, à tous ses stades (il la revoit en attente ou refusée, avec le motif). */
+  maReponse: { texte: string; statut: StatutReponse; motif: string | null; le: string | null } | null;
+};
+
+/** Les avis reçus par un artisan (son espace) : publiés (avec sa réponse à tous ses stades) et le nombre en attente. */
+export async function avisRecus(artisanId: string): Promise<{ publies: AvisRecu[]; enAttente: number }> {
+  if (!UUID_RE.test(artisanId)) return { publies: [], enAttente: 0 };
+  const sb = supabaseAdmin();
+  const [{ data, error }, { count }] = await Promise.all([
+    sb.from(TABLE_MER).select(COLONNES_MER).eq("artisan_id", artisanId).eq("avis_statut", "publie").order("avis_publie_le", { ascending: false }).limit(200),
+    sb.from(TABLE_MER).select("id", { count: "exact", head: true }).eq("artisan_id", artisanId).eq("avis_statut", "en_attente"),
+  ]);
+  if (error) throw new Error(error.message);
+  const lignes = (data ?? []) as LigneMer[];
+  const urls = await urlsSignees(lignes.flatMap((l) => l.avis_photos ?? []), 3600);
+  return {
+    enAttente: count ?? 0,
+    publies: lignes.map((l) => ({
+      id: l.id, auteur: l.avis_auteur || "Client", note: l.avis_note ?? 0, texte: l.avis_commentaire ?? "", mois: l.avis_mois,
+      publieLe: l.avis_publie_le ?? "", photos: (l.avis_photos ?? []).map((c) => urls.get(c)).filter((u): u is string => !!u),
+      reponse: l.reponse_statut === "publie" && l.reponse_texte ? { texte: l.reponse_texte, le: l.reponse_le ?? "" } : null,
+      statut: "publie" as const, signaleLe: l.avis_signale_le,
+      maReponse: l.reponse_texte && l.reponse_statut ? { texte: l.reponse_texte, statut: l.reponse_statut, motif: l.reponse_motif, le: l.reponse_le } : null,
+    })),
+  };
+}
+
+export type AvisAModerer = {
+  miseId: string; artisanId: string; artisanNom: string; auteur: string; note: number; texte: string; mois: string | null; envoyeLe: string;
+  photos: string[]; demande: { creeLe: string; ville: string | null; codePostal: string; acceptee: string | null };
+  signalement: { le: string; texte: string | null } | null;
+};
+export type ReponseAModerer = { miseId: string; artisanNom: string; auteur: string; note: number; texteAvis: string; reponse: string; le: string | null };
+
+/** Ce qui attend Daniel (admin) : avis à valider, réponses d'artisans à valider, avis publiés signalés par l'artisan. */
+export async function aModerer(): Promise<{ avis: AvisAModerer[]; reponses: ReponseAModerer[]; signales: AvisAModerer[] }> {
+  const sb = supabaseAdmin();
+  const [a, r, s] = await Promise.all([
+    sb.from(TABLE_MER).select(COLONNES_MER).eq("avis_statut", "en_attente").order("avis_le", { ascending: true }).limit(200),
+    sb.from(TABLE_MER).select(COLONNES_MER).eq("reponse_statut", "en_attente").eq("avis_statut", "publie").order("reponse_le", { ascending: true }).limit(200),
+    sb.from(TABLE_MER).select(COLONNES_MER).eq("avis_statut", "publie").not("avis_signale_le", "is", null).order("avis_signale_le", { ascending: true }).limit(200),
+  ]);
+  if (a.error) throw new Error(a.error.message);
+  const toutes = [...((a.data ?? []) as LigneMer[]), ...((r.data ?? []) as LigneMer[]), ...((s.data ?? []) as LigneMer[])];
+  const idsArt = [...new Set(toutes.map((m) => m.artisan_id))];
+  const idsDem = [...new Set(toutes.map((m) => m.demande_id))];
+  const [{ data: arts }, { data: dems }, urls] = await Promise.all([
+    idsArt.length ? sb.from(TABLE_ARTISANS).select("id, raison_sociale, nom_commercial").in("id", idsArt) : Promise.resolve({ data: [] }),
+    idsDem.length ? sb.from(TABLE_DEMANDES).select("id, created_at, ville, code_postal").in("id", idsDem) : Promise.resolve({ data: [] }),
+    urlsSignees(toutes.flatMap((m) => m.avis_photos ?? []), 3600),
+  ]);
+  const noms = new Map(((arts ?? []) as { id: string; raison_sociale: string; nom_commercial: string | null }[]).map((x) => [x.id, x.nom_commercial || x.raison_sociale]));
+  const demandes = new Map(((dems ?? []) as { id: string; created_at: string; ville: string | null; code_postal: string }[]).map((x) => [x.id, x]));
+  const versAvis = (m: LigneMer): AvisAModerer => {
+    const d = demandes.get(m.demande_id);
+    return {
+      miseId: m.id, artisanId: m.artisan_id, artisanNom: noms.get(m.artisan_id) ?? "Artisan", auteur: m.avis_auteur || "Client", note: m.avis_note ?? 0,
+      texte: m.avis_commentaire ?? "", mois: m.avis_mois, envoyeLe: m.avis_le ?? "",
+      photos: (m.avis_photos ?? []).map((c) => urls.get(c)).filter((u): u is string => !!u),
+      demande: { creeLe: d?.created_at ?? "", ville: d?.ville ?? null, codePostal: d?.code_postal ?? "", acceptee: m.repondu_le },
+      signalement: m.avis_signale_le ? { le: m.avis_signale_le, texte: m.avis_signalement } : null,
+    };
+  };
+  return {
+    avis: ((a.data ?? []) as LigneMer[]).map(versAvis),
+    reponses: ((r.data ?? []) as LigneMer[]).map((m) => ({
+      miseId: m.id, artisanNom: noms.get(m.artisan_id) ?? "Artisan", auteur: m.avis_auteur || "Client", note: m.avis_note ?? 0,
+      texteAvis: m.avis_commentaire ?? "", reponse: m.reponse_texte ?? "", le: m.reponse_le,
+    })),
+    signales: ((s.data ?? []) as LigneMer[]).map(versAvis),
+  };
+}
+
+/** Combien de choses attendent Daniel côté avis (pastille du menu admin, tableau de bord). */
+export async function compteAModerer(): Promise<number> {
+  const sb = supabaseAdmin();
+  const tete = () => sb.from(TABLE_MER).select("id", { count: "exact", head: true });
+  const [a, r, s] = await Promise.all([
+    tete().eq("avis_statut", "en_attente"),
+    tete().eq("reponse_statut", "en_attente").eq("avis_statut", "publie"),
+    tete().eq("avis_statut", "publie").not("avis_signale_le", "is", null),
+  ]);
+  return (a.count ?? 0) + (r.count ?? 0) + (s.count ?? 0);
+}
+
+/** Pour l'en-tête : le compte est-il un artisan du réseau, et combien de demandes l'attendent ? Mémorisé par requête. */
+export const etatArtisanEntete = cache(async (userId: string): Promise<{ artisan: boolean; aRepondre: number }> => {
+  if (!UUID_RE.test(userId)) return { artisan: false, aRepondre: 0 };
+  const sb = supabaseAdmin();
+  const { data } = await sb.from(TABLE_ARTISANS).select("id, statut").eq("user_id", userId).maybeSingle();
+  if (!data) return { artisan: false, aRepondre: 0 };
+  if (data.statut !== "valide") return { artisan: true, aRepondre: 0 };
+  const { count } = await sb.from(TABLE_MER).select("id", { count: "exact", head: true }).eq("artisan_id", String(data.id)).eq("statut", "envoyee");
+  return { artisan: true, aRepondre: count ?? 0 };
+});
+
+/** La mise à jour demandée par un artisan validé (nouvelle décennale, métiers, zone), ou null. */
+export async function majDemandeeDe(artisanId: string): Promise<MajDemandee | null> {
+  if (!UUID_RE.test(artisanId)) return null;
+  const { data } = await supabaseAdmin().from(TABLE_ARTISANS).select("maj_demandee").eq("id", artisanId).maybeSingle();
+  return lireMaj(data?.maj_demandee ?? null);
+}
+
+/**
+ * Où arrive un compte qui se connecte sans intention précise (`next` = « /projets », la valeur par défaut) : un artisan
+ * du réseau va sur son espace (25/11/2026), les autres sur leurs projets. Une intention précise est toujours gardée ;
+ * une panne de lecture garde « /projets ».
+ */
+export async function arriveeApresConnexion(userId: string | null | undefined, next: string): Promise<string> {
+  if (next !== "/projets" || !userId) return next;
+  try {
+    return (await etatArtisanEntete(userId)).artisan ? "/espace-artisan" : next;
+  } catch {
+    return next;
+  }
 }

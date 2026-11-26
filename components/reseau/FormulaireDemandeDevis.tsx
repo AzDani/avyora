@@ -1,5 +1,6 @@
 "use client";
 
+import NoteArtisan from "@/components/reseau/avis/NoteArtisan";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -58,6 +59,7 @@ function CarteArtisan({ a, choisi, bloque, onChange, metiersDemandes }: { a: Art
           {a.presentation && <span className="mt-2 line-clamp-3 block whitespace-pre-line text-[13.5px] leading-snug text-muted">{a.presentation}</span>}
         </span>
       </label>
+      <div className="pl-8"><NoteArtisan id={a.id} note={a.note} nbAvis={a.nbAvis} nbRealisations={a.nbRealisations} /></div>
       {a.photos.length > 0 && (
         <div className="mt-3 grid grid-cols-3 gap-1.5 pl-8">
           {a.photos.map((u, i) => (

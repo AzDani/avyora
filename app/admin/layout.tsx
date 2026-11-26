@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getAdmin } from "@/lib/auth";
 import { listDemandesAccompagnement } from "@/lib/data/admin";
-import { listArtisansAdmin, listDemandesDevisAdmin } from "@/lib/data/reseau";
+import { compteAModerer, listArtisansAdmin, listDemandesDevisAdmin } from "@/lib/data/reseau";
 import AdminNav from "@/components/admin/AdminNav";
 
 export const dynamic = "force-dynamic";
@@ -43,12 +43,12 @@ async function devisSansArtisan(): Promise<number | null> {
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const admin = await getAdmin();
   if (!admin) redirect("/");
-  const [accompagnement, artisans, devis] = await Promise.all([aTraiter(), candidatures(), devisSansArtisan()]);
+  const [accompagnement, artisans, devis, avis] = await Promise.all([aTraiter(), candidatures(), devisSansArtisan(), compteAModerer().catch(() => null)]);
 
   return (
     <div data-admin-cadre="" style={{ marginInline: "calc(50% - min(50vw - 1rem, 40rem))" }}>
       <div className="lg:grid lg:grid-cols-[232px_minmax(0,1fr)] lg:gap-8">
-        <AdminNav email={admin.email ?? ""} badges={{ accompagnement, artisans, devis }} />
+        <AdminNav email={admin.email ?? ""} badges={{ accompagnement, artisans, devis, avis }} />
         <div className="min-w-0 pt-6 lg:pt-0">{children}</div>
       </div>
     </div>

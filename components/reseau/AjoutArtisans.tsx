@@ -1,5 +1,6 @@
 "use client";
 
+import NoteArtisan from "@/components/reseau/avis/NoteArtisan";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ajouterArtisans } from "@/lib/actions/devis";
@@ -44,6 +45,7 @@ export default function AjoutArtisans({ demandeId, artisans, places, metiersDema
                   {a.presentation && <span className="mt-2 line-clamp-3 block text-[13.5px] text-muted">{a.presentation}</span>}
                 </span>
               </label>
+              <div className="pl-8"><NoteArtisan id={a.id} note={a.note} nbAvis={a.nbAvis} nbRealisations={a.nbRealisations} /></div>
               {a.photos.length > 0 && (
                 <div className="mt-3 grid grid-cols-3 gap-1.5 pl-8">
                   {a.photos.map((u, i) => (

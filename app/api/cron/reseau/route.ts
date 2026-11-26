@@ -87,7 +87,7 @@ export async function GET(req: Request) {
         const { data: fait } = await sb.from(TABLE_MER).update({ relance_le: new Date().toISOString() }).eq("id", m.id).eq("statut", "envoyee").is("relance_le", null).select("id");
         if (!fait?.length) continue;
         const lieu = `${d.ville ? `${d.ville}, ` : ""}${nomDepartement(d.departement)} (${d.code_postal})`;
-        const mail = emailRelanceArtisan({ nomArtisan: a.contact_nom, travaux: d.metiers.map(labelMetier), lieu, joursRestants: EXPIRATION_JOURS - RELANCE_JOURS, espaceUrl: `${site()}/espace-artisan#demandes` });
+        const mail = emailRelanceArtisan({ nomArtisan: a.contact_nom, travaux: d.metiers.map(labelMetier), lieu, joursRestants: EXPIRATION_JOURS - RELANCE_JOURS, espaceUrl: `${site()}/espace-artisan/demandes` });
         const issue = await envoyerEmailSuivi({ to: a.email, subject: mail.subject, html: mail.html, replyTo: DESTINATAIRE_DEFAUT });
         if (issue === "echec") await sb.from(TABLE_MER).update({ relance_le: null }).eq("id", m.id);
         else bilan.relances++;

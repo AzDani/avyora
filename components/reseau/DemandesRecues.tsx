@@ -7,6 +7,8 @@ import { lienAppel, lienWhatsApp } from "@/lib/admin/outils";
 import type { DemandeRecue } from "@/lib/data/reseau";
 import BoutonsReponse from "@/components/reseau/BoutonsReponse";
 import BoutonDevisEnvoye from "@/components/reseau/BoutonDevisEnvoye";
+import Link from "next/link";
+import { EXPIRATION_JOURS } from "@/lib/reseau/demande";
 
 /**
  * Les demandes de devis reçues par un artisan validé (son espace). Avant sa réponse : la demande sans les coordonnées
@@ -14,6 +16,7 @@ import BoutonDevisEnvoye from "@/components/reseau/BoutonDevisEnvoye";
  */
 const euros = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
 const dateCourte = (iso: string) => new Date(iso).toLocaleDateString("fr-FR", { timeZone: "Europe/Paris", day: "numeric", month: "long" });
+const limite = (iso: string) => new Date(Date.parse(iso) + EXPIRATION_JOURS * 86_400_000).toLocaleDateString("fr-FR", { timeZone: "Europe/Paris", day: "numeric", month: "long" });
 const TON = { envoyee: "bg-brand-600 text-white", acceptee: "bg-[#e3f5ed] text-[#0b5e40]", refusee: "bg-surface-2 text-muted border border-line", expiree: "bg-surface-2 text-muted border border-line" } as const;
 
 function Carte({ r }: { r: DemandeRecue }) {
@@ -27,7 +30,7 @@ function Carte({ r }: { r: DemandeRecue }) {
           <p className="text-[13px] text-muted">{lieu} · {labelDelai(d.delai)}</p>
         </div>
         <span className="flex flex-wrap items-center gap-x-2 gap-y-1 sm:flex-col sm:items-end">
-          <span className={"rounded-full px-2.5 py-0.5 text-[12px] font-semibold " + TON[r.statut]}>{r.statut === "envoyee" ? "À répondre" : r.statut === "expiree" ? "Expirée" : LIBELLES_MER[r.statut]}</span>
+          <span className={"rounded-full px-2.5 py-0.5 text-[12px] font-semibold " + (r.signe ? TON.acceptee : r.nonRetenu ? TON.refusee : TON[r.statut])}>{r.statut === "envoyee" ? "À répondre" : r.statut === "expiree" ? "Expirée" : r.signe ? "Signé avec toi ✓" : r.nonRetenu ? "Pas retenu" : r.statut === "acceptee" && !r.devisEnvoyeLe ? "Devis à envoyer" : r.statut === "acceptee" ? "Devis envoyé" : LIBELLES_MER[r.statut]}</span>
           <span className="num text-[12px] text-faint">Reçue le {dateCourte(r.envoyeeLe)}</span>
         </span>
       </div>
@@ -72,6 +75,29 @@ function Carte({ r }: { r: DemandeRecue }) {
       )}
 
       {r.statut === "envoyee" && <BoutonsReponse miseId={r.miseId} />}
+      {r.statut === "envoyee" && (
+        <p className="mt-3 rounded-xl bg-[#fdf1e1] px-3 py-2 text-[13px] text-[#8a5208]">
+          Réponds avant le <b>{limite(r.envoyeeLe)}</b> : sans réponse, la demande part à un autre artisan.
+        </p>
+      )}
+      {r.statut === "acceptee" && !r.nonRetenu && (
+        <ol className="mt-4 grid grid-cols-4 gap-1.5" aria-label="Avancement">
+          {([
+            ["Acceptée", true],
+            ["Devis envoyé", !!r.devisEnvoyeLe],
+            ["Devis reçu par le client", r.issue === "devis_recu" || r.signe],
+            ["Signé", r.signe],
+          ] as const).map(([l, fait], i, t) => {
+            const enCours = !fait && (i === 0 || t[i - 1][1]);
+            return (
+              <li key={l} className={"text-[11.5px] leading-tight " + (fait ? "font-semibold text-ink" : enCours ? "font-semibold text-brand-700" : "text-faint")}>
+                <span aria-hidden="true" className={"mb-1.5 block h-1.5 rounded-full " + (fait ? "bg-[#0b7a53]" : enCours ? "bg-brand-600" : "bg-line-strong")} />
+                {l}<span className="sr-only">{fait ? " : fait" : " : à venir"}</span>
+              </li>
+            );
+          })}
+        </ol>
+      )}
       {r.statut === "acceptee" && r.client && (
         <div className="mt-4 rounded-2xl bg-[#e3f5ed] p-4">
           <p className="text-[14px] font-semibold text-[#0b5e40]">Ton client : {r.client.prenom}</p>
@@ -87,27 +113,49 @@ function Carte({ r }: { r: DemandeRecue }) {
         </div>
       )}
       {r.statut === "acceptee" && (r.devisEnvoyeLe
-        ? <p className="mt-3 text-[13px] font-semibold text-muted">Devis envoyé le {dateCourte(r.devisEnvoyeLe)}{r.signe ? " · le client a signé avec toi" : ""}</p>
-        : <BoutonDevisEnvoye miseId={r.miseId} />)}
+        ? <p className="mt-3 text-[13px] font-semibold text-muted">Devis envoyé le {dateCourte(r.devisEnvoyeLe)}{r.signe ? " · le client a signé avec toi" : r.nonRetenu ? " · le client a choisi un autre artisan" : r.issue === "devis_recu" ? " · le client a indiqué l'avoir reçu" : ""}</p>
+        : r.nonRetenu ? <p className="mt-3 text-[13px] font-semibold text-muted">Le client a choisi un autre artisan.</p> : <BoutonDevisEnvoye miseId={r.miseId} />)}
       {r.statut === "expiree" && <p className="mt-3 text-[13px] text-muted">Pas de réponse dans les 5 jours : la demande a été proposée à un autre artisan.</p>}
     </article>
   );
 }
 
-export default function DemandesRecues({ demandes }: { demandes: DemandeRecue[] }) {
-  const aRepondre = demandes.filter((d) => d.statut === "envoyee");
-  const autres = demandes.filter((d) => d.statut !== "envoyee");
+export type Onglet = "rep" | "cours" | "fin";
+/** Dans quel onglet range-t-on une demande ? À répondre ; En cours (acceptée, ni signée ni perdue) ; Terminées. */
+export function ongletDe(r: DemandeRecue): Onglet {
+  if (r.statut === "envoyee") return "rep";
+  if (r.statut === "acceptee" && !r.signe && !r.nonRetenu) return "cours";
+  return "fin";
+}
+const ONGLETS: [Onglet, string][] = [["rep", "À répondre"], ["cours", "En cours"], ["fin", "Terminées"]];
+const VIDE: Record<Onglet, string> = {
+  rep: "Rien à répondre pour l'instant. Quand un client de ta zone te choisit, tu reçois un e-mail et la demande apparaît ici.",
+  cours: "Aucune demande en cours.",
+  fin: "Rien de terminé pour l'instant.",
+};
+
+/** Les demandes reçues, rangées en trois onglets (espace artisan, 25/11/2026). Les onglets sont des liens (?onglet=). */
+export default function DemandesRecues({ demandes, onglet }: { demandes: DemandeRecue[]; onglet: Onglet }) {
+  const liste = demandes.filter((d) => ongletDe(d) === onglet);
   return (
-    <section id="demandes" aria-labelledby="demandes-titre" className="scroll-mt-28 space-y-3">
-      <h2 id="demandes-titre" className="text-[18px] font-semibold text-ink">
-        Tes demandes de devis{aRepondre.length > 0 && <span className="num ml-2 rounded-full bg-brand-600 px-2 py-0.5 text-[12px] font-bold text-white">{aRepondre.length} à répondre</span>}
-      </h2>
-      {demandes.length === 0 ? (
-        <p className="rounded-3xl border border-dashed border-line-strong bg-surface-2 p-5 text-[14px] text-muted">
-          Pas encore de demande. Quand un client de ta zone te choisit, tu reçois un e-mail et la demande apparaît ici.
-        </p>
+    <section id="demandes" aria-label="Tes demandes de devis" className="space-y-3">
+      <div className="flex gap-1 overflow-x-auto border-b border-line-strong">
+        {ONGLETS.map(([k, l]) => {
+          const n = demandes.filter((d) => ongletDe(d) === k).length;
+          const on = k === onglet;
+          return (
+            <Link key={k} href={k === "rep" ? "/espace-artisan/demandes" : `/espace-artisan/demandes?onglet=${k}`} aria-current={on ? "page" : undefined}
+              className={"-mb-px inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2.5 text-[14px] font-semibold " + (on ? "border-brand-600 text-brand-700" : "border-transparent text-muted hover:text-ink")}>
+              {l}
+              <span className={"num rounded-full px-2 text-[11.5px] leading-5 " + (on ? "bg-brand-600 text-white" : "border border-line bg-surface-2 text-muted")}>{n}</span>
+            </Link>
+          );
+        })}
+      </div>
+      {liste.length === 0 ? (
+        <p className="rounded-3xl border border-dashed border-line-strong bg-surface-2 p-5 text-[14px] text-muted">{VIDE[onglet]}</p>
       ) : (
-        <div className="space-y-3">{[...aRepondre, ...autres].map((r) => <Carte key={r.miseId} r={r} />)}</div>
+        <div className="space-y-3">{liste.map((r) => <Carte key={r.miseId} r={r} />)}</div>
       )}
     </section>
   );

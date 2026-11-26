@@ -4,6 +4,16 @@ import { logout } from "@/lib/actions/auth";
 import { getT } from "@/lib/i18n/server";
 import { FEATURES } from "@/lib/features";
 import { betaActive, lienInscriptionBeta } from "@/lib/beta";
+import { etatArtisanEntete } from "@/lib/data/reseau";
+
+/** Le compte est-il un artisan du réseau (et combien de demandes l'attendent) ? Une panne n'affiche rien. */
+async function etatArtisan(userId: string) {
+  try {
+    return await etatArtisanEntete(userId);
+  } catch {
+    return { artisan: false, aRepondre: 0 };
+  }
+}
 
 /** Bloc de navigation lié à l'auth : Connexion (déconnecté) ou prénom + déconnexion (connecté). */
 export async function AuthNav() {
@@ -35,6 +45,7 @@ export async function AuthNav() {
   }
 
   const prenom = (user.user_metadata?.nom as string) || user.email?.split("@")[0] || t.nav.monCompte;
+  const artisan = await etatArtisan(user.id);
   /* Éditeur de plan allumé (C9) : l'onglet « Plan 3D » prend de la place. Mesuré à 768 et 1 024 px : le prénom passe
      en icône seule sous xl, « Admin » et « Déconnexion » sous lg (leur nom reste dans aria-label et title). Éteint :
      le bloc d'avant, au caractère près. */
@@ -63,6 +74,33 @@ export async function AuthNav() {
             <path d="M8 1.6 13 3.5v4.2c0 3-2.1 5.4-5 6.7-2.9-1.3-5-3.7-5-6.7V3.5L8 1.6Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
           </svg>
           {compact ? <span className="hidden lg:inline">Admin</span> : "Admin"}
+        </Link>
+      )}
+      {/* Les avis sur les artisans du réseau (25/11/2026) : réservés aux membres Pro, la page le dit aux autres. */}
+      <Link
+        href="/avis-artisans"
+        className="hidden items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm text-indigo-200/90 transition-colors hover:bg-white/10 hover:text-white xl:inline-flex"
+      >
+        Avis artisans
+      </Link>
+      {/* L'espace artisan (25/11/2026) : pour un artisan du réseau, avec le nombre de demandes à répondre. */}
+      {artisan.artisan && (
+        <Link
+          href="/espace-artisan"
+          data-espace-artisan=""
+          title="Espace artisan"
+          className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-[#a78bfa]/20 px-2.5 py-1.5 text-sm font-semibold text-white shadow-[inset_0_0_0_1px_rgba(167,139,250,.55)] transition-colors hover:bg-[#a78bfa]/30"
+        >
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="shrink-0">
+            <path d="M2.5 13.5h11M4 13.5V7.2L8 4l4 3.2v6.3M6.6 13.5V10h2.8v3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span className={compact ? "hidden xl:inline" : ""}>Espace artisan</span>
+          {artisan.aRepondre > 0 && (
+            <span className="num inline-flex min-w-[19px] items-center justify-center rounded-full bg-[#f59e0b] px-1.5 text-[11.5px] font-bold leading-[19px] text-[#1e1b4b]">
+              {artisan.aRepondre > 99 ? "99+" : artisan.aRepondre}
+              <span className="sr-only"> demande{artisan.aRepondre > 1 ? "s" : ""} à répondre</span>
+            </span>
+          )}
         </Link>
       )}
       <Link

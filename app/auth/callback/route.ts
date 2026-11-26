@@ -5,6 +5,7 @@ import { cheminInterne } from "@/lib/next-url";
 import { controlerArrivee, noterArrivee } from "@/lib/auth-arrivee";
 import { COOKIE_DEMANDE, COOKIE_VERIFIER, lienMdpDesactive, trouverDemande } from "@/lib/auth-lien";
 import { empreinteAdresse } from "@/lib/empreinte";
+import { arriveeApresConnexion } from "@/lib/data/reseau";
 
 /**
  * Callback des liens email (lien d'accès, confirmation d'inscription, réinitialisation de mot de passe) et de
@@ -38,7 +39,9 @@ export async function GET(request: NextRequest) {
       await noterArrivee(supabase, data.user, next);
       cookieStore.set(COOKIE_VERIFIER, "", { path: "/", maxAge: 0, httpOnly: true, sameSite: "lax" });
       // Mot de passe remplacé par sécurité : la page qui le dit, puis l'intention.
-      return NextResponse.redirect(`${origin}${mdpDesactive ? lienMdpDesactive(next) : next}`);
+      // Un artisan du réseau sans intention précise arrive sur son espace (25/11/2026).
+      const dest = await arriveeApresConnexion(data.user?.id, next);
+      return NextResponse.redirect(`${origin}${mdpDesactive ? lienMdpDesactive(dest) : dest}`);
     }
   }
   const retour = new URLSearchParams({ erreur: "lien_invalide" });

@@ -1,4 +1,5 @@
 import type { VerifSiret } from "./siret";
+import { lireMaj, type MajDemandee } from "./avis";
 import type { TypeDocument } from "./candidature";
 
 /** Une candidature au Réseau AVYORA (table `artisans`, migration 0007), telle que le code la manipule. Module pur. */
@@ -30,12 +31,14 @@ export type Artisan = {
   messageAdmin: string | null;
   notesAdmin: string | null;
   contactsEnvoyes: number;
+  /** La mise à jour demandée par l'artisan validé (nouvelle décennale, métiers, zone), migration 0012. */
+  majDemandee: MajDemandee | null;
 };
 
 export type DocumentArtisan = { id: string; type: TypeDocument; chemin: string; nom: string; taille: number; mime: string; createdAt: string };
 
 export const COLONNES_ARTISAN =
-  "id, user_id, statut, siret, raison_sociale, nom_commercial, siret_verif, contact_nom, telephone, email, metiers, departements, presentation, site_web, lien_avis, rge, decennale_assureur, decennale_police, decennale_fin, soumise_le, appel_le, valide_le, message_admin, notes_admin, contacts_envoyes";
+  "id, user_id, statut, siret, raison_sociale, nom_commercial, siret_verif, contact_nom, telephone, email, metiers, departements, presentation, site_web, lien_avis, rge, decennale_assureur, decennale_police, decennale_fin, soumise_le, appel_le, valide_le, message_admin, notes_admin, contacts_envoyes, maj_demandee";
 
 const STATUTS: StatutArtisan[] = ["en_attente", "a_completer", "valide", "refuse", "suspendu"];
 
@@ -55,6 +58,7 @@ export function lireArtisan(r: Record<string, unknown>): Artisan {
     soumiseLe: s("soumise_le"), appelLe: n("appel_le"), valideLe: n("valide_le"),
     messageAdmin: n("message_admin"), notesAdmin: n("notes_admin"),
     contactsEnvoyes: typeof r.contacts_envoyes === "number" ? r.contacts_envoyes : 0,
+    majDemandee: lireMaj(r.maj_demandee ?? null),
   };
 }
 

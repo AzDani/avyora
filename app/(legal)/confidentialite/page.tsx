@@ -12,7 +12,7 @@ export default function Confidentialite() {
   return (
     <article>
       <h1>Politique de confidentialité</h1>
-      <p className="maj">Dernière mise à jour : 23 novembre 2026</p>
+      <p className="maj">Dernière mise à jour : 25 novembre 2026</p>
 
       <p>
         La présente politique décrit la manière dont AVYORA collecte et traite les données personnelles,
@@ -37,7 +37,8 @@ export default function Confidentialite() {
           <tr><td>Plans</td><td>plans de maison dessinés dans l&apos;éditeur et enregistrés dans le compte</td></tr>
           <tr><td>Demande d&apos;accompagnement</td><td>prénom, e-mail, téléphone, type de projet, besoins cochés, message libre — formulaire de la page « Accompagnement travaux », sans compte</td></tr>
           <tr><td>Candidature au Réseau AVYORA (artisans)</td><td>SIRET et informations publiques de l&apos;entreprise issues du répertoire des entreprises (nom, état, activité, adresse, label RGE), nom et prénom du contact, portable, e-mail du compte, métiers, départements d&apos;intervention, présentation, site web, lien vers les avis, assureur, numéro de contrat et date de fin de l&apos;assurance décennale, attestations d&apos;assurance et photos de chantiers déposées, notes de l&apos;éditeur sur la candidature</td></tr>
-          <tr><td>Demande de devis au Réseau AVYORA</td><td>travaux souhaités, code postal, ville et adresse du chantier (facultative), description, surfaces et quantités, délai, photos, estimation AVYORA jointe (si tu le choisis), artisans choisis et leurs réponses, suivi (devis reçu, signé, pas retenu) et avis sur les artisans (note et commentaire, lus par l&apos;éditeur seul, non publiés), prénom, portable et e-mail du compte</td></tr>
+          <tr><td>Demande de devis au Réseau AVYORA</td><td>travaux souhaités, code postal, ville et adresse du chantier (facultative), description, surfaces et quantités, délai, photos, estimation AVYORA jointe (si tu le choisis), artisans choisis et leurs réponses, suivi (devis reçu, signé, pas retenu) et avis sur les artisans (note, commentaire, mois des travaux et photos&nbsp;: publiés pour les membres AVYORA Pro avec ton prénom et l&apos;initiale de ton nom, après vérification par l&apos;éditeur), prénom, portable et e-mail du compte</td></tr>
+          <tr><td>Fiche et galerie d&apos;un artisan du Réseau AVYORA</td><td>nom commercial, commune, métiers, départements, présentation, site web, réalisations publiées (titre, description, ville, mois, photos), réponses aux avis</td></tr>
           <tr><td>Paiement</td><td>gérées par Stripe&nbsp;; AVYORA ne stocke pas les numéros de carte</td></tr>
           <tr><td>Sécurité &amp; journaux</td><td>adresse IP (limitation d&apos;abus), horodatage d&apos;évènements d&apos;authentification</td></tr>
           <tr><td>Présence sur le Site (en direct)</td><td>page en cours de consultation, ville et pays approximatifs (déduits de l&apos;adresse IP, qui n&apos;est pas gardée), compte si tu es connecté — effacés 90 secondes au plus après ta dernière page vue pour le compteur en direct ; pour l&apos;historique de la journée (heure d&apos;arrivée, dernière activité, pages vues), 48 heures au plus</td></tr>
@@ -58,6 +59,7 @@ export default function Confidentialite() {
           <tr><td>Répondre à ta demande d&apos;accompagnement et te recontacter (e-mail, téléphone, visio ou WhatsApp, selon ce que tu indiques)</td><td>Mesures précontractuelles prises à ta demande (art. 6.1.b)</td></tr>
           <tr><td>Examiner la candidature d&apos;un artisan au Réseau AVYORA (vérification du SIRET, de l&apos;assurance, entretien téléphonique), puis gérer sa participation au réseau</td><td>Mesures précontractuelles prises à sa demande, puis exécution des <a href="/conditions-reseau">conditions du Réseau AVYORA</a> (art. 6.1.b)</td></tr>
           <tr><td>Transmettre ta demande de devis aux artisans que tu choisis, puis tes coordonnées à ceux qui l&apos;acceptent (mise en relation)</td><td>Mesures précontractuelles prises à ta demande (art. 6.1.b), avec ton accord explicite au moment de l&apos;envoi</td></tr>
+          <tr><td>Publier ton avis sur un artisan (après vérification), et la fiche et la galerie d&apos;un artisan, pour les membres AVYORA Pro</td><td>Ton consentement, donné en envoyant l&apos;avis (art. 6.1.a) — tu peux demander son retrait à tout moment ; pour l&apos;artisan, exécution des <a href="/conditions-reseau">conditions du Réseau AVYORA</a> (art. 6.1.b)</td></tr>
           <tr><td>Sécurité, prévention de la fraude et des abus</td><td>Intérêt légitime (art. 6.1.f)</td></tr>
           <tr><td>Voir en direct et sur la journée la fréquentation du Site (combien de visiteurs, sur quelles pages, d&apos;où approximativement, et quels membres connectés), pour l&apos;éditeur seul</td><td>Intérêt légitime (art. 6.1.f) — 90 secondes au plus pour le direct, 48 heures au plus pour l&apos;historique de la journée, aucun cookie n&apos;est ajouté</td></tr>
           <tr><td>Obligations comptables et légales (facturation)</td><td>Obligation légale (art. 6.1.c)</td></tr>
@@ -97,7 +99,8 @@ export default function Confidentialite() {
         <li>Journaux de sécurité&nbsp;: durée limitée, proportionnée à la finalité de sécurité.</li>
         <li>Demandes d&apos;accompagnement (l&apos;e-mail reçu par l&apos;éditeur et sa trace dans le journal)&nbsp;: <strong>1 an au plus</strong> après le dernier échange si la demande n&apos;a pas de suite&nbsp;; si elle débouche sur une prestation, les données nécessaires sont conservées pour la durée de la relation, puis selon les obligations comptables.</li>
         <li>Candidatures au Réseau AVYORA&nbsp;: pendant la participation au réseau&nbsp;; une candidature non retenue, ou une participation terminée, est supprimée (avec ses documents) <strong>1 an au plus</strong> après la décision, ou plus tôt sur simple demande à contact@getavyora.fr.</li>
-        <li>Demandes de devis et leurs photos&nbsp;: <strong>2 ans au plus</strong> après la demande, supprimées avec le compte, ou plus tôt sur simple demande à contact@getavyora.fr.</li>
+        <li>Demandes de devis et leurs photos&nbsp;: <strong>2 ans au plus</strong> après la demande, supprimées avec le compte, ou plus tôt sur simple demande à contact@getavyora.fr. Les avis sur les artisans et leurs photos suivent la demande à laquelle ils sont liés, et sont retirés plus tôt sur simple demande de leur auteur.</li>
+        <li>Réalisations de la galerie d&apos;un artisan&nbsp;: pendant sa participation au réseau&nbsp;; il peut les supprimer à tout moment.</li>
         <li>Cookies publicitaires Google Ads&nbsp;: <strong>13 mois au plus</strong> à compter de leur dépôt&nbsp;; votre choix (acceptation ou refus) est conservé 6 mois, puis vous est redemandé.</li>
       </ul>
 

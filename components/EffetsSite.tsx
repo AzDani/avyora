@@ -17,7 +17,7 @@ import { usePathname } from "next/navigation";
  */
 const SANS_DEFILEMENT = [
   "/projets", "/plan", "/admin", "/mon-espace", "/espace-artisan", "/onboarding", "/connexion", "/inscription",
-  "/reset", "/auth", "/bienvenue-pro", "/demandes-devis",
+  "/reset", "/auth", "/bienvenue-pro", "/demandes-devis", "/avis-artisans",
   // Les estimateurs (le formulaire est le haut de ces pages) : on y travaille aussi.
   "/estimation-travaux", "/estimation-construction-maison",
 ];

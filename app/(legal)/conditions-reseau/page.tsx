@@ -16,7 +16,7 @@ export default function ConditionsReseau() {
   return (
     <article>
       <h1>Conditions du Réseau AVYORA</h1>
-      <p className="maj">Version du 20 novembre 2026</p>
+      <p className="maj">Version du 25 novembre 2026</p>
 
       <h2>1. Objet</h2>
       <p>
@@ -59,13 +59,29 @@ export default function ConditionsReseau() {
         <li>Ne pas se présenter comme salarié, mandataire ou partenaire exclusif d&apos;AVYORA.</li>
       </ul>
 
-      <h2>4 bis. Suivi et avis des Clients</h2>
+      <h2>4 bis. Suivi, avis des Clients, fiche et galerie</h2>
       <p>
-        Le Client peut indiquer s&apos;il a reçu le devis de l&apos;Artisan et s&apos;il l&apos;a retenu, et donner un avis (une note de
-        1 à 5 et un commentaire). Ces avis <strong>ne sont pas publiés</strong>{" "}à ce jour&nbsp;: ils sont lus par l&apos;éditeur pour
-        veiller à la qualité du réseau. Des avis négatifs répétés, ou un taux de réponse trop faible, peuvent conduire à une
-        suspension (section 7). Si les avis devaient un jour être affichés aux Clients, l&apos;Artisan en serait informé à
-        l&apos;avance, avec la manière dont ils sont contrôlés.
+        Le Client peut indiquer s&apos;il a reçu le devis de l&apos;Artisan et s&apos;il l&apos;a retenu. Quand l&apos;Artisan a accepté
+        sa demande, le Client peut donner un avis&nbsp;: une note de 1 à 5, un commentaire, le mois des travaux et jusqu&apos;à 6
+        photos. L&apos;éditeur lit chaque avis avant de le publier&nbsp;; il ne le refuse que pour un des motifs publiés sur la
+        page des avis (propos injurieux, données personnelles, hors sujet, avis non authentique, photo inadaptée) et publie
+        les avis négatifs comme les autres. Les avis publiés sont visibles par les membres AVYORA Pro, sur la fiche de
+        l&apos;Artisan et quand ils choisissent leurs artisans, avec le prénom et l&apos;initiale du nom de l&apos;auteur, du plus
+        récent au plus ancien. Un avis publié n&apos;est plus modifiable.
+      </p>
+      <p>
+        L&apos;Artisan peut répondre publiquement à un avis (sa réponse est lue par l&apos;éditeur avant publication) et signaler
+        un avis qu&apos;il estime contraire à ces règles&nbsp;: l&apos;éditeur tranche. L&apos;Artisan ne peut ni supprimer un avis, ni
+        en obtenir contre une contrepartie. Des avis négatifs répétés, ou un taux de réponse trop faible, peuvent conduire à
+        une suspension (section 7). La note et les avis ne changent pas l&apos;ordre dans lequel les artisans sont proposés.
+      </p>
+      <p>
+        L&apos;Artisan peut publier dans sa galerie des réalisations (titre, description, ville, photos), sans validation
+        préalable et sous sa responsabilité&nbsp;: il garantit qu&apos;il en est l&apos;auteur, que ses clients acceptent que les
+        photos soient montrées et qu&apos;elles ne laissent voir ni visage reconnaissable ni adresse. L&apos;éditeur peut retirer
+        une réalisation. La fiche de l&apos;Artisan (nom commercial, commune, métiers, départements, présentation, site web,
+        note, avis et réalisations) est visible par les membres AVYORA Pro&nbsp;; ses coordonnées ne sont transmises qu&apos;aux
+        Clients dont il accepte la demande.
       </p>
 
       <h2>5. Rôle d&apos;AVYORA</h2>

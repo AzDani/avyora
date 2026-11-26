@@ -132,7 +132,7 @@ export default function ReseauArtisans() {
             <ul className="mt-2 list-disc space-y-1.5 pl-5 text-[14.5px] leading-relaxed text-muted">
               <li>Une assurance à jour : une attestation expirée suspend la participation jusqu&apos;à son renouvellement.</li>
               <li>Une réponse à chaque demande reçue sous 5 jours (accepter ou refuser).</li>
-              <li>Des clients satisfaits : leurs avis sont lus par le fondateur, et des avis négatifs répétés peuvent suspendre la participation.</li>
+              <li>Des clients satisfaits : leurs avis, vérifiés par le fondateur avant publication, sont visibles par les membres AVYORA Pro, et des avis négatifs répétés peuvent suspendre la participation.</li>
               <li>Des informations exactes, et le respect des clients et de leurs données.</li>
             </ul>
           </div>
@@ -142,6 +142,7 @@ export default function ReseauArtisans() {
               <li>Le client voit les artisans du réseau qui interviennent dans son département et exercent le métier demandé.</li>
               <li>C&apos;est le client qui choisit, jusqu&apos;à trois artisans par demande.</li>
               <li>Ils lui sont affichés en commençant par ceux qui ont reçu le moins de demandes, pour répartir équitablement ; à égalité, dans un ordre propre à chaque client.</li>
+              <li>La note et les avis sont affichés au client, mais ne changent pas cet ordre.</li>
               <li>Aucun artisan ne paie pour être mieux placé ou plus souvent proposé.</li>
             </ul>
             <h3 className="mt-5 text-[15px] font-semibold text-ink">Rémunération et rôle d&apos;AVYORA</h3>

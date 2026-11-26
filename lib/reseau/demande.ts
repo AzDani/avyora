@@ -112,6 +112,10 @@ export type ArtisanPropose = {
   siteWeb: string | null;
   lienAvis: string | null;
   photos: string[];
+  /** Avis publiés (25/11/2026) : la moyenne (null sans avis), leur nombre, et le nombre de réalisations de sa galerie. */
+  note: number | null;
+  nbAvis: number;
+  nbRealisations: number;
 };
 
 /**

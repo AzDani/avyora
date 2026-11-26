@@ -411,8 +411,46 @@ export function emailDemandeAvis(d: { prenom: string; nomArtisan: string; suiviU
   const corps = `
     ${P(`Bonjour ${e(d.prenom)},`)}
     ${P(`Il y a deux semaines, <b style="color:#15172b">${e(d.nomArtisan)}</b> a accepté ta demande de devis. As-tu reçu son devis ? L'as-tu retenu ?`)}
-    ${P("Ton avis prend une minute et sert à garder dans le réseau des artisans sérieux. Il n'est pas publié : seul Daniel le lit.")}
+    ${P("Ton avis prend une minute et aide les prochains clients à choisir. Daniel le lit avant de le publier pour les membres AVYORA Pro, avec ton prénom et l'initiale de ton nom.")}
     ${bouton("Donner mon avis", d.suiviUrl)}
   `;
   return { subject: `Comment ça s'est passé avec ${d.nomArtisan} ?`, html: layout({ preheader: "Une minute pour ton avis", eyebrow: "Réseau AVYORA", titre: "Ton avis compte", corps }) };
+}
+
+/* ─── Réseau AVYORA : avis publics et galerie (25/11/2026) ──────────────────────── */
+
+/** À Daniel : quelque chose attend sa validation (avis, réponse d'artisan, signalement, mise à jour de dossier). */
+export function emailAModererReseau(d: { titre: string; lignes: [string, string][]; url: string; bouton?: string }): { subject: string; html: string } {
+  const e = echapperHtml;
+  const corps = `
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 8px;border-top:1px solid #eef0f6">
+      ${d.lignes.map(([k, v]) => ligne(e(k), e(v).replace(/\n/g, "<br>"))).join("")}
+    </table>
+    ${bouton(d.bouton ?? "Ouvrir", d.url)}
+  `;
+  return { subject: d.titre, html: layout({ preheader: d.lignes.map(([, v]) => v).join(" · ").slice(0, 120), eyebrow: "Réseau AVYORA", titre: d.titre, corps }) };
+}
+
+/** Au client : son avis est publié, ou refusé (avec le motif ; il peut le réécrire). */
+export function emailAvisClient(d: { prenom: string; nomArtisan: string; publie: boolean; motif?: string; suiviUrl: string; ficheUrl?: string }): { subject: string; html: string } {
+  const e = echapperHtml;
+  const corps = d.publie
+    ? `${P(`Bonjour ${e(d.prenom)},`)}${P(`Ton avis sur <b style="color:#15172b">${e(d.nomArtisan)}</b> est en ligne. Merci : il aide les prochains clients à choisir.`)}${P("Un avis publié ne peut plus être modifié. Pour le faire retirer, réponds simplement à cet e-mail.")}${d.ficheUrl ? bouton("Voir la fiche", d.ficheUrl) : ""}`
+    : `${P(`Bonjour ${e(d.prenom)},`)}${P(`Ton avis sur <b style="color:#15172b">${e(d.nomArtisan)}</b> n'a pas pu être publié, pour ce motif :`)}${P(`<b style="color:#15172b">${e(d.motif ?? "")}</b>`)}${P("Tu peux le corriger et le renvoyer depuis le suivi de ta demande.")}${bouton("Corriger mon avis", d.suiviUrl)}`;
+  return {
+    subject: d.publie ? `Ton avis sur ${d.nomArtisan} est en ligne` : `Ton avis sur ${d.nomArtisan} n'a pas été publié`,
+    html: layout({ preheader: d.publie ? "Merci pour ton retour" : "Le motif et comment le corriger", eyebrow: "Réseau AVYORA", titre: d.publie ? "Ton avis est publié" : "Ton avis n'a pas été publié", corps }),
+  };
+}
+
+/** À l'artisan : un nouvel avis est publié sur sa fiche (il peut répondre) ; ou sa réponse est refusée (motif). */
+export function emailAvisArtisan(d: { nomArtisan: string; note?: number; reponseRefusee?: string; espaceUrl: string }): { subject: string; html: string } {
+  const e = echapperHtml;
+  const corps = d.reponseRefusee
+    ? `${P(`Bonjour ${e(d.nomArtisan)},`)}${P("Ta réponse à un avis n'a pas pu être publiée, pour ce motif :")}${P(`<b style="color:#15172b">${e(d.reponseRefusee)}</b>`)}${P("Tu peux la corriger depuis ton espace.")}${bouton("Mes avis", d.espaceUrl)}`
+    : `${P(`Bonjour ${e(d.nomArtisan)},`)}${P(`Un client a laissé un avis (<b style="color:#15172b">${d.note ?? "?"}/5</b>) sur ta fiche du Réseau AVYORA. Une réponse courte et courtoise rassure les prochains clients.`)}${bouton("Lire et répondre", d.espaceUrl)}`;
+  return {
+    subject: d.reponseRefusee ? "Ta réponse à un avis n'a pas été publiée" : "Un nouvel avis sur ta fiche AVYORA",
+    html: layout({ preheader: d.reponseRefusee ? "Le motif et comment la corriger" : "Tu peux y répondre", eyebrow: "Réseau AVYORA", titre: d.reponseRefusee ? "Réponse non publiée" : "Nouvel avis", corps }),
+  };
 }

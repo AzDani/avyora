@@ -19,7 +19,7 @@ import { betaActive, lienInscriptionBeta } from "@/lib/beta";
  * Clavier (menu déroulant accessible) : à l'ouverture, le focus va sur le premier lien du panneau ; Échap ferme et
  * rend le focus au bouton Menu, comme un clic sur le fond. Le bouton fait 44 × 44 px (cible tactile).
  */
-export default function MobileMenu({ isLoggedIn, prenom, isAdmin, isPro }: { isLoggedIn: boolean; prenom?: string; isAdmin?: boolean; isPro?: boolean }) {
+export default function MobileMenu({ isLoggedIn, prenom, isAdmin, isPro, artisan }: { isLoggedIn: boolean; prenom?: string; isAdmin?: boolean; isPro?: boolean; artisan?: { aRepondre: number } }) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
   const t = useT();
@@ -53,8 +53,10 @@ export default function MobileMenu({ isLoggedIn, prenom, isAdmin, isPro }: { isL
         aria-expanded={open}
         aria-controls={panneauId}
         onClick={() => setOpen((o) => !o)}
-        className="grid h-11 w-11 place-items-center rounded-lg text-indigo-100 transition-colors hover:bg-white/10"
+        className="relative grid h-11 w-11 place-items-center rounded-lg text-indigo-100 transition-colors hover:bg-white/10"
       >
+        {/* Un artisan avec des demandes à répondre : un point orange sur le bouton du menu (25/11/2026). */}
+        {!!artisan?.aRepondre && !open && <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-[#f59e0b] ring-2 ring-[#1E1B4B]" aria-hidden="true" />}
         {open ? (
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <path d="M5 5l10 10M15 5 5 15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
@@ -107,9 +109,22 @@ export default function MobileMenu({ isLoggedIn, prenom, isAdmin, isPro }: { isL
                 <span className="mt-0.5 block text-[11.5px] font-medium text-brand-700/80">{t.nav.accompagnementPastille}</span>
               </span>
             </Link>
+            {/* L'espace artisan (25/11/2026) : en tête des liens pour un artisan du réseau, avec ses demandes à répondre. */}
+            {artisan && (
+              <Link href="/espace-artisan" onClick={close} className="mb-1 flex items-center gap-2 rounded-lg bg-[#f3efff] px-3 py-2.5 text-sm font-semibold text-[#5b21b6] transition-colors hover:bg-[#ebe4ff]">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="shrink-0"><path d="M2.5 13.5h11M4 13.5V7.2L8 4l4 3.2v6.3M6.6 13.5V10h2.8v3.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <span className="flex-1">Espace artisan</span>
+                {artisan.aRepondre > 0 && <span className="num rounded-full bg-[#f59e0b] px-1.5 text-[11px] font-bold leading-5 text-[#1e1b4b]">{artisan.aRepondre}<span className="sr-only"> à répondre</span></span>}
+              </Link>
+            )}
             <Link href="/projets" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-surface-2">
               {t.nav.projets}
             </Link>
+            {isLoggedIn && (
+              <Link href="/avis-artisans" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-surface-2">
+                Avis artisans
+              </Link>
+            )}
             <div className="my-1.5 border-t border-line" />
             {isLoggedIn ? (
               <>

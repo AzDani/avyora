@@ -51,6 +51,23 @@ async function modifiable(userId: string): Promise<{ ok: true; existante: Awaite
 
 const estType = (t: unknown): t is TypeDocument => typeof t === "string" && (TYPES_DOCUMENTS as string[]).includes(t);
 
+/**
+ * Peut-il déposer ce type de fichier ? Une candidature modifiable : tout, dans la limite de `DOCS`. Un artisan VALIDÉ
+ * (25/11/2026) : sa nouvelle attestation décennale ou RC pro, depuis « Mon dossier » (10 au plus : les anciennes
+ * restent pour l'historique) ; Daniel vérifie la nouvelle décennale avant de changer la date.
+ */
+async function peutDeposer(userId: string, type: TypeDocument): Promise<{ ok: true; max: number } | { ok: false; erreur: Erreur }> {
+  const m = await modifiable(userId);
+  if (m.ok) return { ok: true, max: DOCS[type].max };
+  if (m.erreur !== "verrouille" || (type !== "decennale" && type !== "rc_pro")) return m;
+  try {
+    const a = await candidatureDe(userId);
+    return a?.statut === "valide" ? { ok: true, max: 10 } : { ok: false, erreur: "verrouille" };
+  } catch {
+    return { ok: false, erreur: "serveur" };
+  }
+}
+
 /** Vérifie un SIRET pendant la saisie (nom de l'entreprise, état). Compte connecté, 20 par heure. */
 export async function verifierMonSiret(saisie: string): Promise<{ ok: true; verif: VerifSiret } | { ok: false; erreur: "session" | "invalide" | "cle" | "limite" }> {
   const user = await getUser();
@@ -72,10 +89,10 @@ export async function preparerEnvoiDocument(f: { type: string; taille: number; m
   if (!user) return { ok: false, erreur: "session" };
   if (!estType(f?.type) || typeof f.mime !== "string" || !mimeAccepte(f.type, f.mime)) return { ok: false, erreur: "type" };
   if (!(typeof f.taille === "number" && f.taille > 0 && f.taille <= TAILLE_MAX)) return { ok: false, erreur: "taille" };
-  const m = await modifiable(user.id);
+  const m = await peutDeposer(user.id, f.type);
   if (!m.ok) return m;
   const deja = (await documentsDe(user.id)).filter((d) => d.type === f.type).length;
-  if (deja >= DOCS[f.type].max) return { ok: false, erreur: "trop" };
+  if (deja >= m.max) return { ok: false, erreur: "trop" };
   if (!(await verifierLimite("artisanFichier", user.id))) return { ok: false, erreur: "limite" };
 
   const chemin = `${user.id}/${f.type}/${randomUUID()}.${MIMES_ACCEPTES[f.mime as keyof typeof MIMES_ACCEPTES]}`;
@@ -92,7 +109,7 @@ export async function enregistrerDocument(f: { type: string; chemin: string; nom
   const prefixe = `${user.id}/${f.type}/`;
   const fichier = f.chemin.slice(prefixe.length);
   if (!f.chemin.startsWith(prefixe) || !/^[0-9a-f-]{36}\.(pdf|jpg|png|webp)$/.test(fichier)) return { ok: false, erreur: "introuvable" };
-  const m = await modifiable(user.id);
+  const m = await peutDeposer(user.id, f.type);
   if (!m.ok) return m;
 
   const sb = supabaseAdmin();
@@ -106,7 +123,7 @@ export async function enregistrerDocument(f: { type: string; chemin: string; nom
     return { ok: false, erreur: "type" };
   }
   const deja = (await documentsDe(user.id)).filter((d) => d.type === f.type).length;
-  if (deja >= DOCS[f.type].max) {
+  if (deja >= m.max) {
     await retirer();
     return { ok: false, erreur: "trop" };
   }
@@ -208,7 +225,7 @@ export async function soumettreCandidature(brut: unknown): Promise<{ ok: true } 
   const issueAccuse = await envoyerEmailSuivi({ to: user.email, subject: accuse.subject, html: accuse.html, replyTo: destinataireInterne() });
   await journaliser("candidature_artisan", { userId: user.id, payload: { artisan: id, completee, envoi_interne: issueInterne, envoi_accuse: issueAccuse } });
 
-  revalidatePath("/espace-artisan");
+  revalidatePath("/espace-artisan", "layout");
   revalidatePath("/admin", "layout");
   return { ok: true };
 }

@@ -59,12 +59,14 @@ const LIMITERS: Record<LimitKind, Ratelimit | null> = {
   // Demandes de devis (phase 2), indexées sur le compte : chaque demande envoie un e-mail à chaque artisan choisi.
   devisRecherche: make(Ratelimit.slidingWindow(60, "3600 s"), "avyora:devis-recherche"), // 60 recherches d'artisans / h / compte
   devisDemande: make(Ratelimit.slidingWindow(5, "86400 s"), "avyora:devis-demande"), // 5 demandes / jour / compte
+  // Avis publics, réponses, signalements et galerie (25/11/2026) : chaque envoi prévient Daniel par e-mail.
+  reseauAvis: make(Ratelimit.slidingWindow(20, "86400 s"), "avyora:reseau-avis"), // 20 envois / jour / compte
 };
 
 export type LimitKind =
   | "auth" | "api" | "ia" | "pdf" | "pdfHeure" | "pdfIp" | "lienAdresse" | "lienIp" | "plan" | "planCreation" | "planEstimation" | "marche"
   | "statut" | "contact" | "contactAccuse" | "artisanSiret" | "artisanFichier" | "artisanEnvoi"
-  | "devisRecherche" | "devisDemande";
+  | "devisRecherche" | "devisDemande" | "reseauAvis";
 
 /**
  * Les catégories qui CRÉENT des lignes en base (« Mes plans ») ou qui coûtent cher (le plafond horaire des PDF) se
@@ -112,6 +114,7 @@ const MEMOIRE: Partial<Record<LimitKind, { max: number; fenetreMs: number }>> = 
   artisanEnvoi: { max: 5, fenetreMs: 3_600_000 },
   devisRecherche: { max: 60, fenetreMs: 3_600_000 },
   devisDemande: { max: 5, fenetreMs: 86_400_000 },
+  reseauAvis: { max: 20, fenetreMs: 86_400_000 },
 };
 
 /**
