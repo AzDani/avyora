@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 import { preparerPortrait } from "@/lib/reseau/image";
@@ -15,44 +15,48 @@ import { enregistrerPhotoProfil, preparerPhotoProfil, retirerPhotoProfil } from 
 export default function PhotoProfil({ url, initiale, artisan = false }: { url: string | null; initiale: string; artisan?: boolean }) {
   const router = useRouter();
   const champ = useRef<HTMLInputElement>(null);
-  const [enCours, demarrer] = useTransition();
-  const [apercu, setApercu] = useState<string | null>(null);
+  // Un état simple plutôt qu'une transition : avec router.refresh() dans une transition, le bouton restait sur
+  // « Envoi… » pendant tout le rechargement, alors que la photo était déjà enregistrée (vu en ligne le 26/11/2026).
+  const [enCours, setEnCours] = useState(false);
+  // undefined : la photo de la page ; une adresse : la nouvelle photo ; null : retirée (avant le rechargement).
+  const [ici, setIci] = useState<string | null | undefined>(undefined);
   const [message, setMessage] = useState<{ ok: boolean; texte: string } | null>(null);
-  const affichee = apercu ?? url;
+  const affichee = ici === undefined ? url : ici;
 
-  const choisir = (f: File | undefined) => {
-    if (!f) return;
+  const choisir = async (f: File | undefined) => {
+    if (!f || enCours) return;
     setMessage(null);
-    demarrer(async () => {
-      try {
-        if (!f.type.startsWith("image/")) throw new Error("Choisis une image (JPEG, PNG ou WebP).");
-        const photo = await preparerPortrait(f, COTE_PHOTO).catch(() => { throw new Error("Cette image n'a pas pu être lue : essaie une autre photo."); });
-        const p = await preparerPhotoProfil({ taille: photo.size, mime: photo.type });
-        if (!p.ok) throw new Error(p.erreur);
-        const { error } = await supabaseBrowser().storage.from(BUCKET_PHOTOS).uploadToSignedUrl(p.chemin, p.jeton, photo, { contentType: "image/jpeg" });
-        if (error) throw new Error("L'envoi a échoué : réessaie.");
-        const r = await enregistrerPhotoProfil(p.chemin);
-        if (!r.ok) throw new Error(r.erreur ?? "Réessaie dans un instant.");
-        setApercu(URL.createObjectURL(photo));
-        setMessage({ ok: true, texte: "Photo enregistrée." });
-        router.refresh();
-      } catch (e) {
-        setMessage({ ok: false, texte: e instanceof Error ? e.message : "Réessaie dans un instant." });
-      } finally {
-        if (champ.current) champ.current.value = "";
-      }
-    });
+    setEnCours(true);
+    try {
+      if (!f.type.startsWith("image/")) throw new Error("Choisis une image (JPEG, PNG ou WebP).");
+      const photo = await preparerPortrait(f, COTE_PHOTO).catch(() => { throw new Error("Cette image n'a pas pu être lue : essaie une autre photo."); });
+      const p = await preparerPhotoProfil({ taille: photo.size, mime: photo.type });
+      if (!p.ok) throw new Error(p.erreur);
+      const { error } = await supabaseBrowser().storage.from(BUCKET_PHOTOS).uploadToSignedUrl(p.chemin, p.jeton, photo, { contentType: "image/jpeg" });
+      if (error) throw new Error("L'envoi a échoué : réessaie.");
+      const r = await enregistrerPhotoProfil(p.chemin);
+      if (!r.ok) throw new Error(r.erreur ?? "Réessaie dans un instant.");
+      setIci(URL.createObjectURL(photo));
+      setMessage({ ok: true, texte: "Photo enregistrée." });
+      router.refresh();
+    } catch (e) {
+      setMessage({ ok: false, texte: e instanceof Error ? e.message : "Réessaie dans un instant." });
+    } finally {
+      setEnCours(false);
+      if (champ.current) champ.current.value = "";
+    }
   };
 
-  const retirer = () => {
+  const retirer = async () => {
+    if (enCours) return;
     setMessage(null);
-    demarrer(async () => {
-      const r = await retirerPhotoProfil().catch(() => ({ ok: false, erreur: "Réessaie dans un instant." }));
-      if (!r.ok) { setMessage({ ok: false, texte: r.erreur ?? "Réessaie dans un instant." }); return; }
-      setApercu(null);
-      setMessage({ ok: true, texte: "Photo retirée." });
-      router.refresh();
-    });
+    setEnCours(true);
+    const r = await retirerPhotoProfil().catch(() => ({ ok: false, erreur: "Réessaie dans un instant." }));
+    setEnCours(false);
+    if (!r.ok) { setMessage({ ok: false, texte: r.erreur ?? "Réessaie dans un instant." }); return; }
+    setIci(null);
+    setMessage({ ok: true, texte: "Photo retirée." });
+    router.refresh();
   };
 
   return (
