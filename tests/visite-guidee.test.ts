@@ -574,10 +574,10 @@ describe("relecture : chaque bouton cité dans une bulle existe sous ce nom, auc
     });
   }
 
-  it("rapide réno : la 1re bulle ne promet pas le multi-pièces sans compte (une pièce sans compte, plusieurs : un compte)", () => {
-    expect(dictVisite("fr").rapideReno.quoi.texte).toMatch(/sans compte/);
-    expect(dictVisite("fr").rapideReno.quoi.texte).toMatch(/il te faut un compte/);
-    expect(dictVisite("en").rapideReno.quoi.texte).toMatch(/need an account/);
+  it("rapide réno : la 1re bulle dit qu'un compte gratuit montre le résultat (26/11/2026) et ne promet rien sans compte", () => {
+    expect(dictVisite("fr").rapideReno.quoi.texte).not.toMatch(/sans compte/);
+    expect(dictVisite("fr").rapideReno.quoi.texte).toMatch(/Un compte gratuit te montre le résultat/);
+    expect(dictVisite("en").rapideReno.quoi.texte).toMatch(/A free account shows you the result/);
     expect(dictVisite("fr").rapideReno.quoi.texte).not.toMatch(/Tu peux en ajouter plusieurs/);
   });
 

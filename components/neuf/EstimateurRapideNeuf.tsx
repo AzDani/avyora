@@ -52,6 +52,7 @@ import { FEATURES } from "@/lib/features";
 import { suivre } from "@/lib/track";
 import { conversionEstimation } from "@/lib/gtag";
 import { useT, useLocale } from "@/components/i18n/LangProvider";
+import { dictCompteEstimation } from "@/lib/i18n/compte-estimation";
 import { dictNeuf } from "@/lib/i18n/neuf";
 import Stepper from "@/components/Stepper";
 import { CountUpNf as CountUp } from "@/components/estimateur/CountUp";
@@ -131,6 +132,9 @@ export default function EstimateurRapideNeuf({
   const router = useRouter();
   const T = useT();
   const locale = useLocale();
+  /** Sans compte, le résultat se voit après l'inscription (26/11/2026) : le chiffre est caché, les réponses gardées. */
+  const verrouCompte = !connecte && !edit;
+  const tc = dictCompteEstimation(locale);
   // Bêta : les libellés « Pro » prennent ceux de la bêta (mêmes clés, pour le rendu ci-dessous).
   const s = beta ? { ...dictNeuf(locale).saisie, introGratuit: T.beta.introNeuf, affinerPro: T.beta.affinerNeuf } : dictNeuf(locale).saisie;
   const rn = dictNeuf(locale).rapide;
@@ -519,7 +523,8 @@ export default function EstimateurRapideNeuf({
                   <span className="eye">{fi.eye}</span>
                   <span className="t">{fi.label}</span>
                   <span className="d">{fi.desc}</span>
-                  <span className="amt">{valid ? <>≈ <b>{euroAvant(locale) + (m2ByFin[f.v] || 0).toLocaleString(nf) + euroApres(locale)}</b>{parM2}</> : <>— €{parM2}</>}</span>
+                  {/* Sans compte, pas de prix au m² (26/11/2026) : avec la surface, il redonnait l'estimation. */}
+                  {!verrouCompte && <span className="amt">{valid ? <>≈ <b>{euroAvant(locale) + (m2ByFin[f.v] || 0).toLocaleString(nf) + euroApres(locale)}</b>{parM2}</> : <>— €{parM2}</>}</span>}
                 </button>
               );
             })}
@@ -546,7 +551,7 @@ export default function EstimateurRapideNeuf({
                   <span className="d">{qi.desc}</span>
                   <span className="amt">
                     {/* Pas de prix avant que la maison soit décrite : la barre dit « Réponds pour voir ton budget » (n° 74). */}
-                    <span className="p">{valid ? <>≈ <b>{euroAvant(locale) + price.toLocaleString(nf) + euroApres(locale)}</b>{parM2}</> : <>— €{parM2}</>}</span>
+                    {!verrouCompte && <span className="p">{valid ? <>≈ <b>{euroAvant(locale) + price.toLocaleString(nf) + euroApres(locale)}</b>{parM2}</> : <>— €{parM2}</>}</span>}
                     {valid && pct > 0 && <span className="save">−{pct}{signePct(locale)}</span>}
                   </span>
                 </button>
@@ -604,12 +609,27 @@ export default function EstimateurRapideNeuf({
         <div className="in">
           <div>
             <div className="lbl">{s.liveLabel}</div>
-            <div className="big">{valid ? <>{euroAvant(locale)}<CountUp value={lo} nf={nf} />{euroApres(locale)}<span style={{ opacity: .55 }}> – </span>{euroAvant(locale)}<CountUp value={hi} nf={nf} />{euroApres(locale)}</> : "—"}</div>
-            <div className="sub">{valid ? <>≈ {euroAvant(locale)}<CountUp value={m2} nf={nf} />{locale === "en" ? "" : " "}{s.parM2} · {locale === "en" ? "±15%" : "±15\u00a0%"}{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? s.attente : s.errSurface}</div>
+            {verrouCompte ? (
+              <>
+                <div className="big">{valid ? tc.pret : "—"}</div>
+                <div className="sub">{valid ? tc.sub : !affiche ? s.attente : s.errSurface}</div>
+              </>
+            ) : (
+              <>
+                <div className="big">{valid ? <>{euroAvant(locale)}<CountUp value={lo} nf={nf} />{euroApres(locale)}<span style={{ opacity: .55 }}> – </span>{euroAvant(locale)}<CountUp value={hi} nf={nf} />{euroApres(locale)}</> : "—"}</div>
+                <div className="sub">{valid ? <>≈ {euroAvant(locale)}<CountUp value={m2} nf={nf} />{locale === "en" ? "" : " "}{s.parM2} · {locale === "en" ? "±15%" : "±15\u00a0%"}{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? s.attente : s.errSurface}</div>
+              </>
+            )}
           </div>
           <div className="btns" data-visite="neuf-actions">
-            <button type="button" className="ghost" onClick={affiner}>{isPro ? s.affiner : s.affinerPro}</button>
-            <button type="button" className="cta" onClick={enregistrer} disabled={saving}>{saving ? s.enregistrement : isPro || edit ? s.enregistrer : s.enregistrerGratuit}</button>
+            {verrouCompte ? (
+              <button type="button" className="cta" onClick={enregistrer} disabled={saving}>{tc.cta}</button>
+            ) : (
+              <>
+                <button type="button" className="ghost" onClick={affiner}>{isPro ? s.affiner : s.affinerPro}</button>
+                <button type="button" className="cta" onClick={enregistrer} disabled={saving}>{saving ? s.enregistrement : isPro || edit ? s.enregistrer : s.enregistrerGratuit}</button>
+              </>
+            )}
           </div>
           {erreur && <div className="err" id="neuf-err" role="alert">{erreur}</div>}
         </div>

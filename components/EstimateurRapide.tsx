@@ -30,6 +30,7 @@ import { CLE_BROUILLON_RENO, CLE_RECLAMATION_RENO, brouillonRapideReno } from "@
 import { suivre } from "@/lib/track";
 import { conversionEstimation } from "@/lib/gtag";
 import { useT, useLocale } from "@/components/i18n/LangProvider";
+import { dictCompteEstimation } from "@/lib/i18n/compte-estimation";
 import Stepper from "@/components/Stepper";
 import { CountUpNf as CountUp } from "@/components/estimateur/CountUp";
 import { RAPIDE_CSS } from "@/components/estimateur/rapide-styles";
@@ -196,6 +197,9 @@ export default function EstimateurRapide({
   const libAffiner = isPro ? t.affinerInclus : t.affiner;
   const libEnregistrer = isPro || edit ? t.enregistrerCompte : t.enregistrer;
   const locale = useLocale();
+  /** Sans compte, le résultat se voit après l'inscription (26/11/2026) : le chiffre est caché, les réponses gardées. */
+  const verrouCompte = connecte === false && !edit;
+  const tc = dictCompteEstimation(locale);
   const nf = locale === "en" ? "en-US" : "fr-FR";
   /** Après le prix au m² d'une carte : « … € / m² » en français, « €…/m² » en anglais (lib/i18n/nombres.ts). */
   const parM2 = locale === "en" ? "/m²" : " / m²";
@@ -541,7 +545,8 @@ export default function EstimateurRapide({
                   </span>
                   <span className="t">{al.label}</span>
                   <span className="d">{al.desc}</span>
-                  <span className="amt">{locked ? <span className="lock">{t.proLock}</span> : valid && m2ByAmp[a.v] > 0 ? <>≈ <b>{euroAvant(locale) + m2ByAmp[a.v].toLocaleString(nf) + euroApres(locale)}</b>{parM2}</> : "—"}</span>
+                  {/* Sans compte, pas de prix au m² sur les cartes (26/11/2026) : avec la surface, il redonnait l'estimation. */}
+                  {!verrouCompte && <span className="amt">{locked ? <span className="lock">{t.proLock}</span> : valid && m2ByAmp[a.v] > 0 ? <>≈ <b>{euroAvant(locale) + m2ByAmp[a.v].toLocaleString(nf) + euroApres(locale)}</b>{parM2}</> : "—"}</span>}
                 </button>
               );
             })}
@@ -562,7 +567,7 @@ export default function EstimateurRapide({
                 <span className="eye">{fi.eye}</span>
                 <span className="t">{fi.label}</span>
                 <span className="d">{fi.desc}</span>
-                <span className="amt">{locked ? <span className="lock">{t.proLock}</span> : valid && m2ByFin[f.v] > 0 ? <>≈ <b>{euroAvant(locale) + m2ByFin[f.v].toLocaleString(nf) + euroApres(locale)}</b>{parM2}</> : "—"}</span>
+                {!verrouCompte && <span className="amt">{locked ? <span className="lock">{t.proLock}</span> : valid && m2ByFin[f.v] > 0 ? <>≈ <b>{euroAvant(locale) + m2ByFin[f.v].toLocaleString(nf) + euroApres(locale)}</b>{parM2}</> : "—"}</span>}
               </button>
               );
             })}
@@ -590,7 +595,7 @@ export default function EstimateurRapide({
                   <span className="d">{qi.desc}</span>
                   {identique && <span className="qsame">{t.quiIdentique}</span>}
                   <span className="amt">
-                    {locked ? <span className="lock">{t.proLock}</span> : valid && price > 0 ? <span className="p">≈ <b>{euroAvant(locale) + price.toLocaleString(nf) + euroApres(locale)}</b>{parM2}</span> : <span className="p">—</span>}
+                    {locked ? <span className="lock">{t.proLock}</span> : verrouCompte ? null : valid && price > 0 ? <span className="p">≈ <b>{euroAvant(locale) + price.toLocaleString(nf) + euroApres(locale)}</b>{parM2}</span> : <span className="p">—</span>}
                     {!locked && pct > 0 && <span className="save">−{pct}{signePct(locale)}</span>}
                   </span>
                 </button>
@@ -622,6 +627,19 @@ export default function EstimateurRapide({
               {versInscription && erreur && <div className="err" id={ID_ERREUR} role="alert">{erreur}</div>}
             </>
           ) : (
+            verrouCompte ? (
+            <>
+              <div>
+                <div className="lbl">{t.liveLabel}</div>
+                <div className="big">{valid ? tc.pret : "—"}</div>
+                <div className="sub">{valid ? tc.sub : !affiche ? t.step1q : (mode === "pieces" ? t.ajoutePiece : t.renseigneSurface)}</div>
+              </div>
+              <div className="btns" data-visite="rapide-actions">
+                <button type="button" className="cta" onClick={enregistrer} disabled={saving}>{tc.cta}</button>
+              </div>
+              {erreur && <div className="err" id={ID_ERREUR} role="alert">{erreur}</div>}
+            </>
+          ) : (
             <>
               <div>
                 <div className="lbl">{t.liveLabel}</div>
@@ -634,7 +652,7 @@ export default function EstimateurRapide({
               </div>
               {erreur && <div className="err" id={ID_ERREUR} role="alert">{erreur}</div>}
             </>
-          )}
+          ))}
         </div>
       </div>
     </>

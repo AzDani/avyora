@@ -30,7 +30,7 @@ const fr = {
     regionInvitation: "Visite guidée",
   },
   rapideReno: {
-    quoi: { titre: "Ce que tu estimes", texte: "Le logement entier (maison ou appartement), ou une pièce : cuisine, salle de bain… Une pièce se chiffre sans compte ; pour combiner des pièces différentes, il te faut un compte." },
+    quoi: { titre: "Ce que tu estimes", texte: "Le logement entier (maison ou appartement), ou une pièce : cuisine, salle de bain… Un compte gratuit te montre le résultat et permet de combiner des pièces différentes." },
     champs: { titre: "Surface et code postal", texte: "Indique la surface habitable et ton code postal : les prix s'ajustent à ta région. En mode pièces, chaque pièce a sa propre surface, juste au-dessus." },
     ampleur: { titre: "L'ampleur des travaux", texte: "Du simple rafraîchissement à la rénovation lourde. Chaque carte affiche son prix au m² dès que tu as répondu à la première question." },
     finition: { titre: "Le niveau de finition", texte: "Éco, standard ou premium : la gamme des matériaux et des équipements. C'est un des choix qui fait le plus bouger le budget." },
@@ -91,7 +91,7 @@ const en: DictVisite = {
     regionInvitation: "Guided tour",
   },
   rapideReno: {
-    quoi: { titre: "What you're estimating", texte: "The whole home (house or apartment), or a single room: kitchen, bathroom… One room is priced without an account; to combine different rooms, you need an account." },
+    quoi: { titre: "What you're estimating", texte: "The whole home (house or apartment), or a single room: kitchen, bathroom… A free account shows you the result and lets you combine different rooms." },
     champs: { titre: "Area and ZIP code", texte: "Enter the living area and your ZIP code: prices adjust to your region. In rooms mode, each room has its own area, just above." },
     ampleur: { titre: "Scope of the work", texte: "From a simple refresh to a full renovation. Each card shows its price per m² as soon as you've answered the first question." },
     finition: { titre: "Finish level", texte: "Economy, standard or premium: the range of materials and fixtures. It's one of the choices that moves the budget the most." },

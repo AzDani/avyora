@@ -59,7 +59,7 @@ export default async function EstimationConstructionMaison({
 
   /**
    * Balisage de l'outil, calqué sur `/estimation-travaux`. Pas d'`aggregateRating` (AVYORA n'a pas
-   * d'avis réels). `offers` à 0 : l'estimation rapide est gratuite et sans inscription.
+   * d'avis réels). `offers` à 0 : l'estimation rapide est gratuite (avec un compte, depuis le 26/11/2026).
    */
   const jsonLd = {
     "@context": "https://schema.org",
@@ -73,7 +73,7 @@ export default async function EstimationConstructionMaison({
         inLanguage: "fr-FR",
         isAccessibleForFree: true,
         description:
-          "Estime gratuitement le budget de construction d'une maison neuve : quatre questions, un budget complet du permis à la remise des clés, ajusté à ton code postal, sans inscription.",
+          "Estime gratuitement le budget de construction d'une maison neuve : quatre questions, un budget complet du permis à la remise des clés, ajusté à ton code postal, gratuit avec un compte.",
         offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
         publisher: { "@id": `${siteUrl}/#organization` },
       },

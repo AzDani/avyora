@@ -77,7 +77,7 @@ export default async function ChoixEstimation({ isPro, nature = "reno", connecte
           <ul>
             <Li tone="free">{t.rapideF1}</Li>
             <Li tone="free">{t.rapideF2}</Li>
-            {/* Rénovation : une pièce ou le bien entier sans compte ; plusieurs pièces demandent un compte (gratuit pendant la
+            {/* Rénovation : un compte gratuit est demandé pour voir le résultat (26/11/2026), une pièce, plusieurs ou le bien entier ; plusieurs pièces demandent un compte (gratuit pendant la
                 bêta, Pro après : la puce par défaut ne le précise donc pas). Le neuf garde sa puce. */}
             <Li tone="free">{beta && !neuf ? b.choixRapideF3 : t.rapideF3}</Li>
           </ul>

@@ -108,7 +108,7 @@ const fr = {
     rapideLead: "4 questions, une fourchette chiffrée immédiate. Idéal pour un premier ordre de grandeur.",
     rapideF1: "Type de bien, surface, ampleur — en 2 min",
     rapideF2: "Fourchette ±15\u00a0% adaptée à ton code postal",
-    rapideF3: "Sans compte pour une pièce ou tout le bien, résultat instantané",
+    rapideF3: "Gratuit avec un compte, pour une pièce ou tout le bien",
     rapideCta: "Commencer gratuitement →",
     rapideFoot: "Aucune carte requise",
     detailTitre: "Estimation détaillée",
@@ -319,13 +319,13 @@ const fr = {
     /* L'écran de choix (`ChoixEstimation`) */
     choixFootAnonyme: "Gratuit pendant la bêta, il suffit d'un compte.",
     /* La 3e puce de l'estimation rapide (rénovation) pendant la bêta : plusieurs pièces demandent un compte (gratuit). */
-    choixRapideF3: "Sans compte pour une pièce ou tout le bien ; plusieurs pièces : compte gratuit",
+    choixRapideF3: "Avec un compte gratuit : une pièce, plusieurs pièces ou tout le bien",
     choixFootConnecte: (fin: string) => `Inclus pendant la bêta, jusqu'au ${fin}`,
     /* L'estimation rapide de la rénovation (`EstimateurRapide`) */
     affiner: "Détail poste par poste — gratuit en bêta",
     proLock: "🔒 Compte",
     lockedLabel: "Multi-pièces · gratuit pendant la bêta",
-    lockedSub: "Combine plusieurs pièces en un seul projet chiffré : c'est gratuit pendant la bêta, il suffit d'un compte. Une pièce seule se chiffre sans compte.",
+    lockedSub: "Combine plusieurs pièces en un seul projet chiffré : c'est gratuit pendant la bêta, il suffit d'un compte.",
     /* L'estimation rapide du neuf (`EstimateurRapideNeuf`) et les résultats rapides */
     introNeuf: "Estimation indicative, marge ±15\u00a0%. Le détail lot par lot, poste par poste, est gratuit pendant la bêta : il suffit d'un compte.",
     introReno: "Estimation indicative, marge ±15\u00a0%. Le détail poste par poste est gratuit pendant la bêta : il suffit d'un compte.",
@@ -393,7 +393,7 @@ const fr = {
     tarifsBasLienConnecte: "faire une estimation rapide",
     /* Le bas de page pour un visiteur sans compte (« continuer » ne voulait rien dire pour qui n'a rien commencé). */
     tarifsBasAnonyme: "Pas encore prêt à créer un compte ? ",
-    tarifsBasLienAnonyme: "Fais une estimation rapide d'une pièce ou de tout le bien, sans compte",
+    tarifsBasLienAnonyme: "Fais une estimation rapide d'une pièce ou de tout le bien, avec un compte gratuit",
     /* La puce « Éditeur de plan » de « Inclus pendant la bêta », en trois puces courtes (une énumération à points-virgules
        était illisible). Le plafond des plans d'un inscrit arrive en paramètre (`PLANS_MAX_BETA`). */
     pucesPlan: (n: number) => [
@@ -645,7 +645,7 @@ const en: Dict = {
     rapideLead: "4 questions, an instant price range. Perfect for a first ballpark figure.",
     rapideF1: "Property type, area, scope — in 2 min",
     rapideF2: "±15% range tailored to your ZIP code",
-    rapideF3: "No account for one room or the whole home, instant result",
+    rapideF3: "Free with an account, for one room or the whole home",
     rapideCta: "Start for free →",
     rapideFoot: "No card required",
     detailTitre: "Detailed estimate",
@@ -826,12 +826,12 @@ const en: Dict = {
     creerCompte: "Create my free account",
     creerCompteFleche: "Create my free account →",
     choixFootAnonyme: "Free during the beta, all you need is an account.",
-    choixRapideF3: "No account for one room or the whole home; several rooms: free account",
+    choixRapideF3: "With a free account: one room, several rooms or the whole home",
     choixFootConnecte: (fin: string) => `Included during the beta, through ${fin}`,
     affiner: "Line-by-line detail — free in beta",
     proLock: "🔒 Account",
     lockedLabel: "Multi-room · free during the beta",
-    lockedSub: "Combine multiple rooms into one estimated project: it's free during the beta, all you need is an account. A single room is priced without an account.",
+    lockedSub: "Combine multiple rooms into one estimated project: it's free during the beta, all you need is an account.",
     introNeuf: "Indicative estimate, ±15% margin. The trade-by-trade, line-by-line detail is free during the beta: all you need is an account.",
     introReno: "Indicative estimate, ±15% margin. The line-by-line detail is free during the beta: all you need is an account.",
     affinerNeuf: "Trade-by-trade detail — free in beta",
@@ -888,7 +888,7 @@ const en: Dict = {
     ],
     tarifsBasLienConnecte: "run a quick estimate",
     tarifsBasAnonyme: "Not ready to create an account? ",
-    tarifsBasLienAnonyme: "Run a quick estimate of one room or your whole home, no account needed",
+    tarifsBasLienAnonyme: "Run a quick estimate of one room or your whole home, with a free account",
     pucesPlan: (n: number) => [
       `Floor plan editor (2D/3D): up to ${n} saved plans`,
       "The renovation project: start from your home as it is and price what changes",

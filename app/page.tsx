@@ -74,7 +74,7 @@ function jsonLdApplication(beta: boolean) {
       priceCurrency: "EUR",
       description: beta
         ? `Gratuit pendant la bêta, jusqu'au ${libellesBeta("fr").fin}, avec un compte`
-        : "Estimation rapide gratuite, sans compte pour une pièce ou tout le bien",
+        : "Estimation rapide gratuite avec un compte, pour une pièce ou tout le bien",
     },
   };
 }
