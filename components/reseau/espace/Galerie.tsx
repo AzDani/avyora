@@ -15,6 +15,25 @@ import EnvoiPhotos, { type PhotoEnvoyee } from "@/components/reseau/avis/EnvoiPh
 type Brouillon = { id: string | null; titre: string; description: string; ville: string; mois: string; photos: PhotoEnvoyee[] };
 const VIDE: Brouillon = { id: null, titre: "", description: "", ville: "", mois: "", photos: [] };
 
+/** La vignette d'une réalisation : 1 photo pleine ; 2 côte à côte ; 3 ou plus, une grande et deux petites. */
+function Vignettes({ urls }: { urls: string[] }) {
+  // eslint-disable-next-line @next/next/no-img-element
+  const img = (u: string, c = "") => <img key={u} src={u} alt="" loading="lazy" className={"h-full w-full object-cover " + c} />;
+  if (urls.length === 0) return <div className="h-40 bg-surface-2" />;
+  if (urls.length === 1) return <div className="h-40">{img(urls[0])}</div>;
+  if (urls.length === 2) return <div className="grid h-40 grid-cols-2 gap-0.5 bg-line">{urls.map((u) => img(u))}</div>;
+  return (
+    <div className="grid h-40 grid-cols-[2fr_1fr] grid-rows-2 gap-0.5 bg-line">
+      {img(urls[0], "row-span-2")}
+      {img(urls[1])}
+      <span className="relative">
+        {img(urls[2])}
+        {urls.length > 3 && <span className="absolute inset-0 grid place-items-center bg-black/45 text-[14px] font-semibold text-white">+{urls.length - 3}</span>}
+      </span>
+    </div>
+  );
+}
+
 export default function Galerie({ realisations }: { realisations: Realisation[] }) {
   const router = useRouter();
   const [enCours, demarrer] = useTransition();
@@ -111,16 +130,7 @@ export default function Galerie({ realisations }: { realisations: Realisation[] 
         <ul className="grid gap-3 sm:grid-cols-2">
           {realisations.map((r) => (
             <li key={r.id} className="overflow-hidden rounded-2xl border border-line bg-surface">
-              <div className="grid h-40 grid-cols-[2fr_1fr] gap-0.5 bg-line">
-                {[0, 1, 2].map((i) => {
-                  const p = r.photos[i];
-                  if (i > 0 && r.photos.length < 2) return null;
-                  return p?.url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img key={i} src={p.url} alt="" loading="lazy" className={"h-full w-full object-cover " + (i === 0 ? (r.photos.length < 2 ? "col-span-2 row-span-2" : "row-span-2") : "")} />
-                  ) : i === 0 ? <span key={i} className="row-span-2 bg-surface-2" /> : null;
-                })}
-              </div>
+              <Vignettes urls={r.photos.map((p) => p.url).filter((u): u is string => !!u)} />
               <div className="p-3.5">
                 <p className="text-[14.5px] font-semibold text-ink">{r.titre}</p>
                 <p className="mt-0.5 text-[12.5px] text-faint">{[r.ville, r.mois ? labelMois(r.mois) : null, `${r.photos.length} photo${r.photos.length > 1 ? "s" : ""}`].filter(Boolean).join(" · ")}</p>
