@@ -12,7 +12,7 @@ export default function Confidentialite() {
   return (
     <article>
       <h1>Politique de confidentialité</h1>
-      <p className="maj">Dernière mise à jour : 25 novembre 2026</p>
+      <p className="maj">Dernière mise à jour : 26 novembre 2026</p>
 
       <p>
         La présente politique décrit la manière dont AVYORA collecte et traite les données personnelles,
