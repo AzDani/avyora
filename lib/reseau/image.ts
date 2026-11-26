@@ -48,3 +48,30 @@ export async function preparerPortrait(f: File, cote = 320): Promise<File> {
   if (!blob) throw new Error("encodage");
   return new File([blob], "photo.jpg", { type: "image/jpeg" });
 }
+
+/** La zone gardée d'une photo, en pixels de l'image d'origine (déjà tournée selon son EXIF). */
+export type ZoneCarree = { x: number; y: number; cote: number };
+
+/**
+ * La photo de profil CADRÉE par l'utilisateur (outil de cadrage, 26/11/2026) : la zone carrée choisie, redessinée en
+ * `cote` px et réencodée en JPEG (sans métadonnées, donc sans position GPS).
+ */
+export async function recadrerPortrait(f: File, zone: ZoneCarree, cote = 320): Promise<File> {
+  const source = await createImageBitmap(f, { imageOrientation: "from-image" });
+  const c = Math.max(1, Math.min(zone.cote, source.width, source.height));
+  const sx = Math.min(Math.max(0, zone.x), source.width - c);
+  const sy = Math.min(Math.max(0, zone.y), source.height - c);
+  const canvas = document.createElement("canvas");
+  canvas.width = cote;
+  canvas.height = cote;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("canvas");
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, cote, cote);
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(source, sx, sy, c, c, 0, 0, cote, cote);
+  source.close();
+  const blob = await new Promise<Blob | null>((ok) => canvas.toBlob(ok, "image/jpeg", 0.88));
+  if (!blob) throw new Error("encodage");
+  return new File([blob], "photo.jpg", { type: "image/jpeg" });
+}

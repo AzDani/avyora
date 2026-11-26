@@ -3,13 +3,15 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/browser";
-import { preparerPortrait } from "@/lib/reseau/image";
+import { recadrerPortrait, type ZoneCarree } from "@/lib/reseau/image";
+import RecadragePhoto from "./RecadragePhoto";
 import { BUCKET_PHOTOS, COTE_PHOTO } from "@/lib/compte/photo";
 import { enregistrerPhotoProfil, preparerPhotoProfil, retirerPhotoProfil } from "@/lib/actions/photo";
 
 /**
- * Ajouter, changer ou retirer sa photo de profil (26/11/2026). La photo est recadrée en carré au centre et réencodée
- * dans le navigateur (sans métadonnées), envoyée par une URL signée, puis enregistrée côté serveur. Pour un artisan,
+ * Ajouter, changer ou retirer sa photo de profil (26/11/2026). La photo choisie s'ouvre dans l'outil de cadrage
+ * (RecadragePhoto), puis la zone gardée est redessinée en carré et réencodée dans le navigateur (sans métadonnées),
+ * envoyée par une URL signée, et enregistrée côté serveur. Pour un artisan,
  * c'est aussi la photo (ou le logo) de sa fiche dans le réseau.
  */
 export default function PhotoProfil({ url, initiale, artisan = false }: { url: string | null; initiale: string; artisan?: boolean }) {
@@ -21,15 +23,24 @@ export default function PhotoProfil({ url, initiale, artisan = false }: { url: s
   // undefined : la photo de la page ; une adresse : la nouvelle photo ; null : retirée (avant le rechargement).
   const [ici, setIci] = useState<string | null | undefined>(undefined);
   const [message, setMessage] = useState<{ ok: boolean; texte: string } | null>(null);
+  // La photo choisie, ouverte dans l'outil de cadrage (avant tout envoi).
+  const [aCadrer, setACadrer] = useState<File | null>(null);
   const affichee = ici === undefined ? url : ici;
 
-  const choisir = async (f: File | undefined) => {
+  const vider = () => { if (champ.current) champ.current.value = ""; };
+
+  const choisir = (f: File | undefined) => {
     if (!f || enCours) return;
     setMessage(null);
+    if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { setMessage({ ok: false, texte: "Choisis une image (JPEG, PNG ou WebP)." }); vider(); return; }
+    setACadrer(f);
+  };
+
+  const envoyer = async (f: File, zone: ZoneCarree) => {
+    setACadrer(null);
     setEnCours(true);
     try {
-      if (!f.type.startsWith("image/")) throw new Error("Choisis une image (JPEG, PNG ou WebP).");
-      const photo = await preparerPortrait(f, COTE_PHOTO).catch(() => { throw new Error("Cette image n'a pas pu être lue : essaie une autre photo."); });
+      const photo = await recadrerPortrait(f, zone, COTE_PHOTO).catch(() => { throw new Error("Cette image n'a pas pu être lue : essaie une autre photo."); });
       const p = await preparerPhotoProfil({ taille: photo.size, mime: photo.type });
       if (!p.ok) throw new Error(p.erreur);
       const { error } = await supabaseBrowser().storage.from(BUCKET_PHOTOS).uploadToSignedUrl(p.chemin, p.jeton, photo, { contentType: "image/jpeg" });
@@ -43,7 +54,7 @@ export default function PhotoProfil({ url, initiale, artisan = false }: { url: s
       setMessage({ ok: false, texte: e instanceof Error ? e.message : "Réessaie dans un instant." });
     } finally {
       setEnCours(false);
-      if (champ.current) champ.current.value = "";
+      vider();
     }
   };
 
@@ -61,6 +72,7 @@ export default function PhotoProfil({ url, initiale, artisan = false }: { url: s
 
   return (
     <div className="flex flex-wrap items-center gap-4" data-photo-profil="">
+      {aCadrer && <RecadragePhoto fichier={aCadrer} onValider={(z) => envoyer(aCadrer, z)} onAnnuler={() => { setACadrer(null); vider(); }} />}
       {affichee ? (
         // eslint-disable-next-line @next/next/no-img-element -- une petite image publique déjà réduite
         <img src={affichee} alt="Ta photo de profil" width={72} height={72} className="h-[72px] w-[72px] rounded-full object-cover ring-1 ring-line" />

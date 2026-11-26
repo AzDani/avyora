@@ -64,3 +64,27 @@ describe("photo de profil : serveur, stockage et affichage", () => {
     expect(lire("app/(legal)/confidentialite/page.tsx")).toContain("Photo de profil (facultative)");
   });
 });
+
+describe("outil de cadrage : la géométrie", () => {
+  it("à zoom 1 sans décalage, le plus grand carré centré", async () => {
+    const { zoneCadrage } = await import("@/lib/compte/photo");
+    expect(zoneCadrage({ zoom: 1, dx: 0, dy: 0 }, 1200, 800, 280)).toEqual({ x: 200, y: 0, cote: 800 });
+    expect(zoneCadrage({ zoom: 1, dx: 0, dy: 0 }, 600, 900, 280)).toEqual({ x: 0, y: 150, cote: 600 });
+  });
+  it("zoomer resserre la zone ; déplacer l'image à droite montre sa gauche ; jamais hors de l'image", async () => {
+    const { zoneCadrage, bornerCadrage, ZOOM_MAX } = await import("@/lib/compte/photo");
+    expect(zoneCadrage({ zoom: 2, dx: 0, dy: 0 }, 1200, 800, 280)).toEqual({ x: 400, y: 200, cote: 400 });
+    expect(zoneCadrage({ zoom: 1, dx: 10_000, dy: 0 }, 1200, 800, 280)).toEqual({ x: 0, y: 0, cote: 800 });
+    expect(zoneCadrage({ zoom: 1, dx: -10_000, dy: 0 }, 1200, 800, 280)).toEqual({ x: 400, y: 0, cote: 800 });
+    expect(bornerCadrage({ zoom: 99, dx: 0, dy: 0 }, 1200, 800, 280).zoom).toBe(ZOOM_MAX);
+    expect(bornerCadrage({ zoom: 0.2, dx: 50, dy: 50 }, 1200, 800, 280)).toEqual({ zoom: 1, dx: 50, dy: 0 });
+  });
+  it("le composant ouvre le cadrage avant tout envoi, et le recadrage part de la zone choisie", () => {
+    const p = lire("components/compte/PhotoProfil.tsx");
+    expect(p).toContain("setACadrer(f);");
+    expect(p).toContain("await recadrerPortrait(f, zone, COTE_PHOTO)");
+    const r = lire("components/compte/RecadragePhoto.tsx");
+    expect(r).toContain('role="dialog" aria-modal="true"');
+    expect(r).toContain('if (e.key === "Escape") onAnnuler();');
+  });
+});

@@ -34,3 +34,32 @@ export function photoDuCompte(user: { id?: string; app_metadata?: Record<string,
 
 /** L'initiale affichée quand il n'y a pas de photo. */
 export const initialeDe = (nom: string) => (nom.trim()[0] ?? "?").toUpperCase();
+
+/* ─── L'outil de cadrage (26/11/2026) : la géométrie, pure ─────────────────────────────────────────────────────── */
+
+/** L'état du cadrage : `zoom` ≥ 1 (1 = l'image couvre juste le cadre), décalage du centre en px affichés. */
+export type Cadrage = { zoom: number; dx: number; dy: number };
+export const ZOOM_MAX = 4;
+
+/** L'échelle d'affichage : l'image (l × h) couvre un cadre de `cadre` px à zoom 1. */
+export const echelleCadrage = (l: number, h: number, cadre: number, zoom: number) => (cadre / Math.min(l, h)) * zoom;
+
+/** Le décalage ramené dans les limites : l'image couvre toujours tout le cadre. */
+export function bornerCadrage(c: Cadrage, l: number, h: number, cadre: number): Cadrage {
+  const zoom = Math.min(ZOOM_MAX, Math.max(1, c.zoom));
+  const s = echelleCadrage(l, h, cadre, zoom);
+  const mx = Math.max(0, (l * s - cadre) / 2);
+  const my = Math.max(0, (h * s - cadre) / 2);
+  return { zoom, dx: Math.min(mx, Math.max(-mx, c.dx)), dy: Math.min(my, Math.max(-my, c.dy)) };
+}
+
+/** La zone carrée gardée, en pixels de l'image d'origine. */
+export function zoneCadrage(c: Cadrage, l: number, h: number, cadre: number): { x: number; y: number; cote: number } {
+  const b = bornerCadrage(c, l, h, cadre);
+  const s = echelleCadrage(l, h, cadre, b.zoom);
+  const cote = cadre / s;
+  // Le centre du cadre, dans l'image : son milieu moins le décalage (déplacer l'image vers la droite montre sa gauche).
+  const cx = l / 2 - b.dx / s;
+  const cy = h / 2 - b.dy / s;
+  return { x: Math.round(cx - cote / 2), y: Math.round(cy - cote / 2), cote: Math.round(cote) };
+}
