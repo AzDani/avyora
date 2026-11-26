@@ -48,7 +48,12 @@ export default async function FicheArtisan({ params, searchParams }: { params: P
 
       <section className="rounded-3xl border border-line bg-surface p-5 sm:p-6">
         <div className="flex flex-wrap items-start gap-4">
-          <span aria-hidden="true" className="grid h-16 w-16 shrink-0 place-items-center rounded-[18px] bg-gradient-to-br from-brand-600 to-[#7c3aed] text-[20px] font-bold text-white">{initiales}</span>
+          {a.photo ? (
+            // eslint-disable-next-line @next/next/no-img-element -- petite image publique déjà réduite
+            <img src={a.photo} alt={`Photo de ${a.nom}`} width={64} height={64} className="h-16 w-16 shrink-0 rounded-[18px] object-cover ring-1 ring-line" />
+          ) : (
+            <span aria-hidden="true" className="grid h-16 w-16 shrink-0 place-items-center rounded-[18px] bg-gradient-to-br from-brand-600 to-[#7c3aed] text-[20px] font-bold text-white">{initiales}</span>
+          )}
           <div className="min-w-0 flex-1">
             <h1 className="text-[24px] font-semibold tracking-tight text-ink">{a.nom}</h1>
             <p className="mt-1 text-[13.5px] text-muted">{[a.commune, resumeDepartements(a.departements, 4)].filter(Boolean).join(" · ")}</p>

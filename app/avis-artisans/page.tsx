@@ -71,9 +71,14 @@ export default async function AvisArtisans({ searchParams }: { searchParams: Pro
               {artisans.map((a) => (
                 <li key={a.id}>
                   <Link href={`/avis-artisans/${a.id}`} className="flex items-center gap-3.5 rounded-2xl border border-line bg-surface p-4 transition-colors hover:border-brand-200">
-                    <span aria-hidden="true" className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] bg-gradient-to-br from-brand-600 to-[#7c3aed] text-[15px] font-bold text-white">
-                      {a.nom.replace(/[^\p{L}\p{N} ]/gu, "").split(/\s+/).filter(Boolean).slice(0, 2).map((m) => m[0]).join("").toUpperCase()}
-                    </span>
+                    {a.photo ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- petite image publique déjà réduite
+                      <img src={a.photo} alt="" width={48} height={48} className="h-12 w-12 shrink-0 rounded-[14px] object-cover ring-1 ring-line" />
+                    ) : (
+                      <span aria-hidden="true" className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] bg-gradient-to-br from-brand-600 to-[#7c3aed] text-[15px] font-bold text-white">
+                        {a.nom.replace(/[^\p{L}\p{N} ]/gu, "").split(/\s+/).filter(Boolean).slice(0, 2).map((m) => m[0]).join("").toUpperCase()}
+                      </span>
+                    )}
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-[15px] font-semibold text-ink">{a.nom}</span>
                       <span className="block truncate text-[12.5px] text-muted">{[a.commune, a.metiers.map(labelMetier).join(" · ")].filter(Boolean).join(" · ")}</span>

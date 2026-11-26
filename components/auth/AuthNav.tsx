@@ -4,6 +4,7 @@ import { logout } from "@/lib/actions/auth";
 import { getT } from "@/lib/i18n/server";
 import { etatArtisanEntete, resumeDevisDuClient } from "@/lib/data/reseau";
 import { estComptePro } from "@/lib/compte/type";
+import { photoDuCompte } from "@/lib/compte/photo";
 import Volet from "@/components/entete/Volet";
 
 /**
@@ -34,6 +35,8 @@ export async function AuthNav() {
   const fr = locale === "fr";
   const prenom = (user.user_metadata?.nom as string) || user.email?.split("@")[0] || n.monCompte;
   const initiale = (prenom.trim()[0] ?? "?").toUpperCase();
+  // La photo de profil (26/11/2026), sinon l'initiale.
+  const photo = photoDuCompte(user);
   const [artisan, devis] = await Promise.all([
     fr ? etatArtisanEntete(user.id, estComptePro(user)).catch(() => null) : Promise.resolve(null),
     fr ? resumeDevisDuClient(user.id).catch(() => null) : Promise.resolve(null),
@@ -53,7 +56,8 @@ export async function AuthNav() {
         bouton={
           <>
             <span className="relative grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#a78bfa] text-[13px] font-bold text-[#1e1b4b]" aria-hidden="true">
-              {initiale}
+              {/* eslint-disable-next-line @next/next/no-img-element -- petite image publique déjà réduite */}
+              {photo ? <img src={photo} alt="" width={28} height={28} className="h-7 w-7 rounded-full object-cover" /> : initiale}
               {pastille > 0 && (
                 <span className="num absolute -right-2 -top-1.5 min-w-[18px] rounded-full bg-[#f59e0b] px-1 text-center text-[11px] font-bold leading-[18px] text-[#1e1b4b] ring-2 ring-[#1E1B4B]" data-pastille-espace="">
                   {pastille > 99 ? "99+" : pastille}
@@ -68,7 +72,10 @@ export async function AuthNav() {
         }
       >
         <div className="flex items-center gap-2.5 px-2.5 pb-2.5 pt-1.5">
-          <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full bg-[#a78bfa] text-[14px] font-bold text-[#1e1b4b]" aria-hidden="true">{initiale}</span>
+          <span className="grid h-[34px] w-[34px] shrink-0 place-items-center overflow-hidden rounded-full bg-[#a78bfa] text-[14px] font-bold text-[#1e1b4b]" aria-hidden="true">
+            {/* eslint-disable-next-line @next/next/no-img-element -- petite image publique déjà réduite */}
+            {photo ? <img src={photo} alt="" width={34} height={34} className="h-full w-full object-cover" /> : initiale}
+          </span>
           <span className="min-w-0 truncate text-[14.5px] font-semibold">{prenom}</span>
         </div>
         <p className="mx-2.5 mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-brand-700">{n.monEspace}</p>

@@ -8,7 +8,8 @@ import { DEPARTEMENTS, nomDepartement } from "@/lib/reseau/departements";
 import { afficherPortable } from "@/lib/telephone";
 import { dateCourte } from "@/lib/admin/outils";
 import ContactRapide from "@/components/admin/ContactRapide";
-import PanneauDecision, { BoutonMasquer, BoutonReverifierSiret } from "@/components/admin/reseau/PanneauDecision";
+import PanneauDecision, { BoutonMasquer, BoutonRetirerPhoto, BoutonReverifierSiret } from "@/components/admin/reseau/PanneauDecision";
+import { urlPhoto } from "@/lib/compte/photo";
 import { BoutonsMaj } from "@/components/admin/reseau/ModerationAvis";
 import { PastilleDecennale, PastilleSiret, PastilleStatut } from "@/components/admin/reseau/Pastilles";
 
@@ -66,7 +67,14 @@ export default async function FicheArtisan({ params }: { params: Promise<{ id: s
       <header className="rounded-3xl border border-line bg-surface p-5 sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="text-[22px] font-semibold tracking-tight text-ink">{a.raisonSociale}</h1>
+            <div className="flex flex-wrap items-center gap-3">
+              {urlPhoto(a.photo) && (
+                // eslint-disable-next-line @next/next/no-img-element -- petite image publique déjà réduite
+                <img src={urlPhoto(a.photo)!} alt="Photo de l'artisan" width={48} height={48} className="h-12 w-12 rounded-[14px] object-cover ring-1 ring-line" />
+              )}
+              <h1 className="text-[22px] font-semibold tracking-tight text-ink">{a.raisonSociale}</h1>
+              {urlPhoto(a.photo) && <BoutonRetirerPhoto id={a.id} />}
+            </div>
             <p className="mt-0.5 text-[13.5px] text-muted">
               {a.nomCommercial ? `${a.nomCommercial} · ` : ""}{a.contactNom} · {afficherPortable(a.telephone)} · {a.email}
             </p>

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { deciderArtisan, masquerArtisan, noterArtisan, reverifierSiretArtisan, type ActionArtisan } from "@/lib/actions/admin";
 import type { StatutArtisan } from "@/lib/reseau/artisan";
+import { retirerPhotoArtisan } from "@/lib/actions/photo";
 
 /**
  * Les décisions sur une candidature (fiche admin d'un artisan) : l'appel, puis valider, demander un complément,
@@ -177,5 +178,24 @@ export function BoutonMasquer({ id, masque }: { id: string; masque: boolean }) {
       </button>
       {erreur && <span role="alert" className="text-[12.5px] text-[#b42318]">{erreur}</span>}
     </div>
+  );
+}
+
+/** Retirer la photo (ou le logo) d'un artisan, si elle est inadaptée (26/11/2026). Demande une confirmation. */
+export function BoutonRetirerPhoto({ id }: { id: string }) {
+  const [enCours, demarrer] = useTransition();
+  const [confirmer, setConfirmer] = useState(false);
+  const [erreur, setErreur] = useState<string | null>(null);
+  if (!confirmer) {
+    return <button type="button" onClick={() => setConfirmer(true)} className="inline-flex min-h-9 items-center rounded-lg px-2.5 text-[12.5px] font-semibold text-[#b42318] hover:bg-[#fdf0ef]">Retirer la photo</button>;
+  }
+  return (
+    <span className="inline-flex flex-wrap items-center gap-2">
+      <button type="button" disabled={enCours}
+        onClick={() => demarrer(async () => { const r = await retirerPhotoArtisan(id).catch(() => ({ ok: false, erreur: "Réessaie." })); setErreur(r.ok ? null : r.erreur ?? "Réessaie."); if (r.ok) setConfirmer(false); })}
+        className="btn min-h-9 bg-[#b42318] px-3 text-[12.5px] text-white disabled:opacity-50">{enCours ? "Retrait…" : "Confirmer le retrait"}</button>
+      <button type="button" onClick={() => setConfirmer(false)} className="text-[12.5px] text-muted underline">Annuler</button>
+      {erreur && <span role="alert" className="text-[12px] text-[#b42318]">{erreur}</span>}
+    </span>
   );
 }

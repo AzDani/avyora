@@ -6,6 +6,8 @@ import { ALERTE_DECENNALE_JOURS, joursAvant } from "@/lib/reseau/avis";
 import { afficherPortable } from "@/lib/telephone";
 import { Recap } from "@/components/reseau/espace/RecapDossier";
 import { ChangerPortable, DemandeModification, NouvelleDecennale } from "@/components/reseau/espace/ActionsDossier";
+import PhotoProfil from "@/components/compte/PhotoProfil";
+import { initialeDe, photoDuCompte } from "@/lib/compte/photo";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Mon dossier · Espace artisan", robots: { index: false, follow: false } };
@@ -41,6 +43,12 @@ export default async function PageDossier() {
           <NouvelleDecennale />
         </div>
       )}
+
+      {/* La photo ou le logo de l'artisan (26/11/2026) : affiché sur sa fiche et quand les clients choisissent. */}
+      <section className="rounded-3xl border border-line bg-surface p-5" aria-labelledby="photo">
+        <h2 id="photo" className="mb-3 text-[16px] font-semibold text-ink">Ta photo ou ton logo</h2>
+        <PhotoProfil url={photoDuCompte(user)} initiale={initialeDe(a.nomCommercial || a.raisonSociale)} artisan />
+      </section>
 
       <section className="rounded-3xl border border-line bg-surface p-5" aria-labelledby="entreprise">
         <h2 id="entreprise" className="mb-4 text-[16px] font-semibold text-ink">Ton entreprise</h2>

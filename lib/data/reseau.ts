@@ -5,6 +5,7 @@ import { BUCKET_ARTISANS, aujourdhuiParis } from "@/lib/reseau/candidature";
 import { ordreEquitable, resumeDevisClient, type ArtisanPropose, type ResumeDevisClient, type EstimationJointe, type Issue, type StatutMiseEnRelation } from "@/lib/reseau/demande";
 import { COLONNES_ARTISAN, lireArtisan, lireDocument, type Artisan, type DocumentArtisan } from "@/lib/reseau/artisan";
 import { typeCompte } from "@/lib/compte/type";
+import { urlPhoto } from "@/lib/compte/photo";
 import { lireMaj, resumeNotes, type MajDemandee, type ResumeNotes, type StatutAvis, type StatutReponse } from "@/lib/reseau/avis";
 
 /**
@@ -420,6 +421,8 @@ export async function realisationsRecentes(limite = 30): Promise<(Realisation & 
 export type ArtisanPublic = {
   id: string; nom: string; metiers: string[]; departements: string[]; commune: string | null; presentation: string | null;
   siteWeb: string | null; rge: boolean; valideLe: string | null; resume: ResumeNotes; nbRealisations: number;
+  /** L'adresse publique de sa photo ou de son logo (migration 0014), ou null. */
+  photo: string | null;
 };
 
 /**
@@ -431,7 +434,7 @@ export async function artisansPublics(filtre: { departement?: string | null; met
   const sb = supabaseAdmin();
   let q = sb
     .from(TABLE_ARTISANS)
-    .select("id, raison_sociale, nom_commercial, metiers, departements, presentation, site_web, rge, valide_le, siret_verif")
+    .select("id, raison_sociale, nom_commercial, metiers, departements, presentation, site_web, rge, valide_le, siret_verif, photo")
     .eq("statut", "valide")
     .is("masque_le", null)
     .gte("decennale_fin", aujourdhuiParis())
@@ -440,7 +443,7 @@ export async function artisansPublics(filtre: { departement?: string | null; met
   if (filtre.metier) q = q.overlaps("metiers", [...new Set([filtre.metier, "tce"])]);
   const { data, error } = await q;
   if (error) throw new Error(error.message);
-  const lignes = (data ?? []) as { id: string; raison_sociale: string; nom_commercial: string | null; metiers: string[]; departements: string[]; presentation: string | null; site_web: string | null; rge: boolean; valide_le: string | null; siret_verif: { adresse?: string; codePostal?: string } | null }[];
+  const lignes = (data ?? []) as { id: string; raison_sociale: string; nom_commercial: string | null; metiers: string[]; departements: string[]; presentation: string | null; site_web: string | null; rge: boolean; valide_le: string | null; siret_verif: { adresse?: string; codePostal?: string } | null; photo: string | null }[];
   if (!lignes.length) return [];
   const ids = lignes.map((l) => l.id);
   const [resumes, { data: reals }] = await Promise.all([
@@ -453,7 +456,7 @@ export async function artisansPublics(filtre: { departement?: string | null; met
     .map((l) => ({
       id: l.id, nom: l.nom_commercial || l.raison_sociale, metiers: l.metiers, departements: l.departements,
       commune: communeDe(l.siret_verif?.adresse, l.siret_verif?.codePostal), presentation: l.presentation, siteWeb: l.site_web, rge: !!l.rge,
-      valideLe: l.valide_le, resume: resumes.get(l.id) ?? resumeNotes([]), nbRealisations: nbReal.get(l.id) ?? 0,
+      valideLe: l.valide_le, resume: resumes.get(l.id) ?? resumeNotes([]), nbRealisations: nbReal.get(l.id) ?? 0, photo: urlPhoto(l.photo),
     }))
     .sort((a, b) => (b.resume.moyenne ?? -1) - (a.resume.moyenne ?? -1) || b.resume.n - a.resume.n || a.nom.localeCompare(b.nom, "fr"));
 }
@@ -464,13 +467,13 @@ export async function ficheArtisan(id: string): Promise<ArtisanPublic | null> {
   const sb = supabaseAdmin();
   const { data } = await sb
     .from(TABLE_ARTISANS)
-    .select("id, raison_sociale, nom_commercial, metiers, departements, presentation, site_web, rge, valide_le, siret_verif, statut")
+    .select("id, raison_sociale, nom_commercial, metiers, departements, presentation, site_web, rge, valide_le, siret_verif, statut, photo")
     .eq("id", id)
     .eq("statut", "valide")
     .is("masque_le", null)
     .maybeSingle();
   if (!data) return null;
-  const l = data as { id: string; raison_sociale: string; nom_commercial: string | null; metiers: string[]; departements: string[]; presentation: string | null; site_web: string | null; rge: boolean; valide_le: string | null; siret_verif: { adresse?: string; codePostal?: string } | null };
+  const l = data as { id: string; raison_sociale: string; nom_commercial: string | null; metiers: string[]; departements: string[]; presentation: string | null; site_web: string | null; rge: boolean; valide_le: string | null; siret_verif: { adresse?: string; codePostal?: string } | null; photo: string | null };
   const [resumes, { count }] = await Promise.all([
     resumesAvis([l.id]),
     sb.from(TABLE_REALISATIONS).select("id", { count: "exact", head: true }).eq("artisan_id", l.id).is("retiree_le", null),
@@ -478,7 +481,7 @@ export async function ficheArtisan(id: string): Promise<ArtisanPublic | null> {
   return {
     id: l.id, nom: l.nom_commercial || l.raison_sociale, metiers: l.metiers, departements: l.departements,
     commune: communeDe(l.siret_verif?.adresse, l.siret_verif?.codePostal), presentation: l.presentation, siteWeb: l.site_web, rge: !!l.rge,
-    valideLe: l.valide_le, resume: resumes.get(l.id) ?? resumeNotes([]), nbRealisations: count ?? 0,
+    valideLe: l.valide_le, resume: resumes.get(l.id) ?? resumeNotes([]), nbRealisations: count ?? 0, photo: urlPhoto(l.photo),
   };
 }
 

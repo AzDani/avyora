@@ -9,6 +9,8 @@ import UsernameForm from "@/components/UsernameForm";
 import OnboardingForm from "@/components/OnboardingForm";
 import ChoixTypeCompte from "@/components/compte/ChoixTypeCompte";
 import PasserEnPro from "@/components/compte/PasserEnPro";
+import PhotoProfil from "@/components/compte/PhotoProfil";
+import { initialeDe, photoDuCompte } from "@/lib/compte/photo";
 import { typeCompte } from "@/lib/compte/type";
 import type { ProfilData } from "@/lib/actions/profil";
 import { getLocale } from "@/lib/i18n/server";
@@ -75,6 +77,12 @@ export default async function ComptePage() {
         <p className="mt-1.5 text-[15px] text-muted">{s.sous}</p>
         {fondateur && <p className="mt-3"><PastilleFondateur locale={locale} /></p>}
       </header>
+
+      {/* La photo de profil (26/11/2026) : dans « Mon espace » et, pour un artisan, sur sa fiche du réseau. */}
+      <section className="rounded-3xl border border-line bg-surface p-5 sm:p-6" aria-labelledby="photo-profil">
+        <h2 id="photo-profil" className="mb-3 text-[17px] font-semibold text-ink">{locale === "en" ? "Profile photo" : "Photo de profil"}</h2>
+        <PhotoProfil url={photoDuCompte(user)} initiale={initialeDe(String(user.user_metadata?.nom || user.email || "?"))} />
+      </section>
 
       {/* L'abonnement, pas les droits : pendant la bêta, un inscrit est Pro sans rien avoir à gérer ni résilier. */}
       <AbonnementSection

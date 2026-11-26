@@ -8,6 +8,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { journaliser } from "@/lib/audit";
 import { getStripe, resilierAbonnementsUtilisateur } from "@/lib/stripe";
 import { getLocale } from "@/lib/i18n/server";
+import { supprimerPhotosCompte } from "@/lib/compte/photo-serveur";
 
 export type CompteState = { error?: string } | undefined;
 
@@ -52,6 +53,8 @@ export async function supprimerCompte(_prev: CompteState, formData: FormData): P
 
   // Les fichiers du Réseau AVYORA (attestations, photos) ne partent pas en cascade : on vide son dossier avant.
   await supprimerFichiersArtisan(user.id).catch((e) => console.error("Fichiers du réseau non supprimés :", e));
+  // La photo de profil (dossier public `avatars`, migration 0014) non plus.
+  await supprimerPhotosCompte(user.id);
 
   const admin = supabaseAdmin();
   const { error } = await admin.auth.admin.deleteUser(user.id); // cascade sur toutes les données

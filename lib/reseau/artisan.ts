@@ -35,12 +35,14 @@ export type Artisan = {
   majDemandee: MajDemandee | null;
   /** Masqué du réseau le (migration 0013) : plus proposé aux clients ni affiché aux membres Pro ; l'espace reste ouvert. */
   masqueLe: string | null;
+  /** Le chemin de sa photo ou de son logo (dossier public `avatars`, migration 0014), ou null. */
+  photo: string | null;
 };
 
 export type DocumentArtisan = { id: string; type: TypeDocument; chemin: string; nom: string; taille: number; mime: string; createdAt: string };
 
 export const COLONNES_ARTISAN =
-  "id, user_id, statut, siret, raison_sociale, nom_commercial, siret_verif, contact_nom, telephone, email, metiers, departements, presentation, site_web, lien_avis, rge, decennale_assureur, decennale_police, decennale_fin, soumise_le, appel_le, valide_le, message_admin, notes_admin, contacts_envoyes, maj_demandee, masque_le";
+  "id, user_id, statut, siret, raison_sociale, nom_commercial, siret_verif, contact_nom, telephone, email, metiers, departements, presentation, site_web, lien_avis, rge, decennale_assureur, decennale_police, decennale_fin, soumise_le, appel_le, valide_le, message_admin, notes_admin, contacts_envoyes, maj_demandee, masque_le, photo";
 
 const STATUTS: StatutArtisan[] = ["en_attente", "a_completer", "valide", "refuse", "suspendu"];
 
@@ -62,6 +64,7 @@ export function lireArtisan(r: Record<string, unknown>): Artisan {
     contactsEnvoyes: typeof r.contacts_envoyes === "number" ? r.contacts_envoyes : 0,
     majDemandee: lireMaj(r.maj_demandee ?? null),
     masqueLe: n("masque_le"),
+    photo: n("photo"),
   };
 }
 

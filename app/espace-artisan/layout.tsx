@@ -7,6 +7,7 @@ import { ALERTE_DECENNALE_JOURS, joursAvant, noteFr, resumeNotes } from "@/lib/r
 import { labelMetier } from "@/lib/reseau/metiers";
 import { resumeDepartements } from "@/lib/reseau/departements";
 import MenuArtisan, { type CompteursMenu } from "@/components/reseau/espace/MenuArtisan";
+import { urlPhoto } from "@/lib/compte/photo";
 
 /**
  * L'espace dédié de l'artisan (25/11/2026). Validé : la carte de son entreprise et le menu à gauche (onglets sur
@@ -43,7 +44,13 @@ export default async function EspaceArtisanLayout({ children }: { children: Reac
       <aside className="mb-4 space-y-3 lg:sticky lg:top-[96px] lg:mb-0">
         <div className="hidden rounded-2xl border border-line bg-surface p-4 lg:block">
           <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">Réseau AVYORA</p>
-          <p className="mt-1 text-[15px] font-bold text-ink">{nom}</p>
+          <div className="mt-1.5 flex items-center gap-2.5">
+            {urlPhoto(a.photo) && (
+              // eslint-disable-next-line @next/next/no-img-element -- petite image publique déjà réduite
+              <img src={urlPhoto(a.photo)!} alt="" width={36} height={36} className="h-9 w-9 shrink-0 rounded-[10px] object-cover ring-1 ring-line" />
+            )}
+            <p className="min-w-0 text-[15px] font-bold text-ink">{nom}</p>
+          </div>
           {a.masqueLe ? (
             <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-surface-2 px-2.5 py-0.5 text-[12px] font-semibold text-muted ring-1 ring-line">
               <span className="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true" />Masqué du réseau
