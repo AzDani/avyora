@@ -111,6 +111,7 @@ export async function envoyerDemandeDevis(brut: unknown): Promise<{ ok: true; id
       .select("id, user_id, raison_sociale, nom_commercial, contact_nom, email")
       .in("id", d.artisans)
       .eq("statut", "valide")
+      .is("masque_le", null)
       .contains("departements", [dep])
       .overlaps("metiers", [...new Set([...d.metiers, "tce"])])
       .gte("decennale_fin", aujourdhuiParis());
@@ -325,6 +326,7 @@ export async function ajouterArtisans(demandeId: string, ids: string[]): Promise
     .select("id, user_id, raison_sociale, nom_commercial, contact_nom, email")
     .in("id", choix)
     .eq("statut", "valide")
+    .is("masque_le", null)
     .neq("user_id", user.id)
     .contains("departements", [String(d.departement)])
     .overlaps("metiers", [...new Set([...metiers, "tce"])])

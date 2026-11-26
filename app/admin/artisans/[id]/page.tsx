@@ -8,7 +8,7 @@ import { DEPARTEMENTS, nomDepartement } from "@/lib/reseau/departements";
 import { afficherPortable } from "@/lib/telephone";
 import { dateCourte } from "@/lib/admin/outils";
 import ContactRapide from "@/components/admin/ContactRapide";
-import PanneauDecision, { BoutonReverifierSiret } from "@/components/admin/reseau/PanneauDecision";
+import PanneauDecision, { BoutonMasquer, BoutonReverifierSiret } from "@/components/admin/reseau/PanneauDecision";
 import { BoutonsMaj } from "@/components/admin/reseau/ModerationAvis";
 import { PastilleDecennale, PastilleSiret, PastilleStatut } from "@/components/admin/reseau/Pastilles";
 
@@ -73,7 +73,10 @@ export default async function FicheArtisan({ params }: { params: Promise<{ id: s
             <p className="num mt-0.5 text-[12.5px] text-faint">Envoyée le {dateCourte(a.soumiseLe)}{a.valideLe ? ` · validée le ${dateCourte(a.valideLe)}` : ""}</p>
 
           </div>
-          <PastilleStatut statut={a.statut} />
+          <div className="flex flex-wrap items-center gap-1.5">
+            <PastilleStatut statut={a.statut} />
+            {a.statut === "valide" && a.masqueLe && <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-[12px] font-semibold text-muted ring-1 ring-line" data-masque="">Masqué du réseau</span>}
+          </div>
         </div>
         <div className="mt-3">
           <ContactRapide tel={a.telephone} email={a.email} sujet="Ta candidature au Réseau AVYORA"
@@ -83,6 +86,21 @@ export default async function FicheArtisan({ params }: { params: Promise<{ id: s
           <p className="mt-3 rounded-xl bg-surface-2 px-3 py-2 text-[13px] text-muted"><b className="text-ink">Ton dernier message à l&apos;artisan :</b> {a.messageAdmin}</p>
         )}
       </header>
+
+      {/* Visible ou masqué du réseau (26/11/2026, migration 0013) : seulement pour un artisan validé. */}
+      {a.statut === "valide" && (
+        <section className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-line bg-surface p-4 sm:p-5" data-visibilite="">
+          <div className="min-w-0 max-w-[62ch]">
+            <h2 className="text-[15px] font-semibold text-ink">{a.masqueLe ? `Masqué du réseau depuis le ${dateCourte(a.masqueLe)}` : "Visible dans le réseau"}</h2>
+            <p className="mt-0.5 text-[13px] text-muted">
+              {a.masqueLe
+                ? "Il n'est plus proposé aux clients ni affiché aux membres Pro. Son espace reste ouvert : ses demandes en cours, ses avis et sa galerie continuent."
+                : "Proposé aux clients de sa zone et affiché aux membres Pro. Masquer le retire des propositions sans le suspendre : son espace reste ouvert, sans e-mail."}
+            </p>
+          </div>
+          <BoutonMasquer id={a.id} masque={!!a.masqueLe} />
+        </section>
+      )}
 
       {/* La mise à jour demandée par l'artisan validé depuis son espace (25/11/2026). */}
       {a.majDemandee && (

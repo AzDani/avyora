@@ -122,6 +122,32 @@ export async function deciderArtisan(id: string, action: ActionArtisan, message?
   return { ok: true };
 }
 
+/**
+ * Masquer un artisan du réseau, ou l'y remettre (26/11/2026, migration 0013). Masqué, il reste validé et garde tout son
+ * espace (demandes en cours, avis, galerie) mais n'est plus proposé aux clients ni affiché aux membres Pro. Seulement
+ * pour un artisan validé ; aucun e-mail (l'espace artisan l'affiche).
+ */
+export async function masquerArtisan(id: string, masquer: boolean): Promise<{ ok: true } | { ok: false; erreur: string }> {
+  const admin = await getAdmin();
+  if (!admin) {
+    const user = await getUser();
+    if (user) await journaliser("acces_refuse", { userId: user.id, email: user.email, payload: { cible: "admin:artisans" } });
+    return { ok: false, erreur: "Accès refusé." };
+  }
+  if (typeof id !== "string" || !UUID.test(id) || typeof masquer !== "boolean") return { ok: false, erreur: "Demande invalide." };
+  const maintenant = new Date().toISOString();
+  const { data, error } = await supabaseAdmin().from(TABLE_ARTISANS)
+    .update({ masque_le: masquer ? maintenant : null, updated_at: maintenant })
+    .eq("id", id).eq("statut", "valide").select("id");
+  if (error) return { ok: false, erreur: "Enregistrement impossible : réessaie." };
+  if (!data?.length) return { ok: false, erreur: "Seul un artisan validé peut être masqué ou remis dans le réseau." };
+  await journaliser("action_admin", { userId: admin.id, payload: { action: masquer ? "artisan_masquer" : "artisan_afficher", artisan: id } });
+  revalidatePath("/admin", "layout");
+  revalidatePath("/avis-artisans", "layout");
+  revalidatePath("/espace-artisan", "layout");
+  return { ok: true };
+}
+
 /** Les notes internes de l'admin sur une candidature (jamais montrées à l'artisan). */
 export async function noterArtisan(id: string, notes: string): Promise<{ ok: boolean }> {
   const admin = await getAdmin();

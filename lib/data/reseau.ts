@@ -114,6 +114,8 @@ export async function artisansDisponibles(departement: string, metiers: string[]
     .from(TABLE_ARTISANS)
     .select("id, user_id, raison_sociale, nom_commercial, metiers, presentation, rge, site_web, lien_avis")
     .eq("statut", "valide")
+    // Masqué du réseau (0013) : plus proposé aux clients.
+    .is("masque_le", null)
     // Un client qui est lui-même artisan du réseau ne se voit pas dans sa propre liste.
     .neq("user_id", clientId)
     .contains("departements", [departement])
@@ -431,6 +433,7 @@ export async function artisansPublics(filtre: { departement?: string | null; met
     .from(TABLE_ARTISANS)
     .select("id, raison_sociale, nom_commercial, metiers, departements, presentation, site_web, rge, valide_le, siret_verif")
     .eq("statut", "valide")
+    .is("masque_le", null)
     .gte("decennale_fin", aujourdhuiParis())
     .limit(500);
   if (filtre.departement) q = q.contains("departements", [filtre.departement]);
@@ -455,7 +458,7 @@ export async function artisansPublics(filtre: { departement?: string | null; met
     .sort((a, b) => (b.resume.moyenne ?? -1) - (a.resume.moyenne ?? -1) || b.resume.n - a.resume.n || a.nom.localeCompare(b.nom, "fr"));
 }
 
-/** La fiche publique (Pro) d'un artisan validé ; null s'il n'est pas (ou plus) dans le réseau. */
+/** La fiche publique (Pro) d'un artisan validé ; null s'il n'est pas (ou plus) dans le réseau, ou s'il en est masqué. */
 export async function ficheArtisan(id: string): Promise<ArtisanPublic | null> {
   if (!UUID_RE.test(id)) return null;
   const sb = supabaseAdmin();
@@ -464,6 +467,7 @@ export async function ficheArtisan(id: string): Promise<ArtisanPublic | null> {
     .select("id, raison_sociale, nom_commercial, metiers, departements, presentation, site_web, rge, valide_le, siret_verif, statut")
     .eq("id", id)
     .eq("statut", "valide")
+    .is("masque_le", null)
     .maybeSingle();
   if (!data) return null;
   const l = data as { id: string; raison_sociale: string; nom_commercial: string | null; metiers: string[]; departements: string[]; presentation: string | null; site_web: string | null; rge: boolean; valide_le: string | null; siret_verif: { adresse?: string; codePostal?: string } | null };

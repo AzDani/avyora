@@ -99,6 +99,7 @@ export default async function AdminArtisans({ searchParams }: { searchParams: Pr
                   <div className="flex flex-wrap items-center gap-1.5">
                     <PastilleSiret v={a.siretVerif} />
                     <PastilleStatut statut={a.statut} />
+                    {a.statut === "valide" && a.masqueLe && <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-[12px] font-semibold text-muted ring-1 ring-line">Masqué</span>}
                   </div>
                 </div>
                 <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[12.5px]">

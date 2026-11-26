@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { deciderArtisan, noterArtisan, reverifierSiretArtisan, type ActionArtisan } from "@/lib/actions/admin";
+import { deciderArtisan, masquerArtisan, noterArtisan, reverifierSiretArtisan, type ActionArtisan } from "@/lib/actions/admin";
 import type { StatutArtisan } from "@/lib/reseau/artisan";
 
 /**
@@ -158,5 +158,24 @@ export function BoutonReverifierSiret({ id }: { id: string }) {
       </button>
       {erreur && <span role="alert" className="text-[12px] text-[#b42318]">Échec : réessaie.</span>}
     </span>
+  );
+}
+
+/**
+ * Masquer un artisan validé du réseau, ou l'y remettre (26/11/2026). Masqué : plus proposé aux clients ni affiché aux
+ * membres Pro, mais son espace reste ouvert. Aucun e-mail : son espace le lui dit.
+ */
+export function BoutonMasquer({ id, masque }: { id: string; masque: boolean }) {
+  const [enCours, demarrer] = useTransition();
+  const [erreur, setErreur] = useState<string | null>(null);
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <button type="button" disabled={enCours}
+        onClick={() => demarrer(async () => { const r = await masquerArtisan(id, !masque).catch(() => ({ ok: false as const, erreur: "Réessaie dans un instant." })); setErreur(r.ok ? null : r.erreur); })}
+        className={"btn min-h-10 px-4 text-[13.5px] disabled:opacity-50 " + (masque ? "btn-primary" : "border border-line bg-surface text-ink hover:bg-surface-2")}>
+        {enCours ? "Enregistrement…" : masque ? "Remettre dans le réseau" : "Masquer du réseau"}
+      </button>
+      {erreur && <span role="alert" className="text-[12.5px] text-[#b42318]">{erreur}</span>}
+    </div>
   );
 }

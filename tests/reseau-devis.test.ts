@@ -59,7 +59,7 @@ function base(reponses: Partial<Record<string, unknown>> = {}) {
     const filtre = (k: string) => (c: string, v: unknown) => { o.filtres.push([k, c, v]); return q; };
     const q: Record<string, unknown> = {
       select: () => q, order: () => q, limit: () => q,
-      eq: filtre("eq"), neq: filtre("neq"), in: filtre("in"), contains: filtre("contains"), overlaps: filtre("overlaps"), gte: filtre("gte"),
+      eq: filtre("eq"), neq: filtre("neq"), in: filtre("in"), contains: filtre("contains"), overlaps: filtre("overlaps"), gte: filtre("gte"), is: filtre("is"),
       maybeSingle: async () => { const x = r() as { data: unknown }; return { ...x, data: Array.isArray(x.data) ? x.data[0] ?? null : x.data }; },
       single: async () => r(),
       then: (res: (v: unknown) => unknown) => Promise.resolve(r()).then(res),
@@ -220,6 +220,8 @@ describe("la liste des artisans proposés", () => {
     const sel = b.ops.find((o) => o.table === "reseau_artisans")!;
     expect(sel.filtres).toEqual(expect.arrayContaining([["eq", "statut", "valide"], ["neq", "user_id", "u-client"], ["contains", "departements", ["33"]], ["overlaps", "metiers", ["plomberie", "tce"]]]));
     expect(sel.filtres.some(([k, c]) => k === "gte" && c === "decennale_fin")).toBe(true);
+    // Masqué du réseau (0013) : jamais proposé.
+    expect(sel.filtres).toEqual(expect.arrayContaining([["is", "masque_le", null]]));
     expect(b.ops.some((o) => o.table === "rpc:reseau_compte_demandes")).toBe(true);
   });
 });
