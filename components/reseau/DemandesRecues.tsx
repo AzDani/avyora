@@ -135,7 +135,7 @@ const VIDE: Record<Onglet, string> = {
 };
 
 /** Les demandes reçues, rangées en trois onglets (espace artisan, 25/11/2026). Les onglets sont des liens (?onglet=). */
-export default function DemandesRecues({ demandes, onglet }: { demandes: DemandeRecue[]; onglet: Onglet }) {
+export default function DemandesRecues({ demandes, onglet, masque = false }: { demandes: DemandeRecue[]; onglet: Onglet; masque?: boolean }) {
   const liste = demandes.filter((d) => ongletDe(d) === onglet);
   return (
     <section id="demandes" aria-label="Tes demandes de devis" className="space-y-3">
@@ -153,7 +153,7 @@ export default function DemandesRecues({ demandes, onglet }: { demandes: Demande
         })}
       </div>
       {liste.length === 0 ? (
-        <p className="rounded-3xl border border-dashed border-line-strong bg-surface-2 p-5 text-[14px] text-muted">{VIDE[onglet]}</p>
+        <p className="rounded-3xl border border-dashed border-line-strong bg-surface-2 p-5 text-[14px] text-muted">{masque && onglet === "rep" ? "Rien à répondre. Ta fiche est masquée du réseau : tu ne reçois pas de nouvelles demandes." : VIDE[onglet]}</p>
       ) : (
         <div className="space-y-3">{liste.map((r) => <Carte key={r.miseId} r={r} />)}</div>
       )}

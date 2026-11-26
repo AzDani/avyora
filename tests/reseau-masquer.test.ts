@@ -37,5 +37,8 @@ describe("masquer un artisan du réseau", () => {
     const espace = lire("app/espace-artisan/layout.tsx");
     expect(espace).toContain("Ta fiche est masquée du réseau.");
     expect(espace).toContain("{!a.masqueLe && <Link href={`/avis-artisans/${a.id}`}");
+    // L'accueil et les demandes ne disent plus « les clients peuvent te choisir » à un artisan masqué.
+    expect(lire("app/espace-artisan/page.tsx")).toContain("Ta fiche est masquée pour le moment : les clients ne peuvent pas te choisir.");
+    expect(lire("app/espace-artisan/demandes/page.tsx")).toContain("masque={!!artisan.masqueLe}");
   });
 });

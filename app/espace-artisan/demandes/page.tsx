@@ -21,7 +21,7 @@ export default async function PageDemandes({ searchParams }: { searchParams: Pro
           Accepte une demande pour recevoir les coordonnées du client. Préviens-nous quand ton devis est parti : le client suit tout de son côté.
         </p>
       </div>
-      {demandes ? <DemandesRecues demandes={demandes} onglet={onglet} /> : (
+      {demandes ? <DemandesRecues demandes={demandes} onglet={onglet} masque={!!artisan.masqueLe} /> : (
         <p role="alert" className="rounded-2xl bg-[#fdf0ef] p-4 text-[14px] text-[#8a1f15]">Tes demandes ne s&apos;affichent pas pour l&apos;instant. Recharge la page dans un instant.</p>
       )}
     </div>

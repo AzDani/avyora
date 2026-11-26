@@ -235,7 +235,8 @@ async function Accueil({ a, prenom }: { a: Artisan; prenom: string }) {
         <p className="eyebrow">Espace artisan</p>
         <h1 className="mt-1 text-[28px] font-semibold tracking-tight text-ink sm:text-[32px]">Bonjour {prenom || nom}</h1>
         <p className="mt-2 max-w-[62ch] text-[15px] leading-relaxed text-muted">
-          {nom} fait partie du Réseau AVYORA{a.valideLe ? ` depuis le ${dateLongue(a.valideLe)}` : ""}. Les clients de ta zone peuvent te choisir pour leurs demandes de devis.
+          {nom} fait partie du Réseau AVYORA{a.valideLe ? ` depuis le ${dateLongue(a.valideLe)}` : ""}.{" "}
+          {a.masqueLe ? "Ta fiche est masquée pour le moment : les clients ne peuvent pas te choisir." : "Les clients de ta zone peuvent te choisir pour leurs demandes de devis."}
         </p>
       </div>
       {a.messageAdmin && (
@@ -269,7 +270,9 @@ async function Accueil({ a, prenom }: { a: Artisan; prenom: string }) {
         )}
         {demandes !== null && !plusAncienne && !devisAEnvoyer.length && !sansReponse.length && jours > ALERTE_DECENNALE_JOURS && (
           <p className="rounded-2xl border border-dashed border-line-strong bg-surface-2 p-4 text-[14px] text-muted">
-            Rien à faire pour l&apos;instant. Quand un client de ta zone te choisit, tu reçois un e-mail et la demande apparaît ici.
+            {a.masqueLe
+              ? "Rien à faire pour l'instant. Ta fiche est masquée : tu ne reçois pas de nouvelles demandes."
+              : "Rien à faire pour l'instant. Quand un client de ta zone te choisit, tu reçois un e-mail et la demande apparaît ici."}
           </p>
         )}
       </section>
