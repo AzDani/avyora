@@ -2,12 +2,14 @@
  * Les bureaux virtuels d'AVYORA (/admin/bureaux) : assemble la scène 3D depuis ses modules (maquettes/bureaux/src).
  *
  *   node maquettes/bureaux/assembler.mjs                      écrit ce que le SITE sert :
- *                                                               public/bureaux/scene.js, public/bureaux/scene.css, lib/bureaux/coquille.ts
+ *                                                               lib/bureaux/coquille.ts (la page) et lib/bureaux/scene-fichiers.ts (le script et
+ *                                                               la feuille de style, servis par /admin/bureaux/scene.js et scene.css, RÉSERVÉS
+ *                                                               à l'admin : depuis le 27/11/2026, plus rien de la scène n'est dans public/)
  *   node maquettes/bureaux/assembler.mjs --artefact <f.html>  écrit en plus la MAQUETTE autonome (données d'exemple, Three.js par CDN,
  *                                                               modèles lus dans un dossier paquets/ à côté du fichier)
  *
  * Les fichiers écrits pour le site sont versionnés : tests/bureaux-scene.test.ts vérifie qu'ils sont à jour avec les modules.
- * Après avoir touché un module : relancer ce script, puis `node --check public/bureaux/scene.js`.
+ * Après avoir touché un module : relancer ce script, puis vérifier la syntaxe du script (`node --check` sur le scene.js écrit par `--essai`).
  *
  * Une seule scène, deux usages : sur le site, la page porte data-source (l'adresse des vraies données) et data-paquets ;
  * sans ces attributs, la scène montre ses données d'exemple (voir src/donnees.js).
@@ -65,12 +67,12 @@ ${style}`;
 <meta name="robots" content="noindex,nofollow">
 <title>Bureaux · AVYORA</title>
 <link rel="icon" href="/icon-192.png">
-<link rel="stylesheet" href="/bureaux/scene.css?v=${v}">
+<link rel="stylesheet" href="/admin/bureaux/scene.css?v=${v}">
 </head>
 <body>
 ${corps.replace('<div class="app">', '<div class="app" data-source="/api/admin/bureaux" data-paquets="/bureaux/paquets/">')}
 ${LIBS.map((l) => `<script src="${VENDOR}${l}"></script>`).join("\n")}
-<script src="/bureaux/scene.js?v=${v}"></script>
+<script src="/admin/bureaux/scene.js?v=${v}"></script>
 </body>
 </html>
 `;
@@ -92,23 +94,27 @@ ${CDN.map((u) => `<script src="${u}"></script>`).join("\n")}
 <script>
 ${js}</script>
 `;
-  return { scene, css, module, artefact, coquille };
+  const fichiers = `/* Fichier écrit par maquettes/bureaux/assembler.mjs : ne pas le modifier à la main. */
+/** Le script et la feuille de style des bureaux virtuels, servis UNIQUEMENT à l'admin (app/admin/bureaux/scene.js et scene.css). */
+export const SCENE_JS = ${JSON.stringify(scene)};
+export const SCENE_CSS = ${JSON.stringify(css)};
+export const VERSION_SCENE = ${JSON.stringify(v)};
+`;
+  return { scene, css, module, artefact, coquille, fichiers };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const r = assembler();
-  mkdirSync(join(RACINE, "public/bureaux"), { recursive: true });
   mkdirSync(join(RACINE, "lib/bureaux"), { recursive: true });
-  writeFileSync(join(RACINE, "public/bureaux/scene.js"), r.scene);
-  writeFileSync(join(RACINE, "public/bureaux/scene.css"), r.css);
+  writeFileSync(join(RACINE, "lib/bureaux/scene-fichiers.ts"), r.fichiers);
   writeFileSync(join(RACINE, "lib/bureaux/coquille.ts"), r.module);
-  console.log(`site : scene.js ${r.scene.length} octets, scene.css ${r.css.length} octets, coquille.ts`);
+  console.log(`site : scène ${r.scene.length} octets, style ${r.css.length} octets (lib/bureaux/scene-fichiers.ts), coquille.ts`);
   const i = process.argv.indexOf("--artefact");
   if (i > 0 && process.argv[i + 1]) { writeFileSync(resolve(process.argv[i + 1]), r.artefact); console.log("maquette :", process.argv[i + 1]); }
   // Une page d'essai du mode « site », servie par un petit serveur local : mêmes fichiers, données lues dans un fichier voisin.
   const j = process.argv.indexOf("--essai");
   if (j > 0 && process.argv[j + 1]) {
-    const page = r.coquille.replaceAll("/bureaux/scene.", "scene.").replace('data-source="/api/admin/bureaux" data-paquets="/bureaux/paquets/"', 'data-source="donnees-essai.json" data-paquets="paquets/"')
+    const page = r.coquille.replaceAll("/admin/bureaux/scene.", "scene.").replace('data-source="/api/admin/bureaux" data-paquets="/bureaux/paquets/"', 'data-source="donnees-essai.json" data-paquets="paquets/"')
       .replaceAll(VENDOR, "vendor/").replace(/<link rel="stylesheet"[^>]*>/, () => "<style>" + r.css.replaceAll("/fonts/geist/", "fonts/") + "</style>");   // (le serveur d'essai ne sert pas les .css)
     const d = resolve(process.argv[j + 1]);
     writeFileSync(join(d, "essai-site.html"), page); writeFileSync(join(d, "scene.js"), r.scene);

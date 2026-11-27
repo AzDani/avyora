@@ -5,7 +5,7 @@ d'œil où travailler. Three.js r128 (servi depuis `public/vendor/three@0.128.0`
 
 - `src/` : les modules de la scène. `donnees.js` porte les pièces, les agents IA et leurs données d'EXEMPLE (la maquette) ;
   sur le site, la page porte `data-source="/api/admin/bureaux"` et les vraies données remplacent les exemples.
-- `assembler.mjs` : fabrique `public/bureaux/scene.js`, `public/bureaux/scene.css` et `lib/bureaux/coquille.ts`.
+- `assembler.mjs` : fabrique `lib/bureaux/scene-fichiers.ts` (script et style, servis à l'admin seul par `/admin/bureaux/scene.js|css`) et `lib/bureaux/coquille.ts`.
   À relancer après toute modification de `src/` (un test vérifie que ces fichiers sont à jour).
   `--artefact <fichier.html>` écrit aussi la maquette autonome ; `--essai <dossier>` une page d'essai du mode « site ».
 - `lib/bureaux/donnees.ts` (dans le site) : le calcul PUR du contenu des pièces à partir des listes de l'admin.

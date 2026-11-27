@@ -17,8 +17,8 @@ const fr = {
     monCompte: "Mon compte",
     nouveauProjet: "Nouveau projet",
     menu: "Menu",
-    /* Éditeur de plan (FEATURES.plans) : l'onglet et sa pastille. */
-    plan: "Plan 3D",
+    /* Éditeur de plan (FEATURES.plans) : l'onglet et sa pastille. « 2D » d'abord : c'est le plan qui compte dans le BTP (décision de Dani, 27/11/2026). */
+    plan: "Plan 2D",
     planPastille: "Gratuit",
     /* Le nom de la navigation de l'en-tête, pour les lecteurs d'écran (aria-label). */
     navPrincipale: "Navigation principale",
@@ -588,7 +588,7 @@ const en: Dict = {
     monCompte: "My account",
     nouveauProjet: "New project",
     menu: "Menu",
-    plan: "3D plan",
+    plan: "2D plan",
     planPastille: "Free",
     navPrincipale: "Main navigation",
     accompagnement: "Renovation advice",

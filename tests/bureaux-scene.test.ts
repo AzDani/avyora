@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { assembler } from "../maquettes/bureaux/assembler.mjs";
@@ -13,12 +13,23 @@ const racine = join(__dirname, "..");
 const lire = (f: string) => readFileSync(join(racine, f), "utf8");
 
 describe("bureaux virtuels : la scène servie par le site", () => {
-  const r = assembler() as { scene: string; css: string; module: string; artefact: string };
+  const r = assembler() as { scene: string; css: string; module: string; artefact: string; fichiers: string };
 
   it("les fichiers versionnés sont à jour avec les modules (sinon : node maquettes/bureaux/assembler.mjs)", () => {
-    expect(lire("public/bureaux/scene.js")).toBe(r.scene);
-    expect(lire("public/bureaux/scene.css")).toBe(r.css);
+    expect(lire("lib/bureaux/scene-fichiers.ts")).toBe(r.fichiers);
     expect(lire("lib/bureaux/coquille.ts")).toBe(r.module);
+  });
+
+  it("la scène n'est plus téléchargeable par tout le monde : hors de public/, servie par deux routes gardées (27/11/2026)", () => {
+    expect(existsSync(join(racine, "public/bureaux/scene.js"))).toBe(false);
+    expect(existsSync(join(racine, "public/bureaux/scene.css"))).toBe(false);
+    expect(COQUILLE).toMatch(/<script src="\/admin\/bureaux\/scene\.js\?v=[0-9a-f]{10}"><\/script>/);
+    expect(COQUILLE).toMatch(/href="\/admin\/bureaux\/scene\.css\?v=[0-9a-f]{10}"/);
+    for (const f of ["app/admin/bureaux/scene.js/route.ts", "app/admin/bureaux/scene.css/route.ts"]) {
+      const route = lire(f);
+      expect(route).toMatch(/if \(!\(await getAdmin\(\)\)\) return new Response\("Introuvable", \{ status: 404/);
+      expect(route).toContain("private, max-age");
+    }
   });
 
   it("la page du site ne charge rien d'extérieur et ne contient aucune donnée", () => {
