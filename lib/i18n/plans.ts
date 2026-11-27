@@ -29,7 +29,7 @@ const fr = {
   },
   /* La vitrine (le haut de page ; le reste de son contenu arrive avec la mise en avant). */
   page: {
-    eyebrow: "Plan 3D gratuit",
+    eyebrow: "Plan 2D gratuit",
     titre: "Dessine le plan de ta maison, gratuitement, et vois-le en 3D",
     sous: "Trace tes murs à la souris : les pièces se ferment toutes seules et affichent leur surface. Ajoute portes, fenêtres et équipements, passe en 3D d'un clic. Dans ton navigateur, sans installation.",
     enFrancais: null as string | null,
@@ -299,7 +299,7 @@ const en: DictPlans = {
     planVide: "Empty plan",
   },
   page: {
-    eyebrow: "Free 3D plan",
+    eyebrow: "Free 2D plan",
     titre: "Draw your house plan for free, and see it in 3D",
     sous: "Draw your walls with the mouse: rooms close on their own and show their area. Add doors, windows and fittings, switch to 3D in one click. In your browser, nothing to install.",
     enFrancais: "The editor is in French for now.",

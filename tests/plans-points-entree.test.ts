@@ -177,7 +177,7 @@ describe("C9 · onglet « Plan 3D » de l'en-tête desktop, et pied de page", ()
     expect(ailleurs.header).not.toContain('aria-current="page"');
   });
 
-  it("allumé : le pied de page gagne « Plan de maison 3D » (FR, EN), et seulement lui", async () => {
+  it("allumé : le pied de page gagne « Plan de maison 2D » (FR, EN), et seulement lui", async () => {
     for (const locale of LOCALES) {
       const avant = await layout({ plans: false, locale });
       const apres = await layout({ plans: true, locale });

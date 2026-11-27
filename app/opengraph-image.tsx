@@ -15,7 +15,7 @@ export const contentType = "image/png";
  * que si leur interrupteur est allumé (lib/features.ts).
  */
 function pied(): string {
-  const offre = ["rénovation", ...(FEATURES.neuf ? ["construction"] : []), ...(FEATURES.plans ? ["plan 3D"] : [])].join(", ");
+  const offre = ["rénovation", ...(FEATURES.neuf ? ["construction"] : []), ...(FEATURES.plans ? ["plan 2D"] : [])].join(", ");
   return betaActive() ? `Bêta gratuite jusqu'au ${libellesBeta("fr").fin} · ${offre}` : `Estimation de travaux · ${offre} · France`;
 }
 

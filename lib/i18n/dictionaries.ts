@@ -82,7 +82,7 @@ const fr = {
     contact: "Contact",
     tarifs: "Tarifs",
     construction: "Construction neuve",
-    plan: "Plan de maison 3D",
+    plan: "Plan de maison 2D",
     tagline:
       "Estimations indicatives basées sur le référentiel de prix AVYORA (France 2026). À confirmer par des devis d'artisans.",
   },
@@ -639,7 +639,7 @@ const en: Dict = {
     contact: "Contact",
     tarifs: "Pricing",
     construction: "New build",
-    plan: "3D house plan",
+    plan: "2D house plan",
     tagline:
       "Indicative estimates based on the AVYORA price reference (France 2026). Confirm with contractor quotes.",
   },
