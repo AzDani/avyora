@@ -61,7 +61,7 @@ new MutationObserver(theme).observe(document.documentElement, { attributes: true
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", theme);
 
 /* ───────────────────────── La boucle ───────────────────────── */
-function taille() { const w = boite.clientWidth, h = boite.clientHeight; renderer.setSize(w, h, false); }
+function taille() { const w = boite.clientWidth, h = boite.clientHeight; renderer.setPixelRatio(finesse(w, h)); renderer.setSize(w, h, false); }
 new ResizeObserver(taille).observe(boite);
 const v3 = new THREE.Vector3();
 let dernier = performance.now(), images = 0;

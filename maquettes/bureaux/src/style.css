@@ -170,3 +170,7 @@ button.agent:hover{background:var(--surface-2)}
   .priorites,.aide{display:none}
   .barre h1{display:none}
 }
+.panne{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:6;max-width:min(420px,calc(100% - 32px));display:flex;flex-direction:column;gap:12px;align-items:flex-start;
+  padding:16px 18px;border-radius:16px;background:var(--surface);border:1px solid var(--trait);box-shadow:var(--ombre);color:var(--encre)}
+.panne p{margin:0;font-size:14px}
+.panne button{border:0;border-radius:10px;background:var(--marque);color:#fff;font-size:13.5px;font-weight:600;padding:8px 14px}

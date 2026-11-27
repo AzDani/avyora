@@ -2,7 +2,21 @@
 const canvas = document.getElementById("c"), boite = document.getElementById("scene");
 const calme = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
-renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+/* La finesse du rendu : au plus 1,5 pixel par point, et au plus ~3,7 millions de pixels dessinés. En pleine fenêtre sur un grand écran
+   Retina, la densité native (×2) faisait dessiner 4 fois plus de pixels que dans l'aperçu : la carte graphique pouvait lâcher (27/11/2026). */
+const PIXELS_MAX = 3.7e6;
+function finesse(w, h) { return Math.max(0.75, Math.min(devicePixelRatio || 1, 1.5, Math.sqrt(PIXELS_MAX / Math.max(1, w * h)))); }
+renderer.setPixelRatio(finesse(canvas.clientWidth || innerWidth, canvas.clientHeight || innerHeight));
+/* Si la 3D s'arrête (carte graphique saturée, erreur en cours de route), on le DIT à l'écran au lieu de laisser une image figée. */
+function panne(texte) {
+  if (document.getElementById("panne")) return;
+  const d = document.createElement("div"); d.id = "panne"; d.className = "panne"; d.setAttribute("role", "alert");
+  d.innerHTML = "<p></p><button type=\"button\">Recharger</button>"; d.querySelector("p").textContent = texte; d.querySelector("button").onclick = () => location.reload();
+  (document.getElementById("scene") || document.body).appendChild(d); window.__erreur = window.__erreur || texte;
+}
+canvas.addEventListener("webglcontextlost", (e) => { e.preventDefault(); panne("La 3D s'est arrêtée : la carte graphique de cet ordinateur a été saturée. Ferme d'autres onglets lourds, puis recharge."); });
+window.addEventListener("error", (e) => { if (document.getElementById("chargement").hidden) panne("La 3D s'est arrêtée sur une erreur : " + (e.message || "inconnue")); });
+window.addEventListener("unhandledrejection", (e) => { if (document.getElementById("chargement").hidden) panne("La 3D s'est arrêtée sur une erreur : " + String(e.reason && e.reason.message || e.reason)); });
 /* Le rendu. Les ombres en « PCFSoft » : des bords lissés, sans les hachures que donnait le mode au flou réglable. La courbe « ACES » donne
    des blancs qui ne brûlent pas ; l'exposition est fixée par l'ambiance (voir « Le ciel »). */
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
