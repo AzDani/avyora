@@ -82,6 +82,8 @@ describe("l'Agent Rappels", () => {
     expect(mail.html).not.toContain("<script>x");
     expect(mail.html).toContain("&lt;script&gt;");
     expect(mail.html).toContain("Cet e-mail vous est envoyé dans le cadre de votre accompagnement");
+    expect(mail.html).toContain("Accompagnement travaux · conseil indépendant");
+    expect(mail.html).not.toContain("Estime tes travaux");
     // La copie pour Daniel : objet préfixé (rangement en dossier), à qui et quand, échappé.
     const copie = emailCompteRendu({ objet, corps, copie: { a: "l<b>@x.fr", le: "27 novembre 2026 à 22:10" } });
     expect(copie.subject).toBe("[Compte rendu envoyé] Notre échange");

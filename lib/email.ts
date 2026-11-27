@@ -79,7 +79,7 @@ function layout(opts: { preheader: string; eyebrow: string; titre: string; corps
         <!-- En-tête nuit -->
         <tr><td bgcolor="#1E1B4B" style="background:linear-gradient(135deg,#1E1B4B,#3b2f96);padding:22px 28px">
           <span style="font-family:Arial,Helvetica,sans-serif;font-size:20px;font-weight:bold;letter-spacing:.5px;color:#ffffff">AVY<span style="color:#a78bfa">ORA</span></span>
-          <span style="font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#c4b5fd;display:block;margin-top:3px">${opts.en ? "Estimate your renovation before you sign" : "Estime tes travaux avant de signer"}</span>
+          <span style="font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#c4b5fd;display:block;margin-top:3px">${opts.en ? "Estimate your renovation before you sign" : opts.vous ? "Accompagnement travaux · conseil indépendant" : "Estime tes travaux avant de signer"}</span>
         </td></tr>
         <!-- Corps -->
         <tr><td style="padding:28px 28px 8px;font-family:Arial,Helvetica,sans-serif">
