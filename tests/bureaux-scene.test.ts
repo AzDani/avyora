@@ -41,6 +41,13 @@ describe("bureaux virtuels : la scène servie par le site", () => {
     expect(r.scene).toMatch(/await Promise\.all\(\[chargerModeles\([\s\S]{0,200}lireDonnees\(\)\]\)/);
   });
 
+  it("les données du site n'écrasent jamais la liste des personnages d'une pièce (piece.gens), relue chaque minute", () => {
+    // 27/11/2026 : le nombre de personnes à montrer était rangé dans p.gens, que les déplacements utilisent pour la LISTE des
+    // personnes de la pièce : à la première relecture des données, « q.gens is not iterable » arrêtait la 3D.
+    expect(r.scene).not.toMatch(/\bp\.gens\s*=(?!=)/);
+    expect(r.scene).toContain("p.foule = ");
+  });
+
   it("la maquette autonome garde ses données d'exemple et ses bibliothèques par CDN", () => {
     expect(r.artefact).toContain("https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js");
     expect(r.artefact).not.toContain("data-source=");

@@ -159,7 +159,7 @@ function appliquerDonnees(d) {
   for (const p of PIECES) {
     const v = d && d.pieces && d.pieces[p.id]; if (!v) continue;
     const liste = Array.isArray(v.liste) ? v.liste : [];
-    p.etat = ETATS[v.etat] ? v.etat : "vide"; p.nb = +v.nb || 0; p.euro = null; p.gens = Math.max(0, +v.gens || 0);
+    p.etat = ETATS[v.etat] ? v.etat : "vide"; p.nb = +v.nb || 0; p.euro = null; p.foule = Math.max(0, +v.gens || 0);   // (pas « p.gens » : les déplacements y rangent la LISTE des personnes de la pièce)
     p.kpis = (v.kpis || []).map((k) => [net(k[0]), net(k[1])]); p.titre = net(v.titre); p.conseil = net(v.conseil);
     p.liste = liste.map((l) => [net(l[0]), net(l[1]), ETATS[l[2]] ? l[2] : "vide", net(l[3])]); p.brut = liste.map((l) => [String(l[0]), String(l[1]), ETATS[l[2]] ? l[2] : "vide", String(l[3])]);
     p.lien = typeof v.lien === "string" && /^\/admin(\/[a-z-]+)*$/.test(v.lien) ? v.lien : null;
@@ -2422,14 +2422,14 @@ for (const p of PIECES) {
    visible, puisque leurs bords sont des cloisons fines). */
 const COULOIRS = [{ id: "couloir-fond", x0: -22, x1: 22, z0: -5.25, z1: -1.75 }, { id: "couloir-accueil", x0: -22, x1: 14.2, z0: 7.7, z1: 10.3 }];
 
-/* Sur le site, chaque pièce montre autant de personnes qu'il y en a vraiment (p.gens, plafonné) : les places assises et les marcheurs
+/* Sur le site, chaque pièce montre autant de personnes qu'il y en a vraiment (p.foule, plafonné) : les places assises et les marcheurs
    prévus par le décor se remplissent dans l'ordre, puis des marcheurs s'ajoutent. Le personnel (accueil, bar, Dani, agents) n'est pas compté.
-   Dans la maquette (p.gens absent), le décor garde sa troupe d'exemple. */
+   Dans la maquette (p.foule absent), le décor garde sa troupe d'exemple. */
 const creerPersonne = personne, GENS_MAX = 14, restePiece = new Map();
 const TYPE_PIECE = { accueil: "visiteur", accompagnement: "client", projets: "particulier", plan: "particulier", attente: "candidat", atelier: "artisan", devis: "client" };
 function aSaPlace(piece, o) {
-  if (piece.gens == null || (o && o.equipe)) return true;
-  const r = restePiece.has(piece) ? restePiece.get(piece) : Math.min(GENS_MAX, piece.gens); if (r <= 0) return false; restePiece.set(piece, r - 1); return true;
+  if (piece.foule == null || (o && o.equipe)) return true;
+  const r = restePiece.has(piece) ? restePiece.get(piece) : Math.min(GENS_MAX, piece.foule); if (r <= 0) return false; restePiece.set(piece, r - 1); return true;
 }
 /* Les lignes d'une pièce, pour un tableau dessiné dans la 3D : [titre, pastille, couleur] (textes d'origine, coupés à la largeur) */
 const TON_ETAT = { critique: "#e5484d", attention: "#f59e0b", bon: "#30a46c", vide: "#9aa0b4" };
@@ -2741,7 +2741,7 @@ function dessinPlanning(c, W, H) {
     tableRonde(D, 25.0, 6.0, 0.4); palmierPot(D, 27.7, -0.9, 3.2); palmierPot(D, 27.7, 6.9, 3.4); tapis(D, 26.0, 3.0, 3.6, 5.4, TAPIS.sable);
   }
   // ── Un agent IA responsable par pièce : en costume sombre, cravate violette, l'insigne AVYORA au-dessus de la tête
-  for (const q of PIECES) { const t = TYPE_PIECE[q.id], r = q.gens == null || !t ? 0 : restePiece.has(q) ? restePiece.get(q) : Math.min(GENS_MAX, q.gens); for (let i = 0; i < r; i++) creerPersonne(t, q); }   // sur le site : ceux que le décor n'avait pas prévus
+  for (const q of PIECES) { const t = TYPE_PIECE[q.id], r = q.foule == null || !t ? 0 : restePiece.has(q) ? restePiece.get(q) : Math.min(GENS_MAX, q.foule); for (let i = 0; i < r; i++) creerPersonne(t, q); }   // sur le site : ceux que le décor n'avait pas prévus
   for (const q of PIECES) if (q.agent) personne("responsable", q);                       // un agent IA par pièce, sauf ton bureau : là, le responsable c'est toi
   // ── Les couloirs : des gens qui vont d'une pièce à l'autre
   for (const q of COULOIRS) { q.cx = (q.x0 + q.x1) / 2; q.cz = (q.z0 + q.z1) / 2; }

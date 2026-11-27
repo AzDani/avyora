@@ -157,7 +157,7 @@ function appliquerDonnees(d) {
   for (const p of PIECES) {
     const v = d && d.pieces && d.pieces[p.id]; if (!v) continue;
     const liste = Array.isArray(v.liste) ? v.liste : [];
-    p.etat = ETATS[v.etat] ? v.etat : "vide"; p.nb = +v.nb || 0; p.euro = null; p.gens = Math.max(0, +v.gens || 0);
+    p.etat = ETATS[v.etat] ? v.etat : "vide"; p.nb = +v.nb || 0; p.euro = null; p.foule = Math.max(0, +v.gens || 0);   // (pas « p.gens » : les déplacements y rangent la LISTE des personnes de la pièce)
     p.kpis = (v.kpis || []).map((k) => [net(k[0]), net(k[1])]); p.titre = net(v.titre); p.conseil = net(v.conseil);
     p.liste = liste.map((l) => [net(l[0]), net(l[1]), ETATS[l[2]] ? l[2] : "vide", net(l[3])]); p.brut = liste.map((l) => [String(l[0]), String(l[1]), ETATS[l[2]] ? l[2] : "vide", String(l[3])]);
     p.lien = typeof v.lien === "string" && /^\/admin(\/[a-z-]+)*$/.test(v.lien) ? v.lien : null;
