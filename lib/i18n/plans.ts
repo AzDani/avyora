@@ -30,8 +30,8 @@ const fr = {
   /* La vitrine (le haut de page ; le reste de son contenu arrive avec la mise en avant). */
   page: {
     eyebrow: "Plan 2D gratuit",
-    titre: "Dessine le plan de ta maison, gratuitement, et vois-le en 3D",
-    sous: "Trace tes murs à la souris : les pièces se ferment toutes seules et affichent leur surface. Ajoute portes, fenêtres et équipements, passe en 3D d'un clic. Dans ton navigateur, sans installation.",
+    titre: "Dessine le plan 2D de ta maison, gratuitement",
+    sous: "Trace tes murs à la souris : les pièces se ferment toutes seules et affichent leur surface. Ajoute portes, fenêtres et équipements, et lis chaque cote. Dans ton navigateur, sans installation. Un premier aperçu en 3D existe aussi, encore en cours d'amélioration.",
     enFrancais: null as string | null,
   },
   /* L'îlot « Tes plans », en tête de la vitrine. */
@@ -82,14 +82,14 @@ const fr = {
     /* § 9 · Plan final : début */
     comment: "Comment ça marche",
     legende2d: "Le plan en 2D : pièces, surfaces et cotes, calculées par l'éditeur.",
-    legende3d: "La même maison en 3D, d'un clic.",
+    legende3d: "Le premier aperçu 3D de la même maison, encore en cours d'amélioration.",
     alt2d: "Plan 2D d'une maison de plain-pied de 94 m² dans l'éditeur AVYORA : pièces nommées, surfaces, cotes et mobilier",
-    alt3d: "La même maison de 94 m² en 3D dans l'éditeur AVYORA",
+    alt3d: "Aperçu 3D, encore en cours d'amélioration, de la même maison de 94 m² dans l'éditeur AVYORA",
     gestesTitre: "En trois gestes",
     gestes: [
       { titre: "Trace le contour, puis les cloisons", texte: "Chaque pièce se ferme toute seule et affiche sa surface." },
       { titre: "Pose portes, fenêtres et équipements", texte: "Ils s'aimantent aux murs : salle de bain, cuisine, mobilier." },
-      { titre: "Regarde en 3D, et chiffre", texte: "La 3D se construit depuis ton plan, d'un clic. Tu fais construire ? « Chiffrer cette maison » ouvre son coût de construction." },
+      { titre: "Cote, contrôle, et chiffre", texte: "Les cotes et le contrôle du plan se lisent sur ton plan 2D. Tu fais construire ? « Chiffrer cette maison » ouvre son coût de construction." },
     ],
     capacitesTitre: "Ce que tu peux faire",
     capacitesSous: "Tout ce qui suit existe dans l'éditeur, aujourd'hui.",
@@ -102,8 +102,8 @@ const fr = {
       "Les cotes, pour lire chaque longueur",
       "Décalquer un plan que tu as déjà : importe son image et cale son échelle",
       "Le contrôle du plan : dégagements conseillés, 9 m² et 2,20 m sous plafond du décret décence",
-      "La vue 3D de ton plan, et la visite à hauteur d'yeux",
       "Le dossier PDF de tes plans",
+      "Un premier aperçu 3D de ton plan, encore en cours d'amélioration",
     ],
     apresTitre: "Et après le plan ?",
     construireTitre: "Tu fais construire",
@@ -118,7 +118,7 @@ const fr = {
       },
       {
         q: "C'est vraiment gratuit ?",
-        r: "Oui, avec un compte gratuit : tu dessines ton plan, le vois en 3D, lis ses surfaces et gardes un plan enregistré. Pro ajoute les plans enregistrés sans limite, le projet rénovation chiffré et le dossier PDF sans filigrane.",
+        r: "Oui, avec un compte gratuit : tu dessines ton plan en 2D, lis ses surfaces et gardes un plan enregistré. Pro ajoute les plans enregistrés sans limite, le projet rénovation chiffré et le dossier PDF sans filigrane.",
       },
       {
         q: "Ça marche sur téléphone ?",
@@ -138,7 +138,7 @@ const fr = {
       },
     ],
     basTitre: "Dessine ta maison, gratuitement.",
-    basSous: "Murs, pièces, surfaces et 3D, dans ton navigateur.",
+    basSous: "Murs, pièces, surfaces et cotes, en 2D, dans ton navigateur.",
     /* § 9 · Plan final : fin */
     renoverTitre: "Tu rénoves",
     renoverTexte: "Pars de ton logement tel qu'il est, décide tes travaux : le budget suit chaque décision, corps d'état par corps d'état, jusqu'au suivi du chantier.",
@@ -278,7 +278,7 @@ const fr = {
     pro: "Pro",
     pastille: "Depuis ton plan",
     bande: "Tes plans",
-    bandeSous: "Rouvre-les dans l'éditeur, en 2D et en 3D.",
+    bandeSous: "Rouvre-les dans l'éditeur de plan 2D.",
     dessiner: "ou commence par dessiner ton plan",
   },
 };
@@ -300,8 +300,8 @@ const en: DictPlans = {
   },
   page: {
     eyebrow: "Free 2D plan",
-    titre: "Draw your house plan for free, and see it in 3D",
-    sous: "Draw your walls with the mouse: rooms close on their own and show their area. Add doors, windows and fittings, switch to 3D in one click. In your browser, nothing to install.",
+    titre: "Draw your 2D house plan, for free",
+    sous: "Draw your walls with the mouse: rooms close on their own and show their area. Add doors, windows and fittings, and read every dimension. In your browser, nothing to install. A first 3D preview is also available, still being improved.",
     enFrancais: "The editor is in French for now.",
   },
   hub: {
@@ -345,14 +345,14 @@ const en: DictPlans = {
   vitrine: {
     comment: "How it works",
     legende2d: "The plan in 2D: rooms, floor areas and dimensions, worked out by the editor.",
-    legende3d: "The same house in 3D, in one click.",
+    legende3d: "The first 3D preview of the same house, still being improved.",
     alt2d: "2D plan of a 94 m² single-story house in the AVYORA editor: named rooms, floor areas, dimensions and furniture",
-    alt3d: "The same 94 m² house in 3D in the AVYORA editor",
+    alt3d: "3D preview, still being improved, of the same 94 m² house in the AVYORA editor",
     gestesTitre: "In three steps",
     gestes: [
       { titre: "Trace the outline, then the partitions", texte: "Each room closes on its own and shows its floor area." },
       { titre: "Place doors, windows and fittings", texte: "They snap to the walls: bathroom, kitchen, furniture." },
-      { titre: "View it in 3D, and price it", texte: "The 3D model is built from your plan, in one click. Building a house? “Chiffrer cette maison” opens its construction cost." },
+      { titre: "Dimension, check, and price it", texte: "Dimensions and the plan check read directly on your 2D plan. Building a house? “Chiffrer cette maison” opens its construction cost." },
     ],
     capacitesTitre: "What you can do",
     capacitesSous: "Everything below is in the editor today.",
@@ -365,8 +365,8 @@ const en: DictPlans = {
       "Dimensions, to read every length",
       "Trace over a plan you already have: import its image and set its scale",
       "The plan check: recommended clearances, 9 m² and 2.20 m ceiling height from the French decent-housing decree",
-      "The 3D view of your plan, and the walkthrough at eye level",
       "The PDF file of your plans",
+      "A first 3D preview of your plan, still being improved",
     ],
     apresTitre: "After the plan?",
     construireTitre: "Building a house",
@@ -381,7 +381,7 @@ const en: DictPlans = {
       },
       {
         q: "Is it really free?",
-        r: "Yes, with a free account: you draw your plan, view it in 3D, read its floor areas and keep one saved plan. Pro adds unlimited saved plans, the priced renovation project and the PDF file without watermark.",
+        r: "Yes, with a free account: you draw your 2D plan, read its floor areas and keep one saved plan. Pro adds unlimited saved plans, the priced renovation project and the PDF file without watermark.",
       },
       {
         q: "Does it work on a phone?",
@@ -401,7 +401,7 @@ const en: DictPlans = {
       },
     ],
     basTitre: "Draw your house, for free.",
-    basSous: "Walls, rooms, floor areas and 3D, in your browser.",
+    basSous: "Walls, rooms, floor areas and dimensions, in 2D, in your browser.",
     renoverTitre: "Renovating",
     renoverTexte: "Start from your home as it is, decide your work: the budget follows every decision, trade by trade, all the way to site tracking.",
     renoverLien: "See what Pro adds",
@@ -413,7 +413,7 @@ const en: DictPlans = {
     gratuitListe: [
       "draw your final plan",
       "the floor areas and the plan check",
-      "the 3D view of your plan",
+      "a first 3D preview of your plan, still being improved",
       "the PDF file of your plans, watermarked",
       "1 saved plan",
     ],
@@ -538,7 +538,7 @@ const en: DictPlans = {
     pro: "Pro",
     pastille: "From your plan",
     bande: "Your plans",
-    bandeSous: "Reopen them in the editor, in 2D and 3D.",
+    bandeSous: "Reopen them in the 2D plan editor.",
     dessiner: "or start by drawing your plan",
   },
 };

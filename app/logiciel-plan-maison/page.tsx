@@ -17,9 +17,9 @@ const siteUrl =
 
 // Longueurs pour la page de résultats : titre ≤ 51 caractères (le gabarit ajoute « · AVYORA »),
 // description ≤ 155. Le contenu SEO reste en français (règle du site) ; l'interface suit la langue.
-const TITRE = "Logiciel de plan de maison gratuit, en 2D et 3D";
+const TITRE = "Logiciel de plan de maison 2D gratuit, en ligne";
 const DESCRIPTION =
-  "Dessine le plan de ta maison en ligne, gratuitement : murs, pièces et surfaces calculées, portes et fenêtres, vue 3D en un clic. Sans installation.";
+  "Dessine le plan 2D de ta maison en ligne, gratuitement : murs, pièces et surfaces calculées, portes, fenêtres et cotes. Sans installation.";
 /** L'image de partage : la vraie capture 2D et 3D de la Maison 94 m², composée en 1200 × 630 (C9). */
 const IMAGE_OG = { url: `${siteUrl}/plans/og-plan.png`, width: 1200, height: 630, alt: TITRE };
 

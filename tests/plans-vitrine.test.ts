@@ -53,7 +53,7 @@ describe("C5 · /logiciel-plan-maison", () => {
   it("FR, sans compte : titre, appel vers l'inscription (retour à l'éditeur), hauteur réservée, aucune mention anglaise", async () => {
     const { html, metadata } = await page(true, "fr");
     expect(html).toContain("<h1");
-    expect(html).toContain("Dessine le plan de ta maison, gratuitement, et vois-le en 3D");
+    expect(html).toContain("Dessine le plan 2D de ta maison, gratuitement");
     expect(html).toContain(INSCRIPTION);
     expect(html).toContain("Crée ton compte gratuit pour dessiner");
     expect(html).toContain("Le dessin se fait sur ordinateur ou tablette.");
@@ -136,7 +136,7 @@ describe("C5 · /logiciel-plan-maison", () => {
 
   it("EN : interface en anglais et « The editor is in French for now »", async () => {
     const { html, metadata } = await page(true, "en");
-    expect(html).toContain("Draw your house plan for free, and see it in 3D");
+    expect(html).toContain("Draw your 2D house plan, for free");
     expect(html).toContain("Create your free account to start drawing");
     expect(html).toContain("Already have an account? ");
     expect(html).toContain("The editor is in French for now.");

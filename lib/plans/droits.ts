@@ -15,7 +15,7 @@ export const DROITS_EDITEUR = {
   /** DROITS.controle.gratuit (le même en Pro). */
   controle: "les surfaces et le contrôle du plan",
   /** DROITS.vue3d.gratuit (D71 : la même pour tous). */
-  vue3d: "la vue 3D de ton plan",
+  vue3d: "un premier aperçu 3D de ton plan, encore en cours d'amélioration",
   /** DROITS.export.planFinal.gratuit (D67 : le dossier d'un Plan final). */
   exportPlanFinalGratuit: "le dossier PDF de tes plans, avec filigrane",
   /** DROITS.export.planFinal.pro */

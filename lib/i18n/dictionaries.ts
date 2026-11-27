@@ -189,7 +189,7 @@ const fr = {
        vérifiés par coherence.mjs § 9. Aucun prix. */
     featurePlan:
       "Éditeur de plan : des plans enregistrés sans limite ; le projet rénovation, pour partir de ton logement tel qu'il est et chiffrer ce qui change ; le dossier PDF de tes plans sans filigrane",
-    planGratuit: "Dessiner ton plan et le voir en 3D reste gratuit.",
+    planGratuit: "Dessiner ton plan 2D reste gratuit.",
     depuisEditeur: "Tu viens de l'éditeur de plan. Avec Pro :",
     depuisEditeurDroits: [
       "des plans enregistrés sans limite",
@@ -414,7 +414,7 @@ const fr = {
     /* La puce « Éditeur de plan » de « Inclus pendant la bêta », en trois puces courtes (une énumération à points-virgules
        était illisible). Le plafond des plans d'un inscrit arrive en paramètre (`PLANS_MAX_BETA`). */
     pucesPlan: (n: number) => [
-      `Éditeur de plan 2D/3D : jusqu'à ${n} plans enregistrés`,
+      `Éditeur de plan 2D : jusqu'à ${n} plans enregistrés`,
       "Le projet rénovation : pars de ton logement tel qu'il est et chiffre ce qui change",
       "Le dossier PDF de tes plans, sans filigrane",
     ],
@@ -738,7 +738,7 @@ const en: Dict = {
     featureNeuf: "New build: your house detailed trade by trade, from permit to completion",
     featurePlan:
       "Floor plan editor: unlimited saved plans; the renovation project, to start from your home as it is and price what changes; the PDF file of your plans without watermark",
-    planGratuit: "Drawing your plan and viewing it in 3D stays free.",
+    planGratuit: "Drawing your 2D plan stays free.",
     depuisEditeur: "You're coming from the floor plan editor. With Pro:",
     depuisEditeurDroits: [
       "unlimited saved plans",
@@ -923,7 +923,7 @@ const en: Dict = {
     tarifsBasAnonyme: "Not ready to create an account? ",
     tarifsBasLienAnonyme: "Run a quick estimate of one room or your whole home, with a free account",
     pucesPlan: (n: number) => [
-      `Floor plan editor (2D/3D): up to ${n} saved plans`,
+      `2D floor plan editor: up to ${n} saved plans`,
       "The renovation project: start from your home as it is and price what changes",
       "The PDF file of your plans, without watermark",
     ],
