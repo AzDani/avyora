@@ -66,6 +66,8 @@ export type CompteRendu = "aucun" | "a_relire" | "envoye";
 export type RendezVous = {
   id: string; debut: string; dureeMin: number; client: string; sujet: string | null;
   type: TypeRdv; mode: ModeRdv; statut: StatutRdv; compteRendu: CompteRendu; demandeId: string | null;
+  /** Agents Rappels et Agenda (migration 0017) : absents tant qu'elle n'est pas appliquée. */
+  agents?: { email: string | null; fiche: unknown; ficheLe: string | null; notes: string | null; compteRenduTexte: string | null; compteRenduEnvoyeLe: string | null; rappelEnvoyeLe: string | null };
 };
 
 export const TYPES_RDV: [TypeRdv, string][] = [["avis_achat", "Avis avant achat"], ["relecture_devis", "Relecture de devis"], ["point_projet", "Point projet"], ["autre", "Autre"]];

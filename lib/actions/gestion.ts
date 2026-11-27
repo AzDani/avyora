@@ -67,10 +67,15 @@ export async function ajouterRendezVous(_: Retour | null, f: FormData): Promise<
   if (!client) return { ok: false, message: "Indique le nom du client." };
   if (!estTypeRdv(type) || !estModeRdv(mode)) return { ok: false, message: "Type ou mode inconnu." };
   if (!Number.isInteger(duree) || duree < 10 || duree > 240) return { ok: false, message: "Durée entre 10 et 240 minutes." };
-  const { error } = await supabaseAdmin().from(TABLE_RDV).insert({
+  const email = String(f.get("email") ?? "").trim().toLowerCase();
+  if (email && !/^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,}$/.test(email)) return { ok: false, message: "Adresse e-mail illisible." };
+  const ligne: Record<string, unknown> = {
     debut: debut.toISOString(), duree_min: duree, client, sujet: sujet || null, type, mode, statut: f.get("confirme") === "on" ? "confirme" : "a_confirmer",
     demande_id: UUID.test(demande) ? demande : null,
-  });
+  };
+  // Avec l'e-mail du client si la migration 0017 est appliquée ; sinon sans (le planning marche quand même).
+  let { error } = await supabaseAdmin().from(TABLE_RDV).insert(email ? { ...ligne, email } : ligne);
+  if (error && email) ({ error } = await supabaseAdmin().from(TABLE_RDV).insert(ligne));
   if (error) return { ok: false, message: PAS_DE_TABLE };
   await journaliser("action_admin", { userId: admin.id, payload: { action: "rdv_ajoute" } });
   return fini("/admin/planning", "Rendez-vous calé.");

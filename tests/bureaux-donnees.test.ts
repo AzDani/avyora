@@ -177,4 +177,29 @@ describe("bureaux virtuels : le contenu des pièces", () => {
       expect(d.priorites.map((r) => r[1])).toEqual(["Confirmer 1 rendez-vous", "Relire 1 compte rendu d'appel"]);
     });
   });
+
+  describe("agents Rappels et Agenda", () => {
+    const rdv = (o: Partial<RendezVous>): RendezVous => ({ id: "r", debut: lireDebut("2026-11-30T15:00")!.toISOString(), dureeMin: 45, client: "Léa D.", sujet: null, type: "avis_achat", mode: "telephone", statut: "confirme", compteRendu: "aucun", demandeId: null,
+      agents: { email: "l@exemple.test", fiche: null, ficheLe: null, notes: null, compteRenduTexte: null, compteRenduEnvoyeLe: null, rappelEnvoyeLe: null }, ...o });
+    it("sans clé de l'API Claude, l'Agent Rappels le dit ; l'Agenda travaille quand même (rappels sans IA)", () => {
+      const a = construireBureaux(sources({ rendezVous: [rdv({})] })).agents;
+      expect(a.accompagnement).toMatchObject({ etat: "creer", fait: "Attend la clé de l'API Claude" });
+      expect(a.reunion).toMatchObject({ etat: "travail", fait: "Rappelle les clients la veille" });
+    });
+    it("avec la clé : fiches prêtes, compte rendu à relire, créneau à confirmer, client sans e-mail", () => {
+      const base = rdv({}).agents!;
+      const a = construireBureaux(sources({ cleClaude: true, rendezVous: [
+        rdv({ agents: { ...base, ficheLe: "2026-11-29T08:00:00Z" } }),
+        rdv({ id: "2", client: "Marc T.", debut: lireDebut("2026-11-24T10:00")!.toISOString(), compteRendu: "a_relire", agents: { ...base, compteRenduTexte: "Objet : x" } }),
+        rdv({ id: "3", client: "Nadia P.", statut: "a_confirmer", agents: { ...base, email: null } }),
+      ] })).agents;
+      expect(a.accompagnement?.etat).toBe("attend");
+      expect(a.accompagnement?.taches.map((t) => t[0])).toEqual(["Compte rendu · Marc T.", "Fiche de Léa D."]);
+      expect(a.reunion?.etat).toBe("attend");
+      expect(a.reunion?.taches.map((t) => t[0])).toEqual(["Confirmer · Nadia P.", "E-mail de Nadia P."]);
+    });
+    it("sans la migration 0017, les bureaux ne disent rien de faux sur les agents", () => {
+      expect(construireBureaux(sources({ rendezVous: [rdv({ agents: undefined })] })).agents).toEqual({});
+    });
+  });
 });

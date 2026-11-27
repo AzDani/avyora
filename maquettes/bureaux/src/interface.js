@@ -113,7 +113,7 @@ function dire(texte, classe) { const e = document.getElementById("exemple"); e.t
 async function rafraichir() {
   if (document.visibilityState !== "visible") return;
   try { await lireDonnees(); } catch (e) { dire("Lecture impossible à " + heure(), "panne"); return; }
-  for (const p of PIECES) pastilles(p); majPriorites();
+  for (const p of PIECES) pastilles(p); majPriorites(); for (const id of ["accompagnement", "reunion"]) if (parId[id]) majInsigne(parId[id]);
   if (choisie) { const haut = panneau.scrollTop; rendre(choisie); panneau.scrollTop = haut; }
   dire("En direct · " + heure(), "direct");
 }

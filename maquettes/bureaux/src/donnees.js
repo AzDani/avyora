@@ -175,6 +175,10 @@ function appliquerDonnees(d) {
     p.lien = typeof v.lien === "string" && /^\/admin(\/[a-z-]+)*$/.test(v.lien) ? v.lien : null;
   }
   if (d && Array.isArray(d.rdvs)) { RDVS.length = 0; for (const r of d.rdvs) RDVS.push({ j: +r.j || 0, h: /^\d\d:\d\d$/.test(r.h) ? r.h : "00:00", qui: net(r.qui), quoi: net(r.quoi), mode: net(r.mode), sujet: net(r.sujet), confirme: !!r.confirme, cr: r.cr === "envoye" || r.cr === "a_relire" ? r.cr : "aucun" }); }
+  if (d && d.agents && typeof d.agents === "object") for (const id of Object.keys(d.agents)) {          // les agents qui travaillent déjà pour de vrai
+    const p = parId[id], v = d.agents[id]; if (!p || !p.agent || !v || !ETATS_AGENT[v.etat]) continue;
+    p.agent.etat = v.etat; p.agent.fait = net(v.fait); p.agent.taches = (Array.isArray(v.taches) ? v.taches : []).map((l) => [net(l[0]), net(l[1]), ETATS[l[2]] ? l[2] : "vide", net(l[3])]);
+  }
   if (d && Array.isArray(d.priorites)) { PRIORITES.length = 0; for (const r of d.priorites) if (parId[r[0]]) PRIORITES.push([r[0], net(r[1]), net(r[2])]); }
 }
 async function lireDonnees() {

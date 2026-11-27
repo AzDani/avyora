@@ -1,6 +1,7 @@
 import Link from "next/link";
 import EnTeteAdmin from "@/components/admin/EnTeteAdmin";
 import { ActionsRdv, FormulaireRdv } from "@/components/admin/gestion/Formulaires";
+import PanneauAgents, { type AgentsRdv } from "@/components/admin/gestion/PanneauAgents";
 import { listRendezVous } from "@/lib/data/gestion";
 import { listDemandesAccompagnement } from "@/lib/data/admin";
 import { COMPTES_RENDUS, MODES_RDV, TYPES_RDV, enParis, heureParis, jourDepuisLundi, libelle, lundiParis, type RendezVous } from "@/lib/admin/gestion";
@@ -45,7 +46,7 @@ export default async function AdminPlanning({ searchParams }: { searchParams: Pr
         <section aria-label="Caler un rendez-vous">
           <h2 className="mb-2 text-[13px] font-semibold uppercase tracking-[0.06em] text-faint">Caler un rendez-vous</h2>
           {demande && <p className="mb-2 text-[13.5px] text-muted">Pour la demande de {demande.prenom || demande.email} · <Link href="/admin/planning" className="font-semibold text-brand-700">ne pas la lier</Link></p>}
-          <FormulaireRdv key={idDemande} client={demande?.prenom ?? ""} demande={demande?.id ?? ""} sujet={demande ? [demande.typeProjet, ...demande.besoins].filter(Boolean).join(" · ").slice(0, 300) : ""} />
+          <FormulaireRdv key={idDemande} client={demande?.prenom ?? ""} demande={demande?.id ?? ""} sujet={demande ? [demande.typeProjet, ...demande.besoins].filter(Boolean).join(" · ").slice(0, 300) : ""} email={demande?.email ?? ""} />
         </section>
       )}
     </>
@@ -66,6 +67,11 @@ function LigneRdv({ r, lundi, maintenant }: { r: RendezVous; lundi: number; main
         {r.sujet && <p className="mt-0.5 text-[13px] text-ink">{r.sujet}</p>}
       </div>
       <ActionsRdv id={r.id} statut={r.statut} compteRendu={r.compteRendu} passe={passe} />
+      {r.agents ? (
+        r.statut !== "annule" && <PanneauAgents id={r.id} client={r.client} passe={passe} a={r.agents as AgentsRdv} />
+      ) : (
+        <p className="w-full text-[12px] text-faint">Agents Rappels et Agenda : migration 0017 à appliquer.</p>
+      )}
     </li>
   );
 }

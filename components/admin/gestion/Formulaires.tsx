@@ -48,7 +48,7 @@ export function BoutonsCharge({ id, actif }: { id: string; actif: boolean }) {
   );
 }
 
-export function FormulaireRdv({ client = "", demande = "", sujet = "" }: { client?: string; demande?: string; sujet?: string }) {
+export function FormulaireRdv({ client = "", demande = "", sujet = "", email = "" }: { client?: string; demande?: string; sujet?: string; email?: string }) {
   const [r, action, enCours] = useActionState(ajouterRendezVous, null);
   return (
     <form action={action} className="grid gap-3 rounded-2xl border border-line bg-surface p-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -57,6 +57,7 @@ export function FormulaireRdv({ client = "", demande = "", sujet = "" }: { clien
       <label className={etiquette}>Type<select name="type" defaultValue="avis_achat" className={champ}>{TYPES_RDV.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
       <label className={etiquette}>Mode<select name="mode" defaultValue="telephone" className={champ}>{MODES_RDV.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
       <label className={etiquette + " sm:col-span-2 lg:col-span-3"}>Sujet (facultatif)<input name="sujet" maxLength={300} defaultValue={sujet} placeholder="Maison de 1975 à Pessac, doute sur la toiture" className={champ} /></label>
+      <label className={etiquette + " sm:col-span-2"}>E-mail du client (rappel la veille, compte rendu)<input name="email" type="email" maxLength={254} defaultValue={email} placeholder="facultatif" className={champ} /></label>
       <label className={etiquette}>Durée (minutes)<input name="duree" type="number" min={10} max={240} defaultValue={45} className={champ} /></label>
       <input type="hidden" name="demande" value={demande} />
       <div className="flex flex-wrap items-center gap-3 sm:col-span-full">

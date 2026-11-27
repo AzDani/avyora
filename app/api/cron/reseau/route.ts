@@ -6,6 +6,7 @@ import { TABLE_ARTISANS, TABLE_DEMANDES, TABLE_MER } from "@/lib/data/reseau";
 import { EXPIRATION_JOURS, RELANCE_JOURS, SONDAGE_JOURS, placesRestantes, type StatutMiseEnRelation } from "@/lib/reseau/demande";
 import { labelMetier } from "@/lib/reseau/metiers";
 import { nomDepartement } from "@/lib/reseau/departements";
+import { tourneeAgenda } from "@/lib/agents/travail";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -115,5 +116,9 @@ export async function GET(req: Request) {
     console.error("[cron reseau]", e);
     return NextResponse.json({ error: "Erreur cron", ...bilan }, { status: 500 });
   }
-  return NextResponse.json({ ok: true, ...bilan });
+  // L'Agent Agenda (27/11/2026) passe dans la même tournée : le plan gratuit de Vercel n'accepte que deux tâches
+  // planifiées. Rappel aux clients du lendemain et fiches préparées d'avance ; une panne ici n'annule pas le reste.
+  let agenda: Awaited<ReturnType<typeof tourneeAgenda>> | { erreur: true } = { erreur: true };
+  try { agenda = await tourneeAgenda(); } catch (e) { console.error("[cron reseau] agenda :", e); }
+  return NextResponse.json({ ok: true, ...bilan, agenda });
 }

@@ -53,7 +53,10 @@ export type DonneesBureaux = {
   priorites: [IdPiece, string, string][];
   /** Les rendez-vous de cette semaine et de la suivante, pour la salle de réunion : j = jours depuis le lundi (heure de France). */
   rdvs: RdvBureaux[];
+  /** Les agents qui travaillent déjà pour de vrai : leur état et leurs tâches (les autres restent « à créer »). */
+  agents: Partial<Record<IdPiece, AgentBureaux>>;
 };
+export type AgentBureaux = { etat: "travail" | "attend" | "repos" | "creer"; fait: string; taches: Ligne[] };
 export type RdvBureaux = { j: number; h: string; qui: string; quoi: string; mode: string; sujet: string; confirme: boolean; cr: "envoye" | "a_relire" | null };
 
 export type SourcesBureaux = {
@@ -71,6 +74,8 @@ export type SourcesBureaux = {
   charges?: Charge[] | null;
   entrees?: EntreesStripe | null;
   rendezVous?: RendezVous[] | null;
+  /** La clé de l'API Claude est posée (les agents Rappels et Agenda peuvent travailler). */
+  cleClaude?: boolean;
   maintenant: Date;
 };
 
@@ -93,7 +98,7 @@ const illisible = (quoi: string, kpis: [string, string][], lien: string | null):
   piece({ etat: "vide", kpis, titre: "Lecture impossible", liste: [[quoi, "La lecture a échoué, la page réessaie dans une minute", "vide", "erreur"]], conseil: "Cette pièce reviendra toute seule dès que la lecture repasse.", lien });
 
 export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
-  const { inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs = null, charges = null, entrees = null, rendezVous = null, maintenant } = src;
+  const { inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs = null, charges = null, entrees = null, rendezVous = null, cleClaude = false, maintenant } = src;
   const jour = aujourdhuiParis(maintenant);
   const projets = inscrits.flatMap((i) => i.projets);
   const projets7 = projets.filter((p) => depuis([p.createdAt], 7, maintenant) === 1);
@@ -350,6 +355,7 @@ export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
     pieces: { accueil, accompagnement, reunion, projets: salleProjets, plan: studio, attente, atelier, devis: salleDevis, bureau, marketing, caisse: comptabilite, archives, serveurs: salle },
     priorites,
     rdvs,
+    agents: agentsBureaux(rendezVous, cleClaude, maintenant),
   };
 }
 
@@ -414,4 +420,37 @@ export function salleCompta(charges: Charge[] | null, entrees: EntreesStripe | n
     conseil: resultat == null ? "Il manque les entrées ou les charges pour calculer le résultat." : resultat < 0 ? "Les charges dépassent encore les entrées ce mois-ci." : "Les entrées couvrent les charges ce mois-ci.",
     lien: "/admin/compta",
   });
+}
+
+/** L'état réel des agents Rappels (accompagnement) et Agenda (salle de réunion), tiré des rendez-vous (migration 0017). */
+export function agentsBureaux(rendezVous: RendezVous[] | null, cleClaude: boolean, maintenant: Date): DonneesBureaux["agents"] {
+  if (!rendezVous) return {};
+  const actifs = rendezVous.filter((r) => r.statut !== "annule"), avecAgents = actifs.filter((r) => r.agents);
+  if (!avecAgents.length && actifs.length) return {};                     // migration 0017 pas encore appliquée : on ne dit rien
+  const aVenir = actifs.filter((r) => new Date(r.debut) > maintenant);
+  const fiches = aVenir.filter((r) => r.agents?.ficheLe), aRelire = actifs.filter((r) => r.compteRendu === "a_relire" && !r.agents?.compteRenduEnvoyeLe);
+  const envoyes = actifs.filter((r) => r.agents?.compteRenduEnvoyeLe), rappels = actifs.filter((r) => r.agents?.rappelEnvoyeLe);
+  const sansEmail = aVenir.filter((r) => r.agents && !r.agents.email), aConfirmer = aVenir.filter((r) => r.statut === "a_confirmer");
+  const cle: Ligne = ["Clé de l'API Claude", "À poser dans Vercel (ANTHROPIC_API_KEY) pour que l'agent écrive", "attention", "à poser"];
+  const rappelsAgent: AgentBureaux = !cleClaude
+    ? { etat: "creer", fait: "Attend la clé de l'API Claude", taches: [cle] }
+    : {
+        etat: aRelire.length ? "attend" : aVenir.length ? "travail" : "repos",
+        fait: aRelire.length ? `${aRelire.length} compte${s(aRelire.length)} rendu${s(aRelire.length)} à relire` : fiches.length ? `${fiches.length} fiche${s(fiches.length)} prête${s(fiches.length)}` : aVenir.length ? "Prépare les fiches la veille" : "Aucun appel à préparer",
+        taches: [
+          ...aRelire.slice(0, 3).map((r): Ligne => [`Compte rendu · ${r.client}`, "Écrit, à relire avant l'envoi", "attention", "t'attend"]),
+          ...fiches.slice(0, 3).map((r): Ligne => [`Fiche de ${r.client}`, `${libelle(TYPES_RDV, r.type)} · ${heureParis(new Date(r.debut))}`, "bon", "prête"]),
+          ...(envoyes.length ? [[`${envoyes.length} compte${s(envoyes.length)} rendu${s(envoyes.length)} envoyé${s(envoyes.length)}`, "Ces deux semaines", "vide", "fait"] as Ligne] : []),
+        ],
+      };
+  const agenda: AgentBureaux = {
+    etat: aConfirmer.length || sansEmail.length ? "attend" : aVenir.length ? "travail" : "repos",
+    fait: aConfirmer.length ? `${aConfirmer.length} créneau${aConfirmer.length > 1 ? "x" : ""} à confirmer` : sansEmail.length ? `${sansEmail.length} client${s(sansEmail.length)} sans e-mail` : aVenir.length ? "Rappelle les clients la veille" : "Aucun rendez-vous à venir",
+    taches: [
+      ...aConfirmer.slice(0, 3).map((r): Ligne => [`Confirmer · ${r.client}`, `${libelle(TYPES_RDV, r.type)} · ${heureParis(new Date(r.debut))}`, "attention", "t'attend"]),
+      ...sansEmail.slice(0, 2).map((r): Ligne => [`E-mail de ${r.client}`, "Sans adresse, pas de rappel la veille", "attention", "à ajouter"]),
+      ...(rappels.length ? [[`${rappels.length} rappel${s(rappels.length)} envoyé${s(rappels.length)}`, "La veille de chaque rendez-vous confirmé", "vide", "fait"] as Ligne] : []),
+    ],
+  };
+  return { accompagnement: rappelsAgent, reunion: agenda };
 }

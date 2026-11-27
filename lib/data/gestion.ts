@@ -13,7 +13,11 @@ export const TABLE_CHARGES = "admin_charges";
 export const TABLE_RDV = "admin_rendez_vous";
 
 type LigneCharge = { id: string; nom: string; montant_centimes: number; devise: string; frequence: string; echeance: string | null; actif: boolean };
-type LigneRdv = { id: string; debut: string; duree_min: number; client: string; sujet: string | null; type: string; mode: string; statut: string; compte_rendu: string; demande_id: string | null };
+type LigneRdv = { id: string; debut: string; duree_min: number; client: string; sujet: string | null; type: string; mode: string; statut: string; compte_rendu: string; demande_id: string | null;
+  email?: string | null; fiche?: unknown; fiche_le?: string | null; notes?: string | null; compte_rendu_texte?: string | null; compte_rendu_envoye_le?: string | null; rappel_envoye_le?: string | null };
+const COLONNES_RDV = "id, debut, duree_min, client, sujet, type, mode, statut, compte_rendu, demande_id";
+/** Avec la migration 0017 (agents Rappels et Agenda). */
+export const COLONNES_RDV_AGENTS = `${COLONNES_RDV}, email, fiche, fiche_le, notes, compte_rendu_texte, compte_rendu_envoye_le, rappel_envoye_le`;
 
 export const lireCharge = (r: LigneCharge): Charge => ({
   id: r.id, nom: r.nom, montantCentimes: r.montant_centimes, devise: r.devise === "USD" ? "USD" : "EUR",
@@ -22,6 +26,7 @@ export const lireCharge = (r: LigneCharge): Charge => ({
 export const lireRdv = (r: LigneRdv): RendezVous => ({
   id: r.id, debut: r.debut, dureeMin: r.duree_min, client: r.client, sujet: r.sujet, type: r.type as RendezVous["type"], mode: r.mode as RendezVous["mode"],
   statut: r.statut as RendezVous["statut"], compteRendu: r.compte_rendu as RendezVous["compteRendu"], demandeId: r.demande_id,
+  ...("fiche_le" in r ? { agents: { email: r.email ?? null, fiche: r.fiche ?? null, ficheLe: r.fiche_le ?? null, notes: r.notes ?? null, compteRenduTexte: r.compte_rendu_texte ?? null, compteRenduEnvoyeLe: r.compte_rendu_envoye_le ?? null, rappelEnvoyeLe: r.rappel_envoye_le ?? null } } : {}),
 });
 
 export const listCharges = cache(async (): Promise<Charge[]> => {
@@ -34,11 +39,12 @@ export const listCharges = cache(async (): Promise<Charge[]> => {
 export const listRendezVous = cache(async (depuisSemaines = -1, jusquaSemaines = 2): Promise<RendezVous[]> => {
   const lundi = lundiParis(new Date());
   const borne = (semaines: number) => { const t = new Date(lundi + semaines * 7 * 864e5); return instantParis(t.getUTCFullYear(), t.getUTCMonth() + 1, t.getUTCDate(), 0, 0).toISOString(); };
-  const { data, error } = await supabaseAdmin().from(TABLE_RDV)
-    .select("id, debut, duree_min, client, sujet, type, mode, statut, compte_rendu, demande_id")
-    .gte("debut", borne(depuisSemaines)).lt("debut", borne(jusquaSemaines)).order("debut").limit(300);
+  const lire = (colonnes: string) => supabaseAdmin().from(TABLE_RDV).select(colonnes).gte("debut", borne(depuisSemaines)).lt("debut", borne(jusquaSemaines)).order("debut").limit(300);
+  // Les colonnes des agents d'abord ; sans la migration 0017, les colonnes de 0016 seules (le planning marche quand même).
+  let { data, error } = await lire(COLONNES_RDV_AGENTS);
+  if (error) ({ data, error } = await lire(COLONNES_RDV));
   if (error) throw new Error(error.message);
-  return ((data ?? []) as LigneRdv[]).map(lireRdv);
+  return ((data ?? []) as unknown as LigneRdv[]).map(lireRdv);
 });
 
 let memoire: { t: number; e: EntreesStripe } | null = null;

@@ -454,3 +454,24 @@ export function emailAvisArtisan(d: { nomArtisan: string; note?: number; reponse
     html: layout({ preheader: d.reponseRefusee ? "Le motif et comment la corriger" : "Tu peux y répondre", eyebrow: "Réseau AVYORA", titre: d.reponseRefusee ? "Réponse non publiée" : "Nouvel avis", corps }),
   };
 }
+
+/* ─── Agents Rappels et Agenda (27/11/2026) ──────────────────────────────────── */
+
+/** Au client : le rappel de son rendez-vous du lendemain (Agent Agenda). L'heure est celle de France. */
+export function emailRappelRendezVous(d: { prenom: string; quoi: string; mode: string; jour: string; heure: string }): { subject: string; html: string } {
+  const e = echapperHtml;
+  const corps = `
+    ${P(`Bonjour ${e(d.prenom)},`)}
+    ${P(`Petit rappel : nous avons rendez-vous <b style="color:#15172b">${e(d.jour)} à ${e(d.heure)}</b> (heure de France), ${e(d.mode)}, pour ton ${e(d.quoi.toLowerCase())}.`)}
+    ${P("Si tu as des documents (annonce, plans, devis, photos), garde-les sous la main : on ira plus vite. Pour décaler, réponds simplement à cet e-mail.")}
+    ${P("À demain,<br>Daniel · AVYORA")}
+  `;
+  return { subject: `Rappel : notre rendez-vous ${d.jour} à ${d.heure}`, html: layout({ preheader: `${d.jour} à ${d.heure}, ${d.mode}`, eyebrow: "Accompagnement", titre: "À demain", corps }) };
+}
+
+/** Au client : le compte rendu de l'appel, relu et corrigé par Daniel avant l'envoi. Le texte est repris tel quel, échappé. */
+export function emailCompteRendu(d: { objet: string; corps: string }): { subject: string; html: string } {
+  const paragraphes = echapperHtml(d.corps).split(/\n{2,}/).map((b) => b.split("\n").join("<br>"));
+  const corps = paragraphes.map((b) => P(b)).join("\n");
+  return { subject: d.objet, html: layout({ preheader: "Le compte rendu de notre échange", eyebrow: "Accompagnement", titre: "Compte rendu de notre échange", corps }) };
+}

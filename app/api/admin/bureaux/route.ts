@@ -35,7 +35,7 @@ export async function GET() {
       entreesStripe(maintenant.getTime()).catch(() => null),
       listRendezVous(0, 2).catch(() => null),
     ]);
-    const donnees = construireBureaux({ inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs, charges, entrees, rendezVous, maintenant });
+    const donnees = construireBureaux({ inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs, charges, entrees, rendezVous, cleClaude: !!process.env.ANTHROPIC_API_KEY, maintenant });
     return NextResponse.json(donnees, { headers: { "Cache-Control": "no-store" } });
   } catch (e) {
     console.error("[admin/bureaux] lecture impossible :", e);
