@@ -59,6 +59,13 @@ const PIECES = [
     kpis: [["Estimations", "412"], ["Demandes de devis", "23"], ["Plans", "54"]],
     titre: "Les rayons", liste: [["Estimations rénovation", "301 dossiers", "bon", "classé"], ["Estimations neuf", "111 dossiers", "bon", "classé"], ["Demandes de devis", "23 dossiers", "bon", "classé"], ["Plans", "54 dossiers", "bon", "classé"]],
     conseil: "Chaque dossier rouvre la vraie fiche dans l'admin." },
+  { id: "serveurs", nom: "Salle des serveurs", sur: "Vercel et Supabase", x0: 14, x1: 20, z0: 16.6, z1: 21, sol: 0xc9ccd4, etat: "bon", nb: 31,
+    kpis: [["Photos et fichiers", "31 %"], ["Base de données", "24 %"], ["Comptes actifs ce mois", "0 %"]],
+    titre: "Supabase gratuit · Vercel gratuit", liste: [],
+    jauges: [{ hote: "Supabase", nom: "Photos et fichiers", part: 0.31, texte: "312 Mo sur 1 Go · 418 fichiers" }, { hote: "Supabase", nom: "Base de données", part: 0.24, texte: "120 Mo sur 500 Mo" },
+      { hote: "Supabase", nom: "Comptes actifs ce mois", part: 0.003, texte: "148 sur 50 000 · connectés depuis 30 jours" }, { hote: "Supabase", nom: "Données envoyées", part: null, texte: "Limite 5 Go par mois · clé d'accès à créer" },
+      { hote: "Vercel", nom: "Données envoyées", part: null, texte: "Limite 100 Go par mois · clé d'accès à créer" }],
+    conseil: "Vercel gratuit interdit l'usage commercial : AVYORA vend, le passage en Pro est à faire même si les jauges sont vertes." },
 ];
 const PRIORITES = [["accompagnement", "Rappeler 3 demandes d'accompagnement", "jusqu'à 297 €"], ["attente", "Examiner 4 candidatures d'artisans", "réseau"], ["devis", "Publier 1 avis en attente", "confiance"]];
 const ICONES = {
@@ -67,7 +74,7 @@ const ICONES = {
   attente: "M8 2.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM8 5v3.2l2 1.3", atelier: "M3 11.5h10M4 11.5a4 4 0 0 1 8 0M8 5V3.5M5.2 6.2l-1-1M10.8 6.2l1-1",
   devis: "M4 1.8h5.2L12.5 5v9.2H4V1.8ZM9 1.8V5h3.5M6.2 8.2h4.1M6.2 10.8h4.1", bureau: "M8 8a2.6 2.6 0 1 0 0-5.2A2.6 2.6 0 0 0 8 8ZM3 13.5a5 5 0 0 1 10 0",
   marketing: "M3 10V6l7-3v10l-7-3ZM10 6.2c1.6.3 2.6 1 2.6 1.8s-1 1.5-2.6 1.8M5 10.5V13", caisse: "M2.5 5h11v7h-11zM2.5 7.5h11M5 10h2",
-  archives: "M3 3h10v3H3zM3.8 6v7h8.4V6M6.5 8.5h3", reunion: "M3 4h10v9.5H3zM3 7h10M5.5 2.5v3M10.5 2.5v3M5.6 9.6h1.6M8.8 9.6h1.6",
+  archives: "M3 3h10v3H3zM3.8 6v7h8.4V6M6.5 8.5h3", serveurs: "M3 2.5h10v4.5H3zM3 9h10v4.5H3zM5.3 4.75h.01M5.3 11.25h.01M8 4.75h3M8 11.25h3", reunion: "M3 4h10v9.5H3zM3 7h10M5.5 2.5v3M10.5 2.5v3M5.6 9.6h1.6M8.8 9.6h1.6",
 };
 const parId = Object.fromEntries(PIECES.map((p) => [p.id, p]));
 
@@ -108,6 +115,10 @@ const AGENTS = {
   caisse: { nom: "Agent Comptable", role: "Relie Stripe et tes charges fixes pour te dire chaque mois ce qu'il reste.", etat: "travail", fait: "Tient les comptes du mois",
     taches: [["Entrées Stripe", "2 paiements rapprochés · 198 €", "bon", "fait"], ["Charges fixes du mois", "Claude, Vercel, Supabase, nom de domaine · 226 €", "attention", "en cours"], ["Renouvellements", "Te prévient un mois avant chaque échéance", "vide", "en veille"], ["Paiement échoué", "Te prévient tout de suite", "vide", "en veille"], ["Bilan du mois", "Entrées, charges, résultat · sur ton bureau le 1er", "vide", "prévu le 1er"]],
     limite: "Il lit Stripe et tes factures. Il ne paie, n'encaisse et ne rembourse rien." },
+  serveurs: { nom: "Agent Serveurs", role: "Surveille les limites de Vercel et de Supabase, et te prévient avant qu'une fonction du site s'arrête.", etat: "travail", fait: "Surveille 5 jauges",
+    taches: [["Relever les jauges", "Fichiers, base, comptes actifs · toutes les 10 minutes", "bon", "en cours"], ["Alerte à 85 %", "Passe en tête de tes priorités", "vide", "en veille"], ["Données envoyées", "Attend les clés d'accès de Vercel et de Supabase", "vide", "à brancher"]],
+    fixes: [["Relever les jauges", "Fichiers, base, comptes actifs · toutes les 10 minutes", "bon", "en cours"], ["Alerte à 85 %", "Passe en tête de tes priorités", "vide", "en veille"]],
+    limite: "Il lit les compteurs. Il ne change jamais d'abonnement et ne paie rien." },
   archives: { nom: "Agent Archives", role: "Range chaque dossier et le retrouve quand tu le demandes.", etat: "repos", fait: "Rien à faire : tout est classé",
     taches: [["Classement", "489 dossiers rangés", "bon", "fait"], ["Résumé de la semaine", "Les chiffres des sept derniers jours", "vide", "prévu lundi"]],
     limite: "Il ne supprime jamais rien." },
@@ -162,6 +173,7 @@ function appliquerDonnees(d) {
     p.etat = ETATS[v.etat] ? v.etat : "vide"; p.nb = +v.nb || 0; p.euro = null; p.foule = Math.max(0, +v.gens || 0);   // (pas « p.gens » : les déplacements y rangent la LISTE des personnes de la pièce)
     p.kpis = (v.kpis || []).map((k) => [net(k[0]), net(k[1])]); p.titre = net(v.titre); p.conseil = net(v.conseil);
     p.liste = liste.map((l) => [net(l[0]), net(l[1]), ETATS[l[2]] ? l[2] : "vide", net(l[3])]); p.brut = liste.map((l) => [String(l[0]), String(l[1]), ETATS[l[2]] ? l[2] : "vide", String(l[3])]);
+    p.jauges = Array.isArray(v.jauges) ? v.jauges.map((j) => ({ hote: net(j.hote), nom: net(j.nom), texte: net(j.texte), brut: [String(j.hote), String(j.nom), String(j.texte)], part: typeof j.part === "number" && isFinite(j.part) ? Math.max(0, j.part) : null })) : p.jauges;
     p.lien = typeof v.lien === "string" && /^\/admin(\/[a-z-]+)*$/.test(v.lien) ? v.lien : null;
   }
   if (d && Array.isArray(d.priorites)) { PRIORITES.length = 0; for (const r of d.priorites) if (parId[r[0]]) PRIORITES.push([r[0], net(r[1]), net(r[2])]); }
@@ -174,7 +186,9 @@ async function lireDonnees() {
 }
 if (SOURCE) {
   RDVS.length = 0;                                                           // le planning se branche à l'étape suivante : aucun rendez-vous d'exemple sur le site
-  for (const p of PIECES) { const a = p.agent; if (!a) continue; a.etat = "creer"; a.fait = "Pas encore construit"; a.taches = (a.fixes || (p.id === "marketing" ? a.taches : [])).map((t) => [t[0], t[1], "vide", "à créer"]); }   // (les tâches d'exemple citent des noms inventés : sur le site, on ne garde que les missions générales)
+  for (const p of PIECES) { const a = p.agent; if (!a) continue;
+    if (p.id === "serveurs") { a.taches = a.fixes; a.fait = "Relève les jauges toutes les 10 minutes"; continue; }   // le relevé des jauges, lui, fonctionne déjà (sans IA)
+    a.etat = "creer"; a.fait = "Pas encore construit"; a.taches = (a.fixes || (p.id === "marketing" ? a.taches : [])).map((t) => [t[0], t[1], "vide", "à créer"]); }   // (les tâches d'exemple citent des noms inventés : sur le site, on ne garde que les missions générales)
   document.getElementById("retour").hidden = false; const e = document.getElementById("exemple"); e.textContent = "Lecture des données…"; e.className = "exemple";
 } else majReunion();
 function listeTelephone() { document.getElementById("tel-priorites").innerHTML = PRIORITES.map((r, i) => "<li><i>" + (i + 1) + "</i><span>" + r[1] + "</span><b>" + r[2] + "</b></li>").join(""); }
@@ -2345,14 +2359,15 @@ boiteM(decor, 47.6, 0.35, 34.6, 0xf3f1ec, 0, -0.95, 0.5, { sansOmbre: true });
 
 /* L'accueil avance de 4 m au-dessus du vide (porte-à-faux), tenu par deux bracons d'acier ; son nez de dalle porte le bandeau AVYORA.
    Le balcon du bureau de Dani fait pareil sur le côté : 5 m dans le vide, plancher bois, garde-corps en verre. */
-const PAF = { x0: -10.7, x1: 14.7, z0: 17.5, z1: 21.7 }, BALCON = { x0: 23.5, x1: 28.6, z0: -1.7, z1: 7.7 };
+const PAF = { x0: -10.7, x1: 20.7, z0: 17.5, z1: 21.7 }, BALCON = { x0: 23.5, x1: 28.6, z0: -1.7, z1: 7.7 };
 (function porteAFaux() {
   const cx = (PAF.x0 + PAF.x1) / 2, cz = (PAF.z0 + PAF.z1) / 2, L = PAF.x1 - PAF.x0, P = PAF.z1 - PAF.z0;
   boiteM(decor, L, 0.6, P, 0xdedad2, cx, -0.52, cz, { mat: matDalle, sansOmbre: true, recoit: true });
   boiteM(decor, L + 0.3, 0.38, P + 0.15, 0xf3f1ec, cx, -0.98, cz + 0.07, { sansOmbre: true });
-  for (const x of [-7.2, 5.2, 12.6]) { const b = boiteM(decor, 0.42, 0.42, 7.2, NOIR, x, -4.1, 19.3, { fin: "metal", sansOmbre: true }); b.rotation.x = -Math.atan2(5.6, 4.4); boiteM(decor, 0.7, 0.5, 0.5, NOIR, x, -6.9, 17.35, { fin: "metal", sansOmbre: true }); }
-  const band = image3d(decor, TEX_MARQUE.bandeau(), 17.6, 1.1, cx, -0.72, PAF.z1 + 0.16, { lum: 0.75 }); band.renderOrder = 2;
-  boiteM(decor, 17.9, 1.25, 0.12, 0x1e1b4b, cx, -0.72, PAF.z1 + 0.09, { fin: "laque", sansOmbre: true });
+  for (const x of [-7.2, 5.2, 12.6, 18.6]) { const b = boiteM(decor, 0.42, 0.42, 7.2, NOIR, x, -4.1, 19.3, { fin: "metal", sansOmbre: true }); b.rotation.x = -Math.atan2(5.6, 4.4); boiteM(decor, 0.7, 0.5, 0.5, NOIR, x, -6.9, 17.35, { fin: "metal", sansOmbre: true }); }
+  const bandeauX = -1;                                                        // le bandeau reste centré sur l'accueil, quelle que soit la longueur du porte-à-faux
+  const band = image3d(decor, TEX_MARQUE.bandeau(), 17.6, 1.1, bandeauX, -0.72, PAF.z1 + 0.16, { lum: 0.75 }); band.renderOrder = 2;
+  boiteM(decor, 17.9, 1.25, 0.12, 0x1e1b4b, bandeauX, -0.72, PAF.z1 + 0.09, { fin: "laque", sansOmbre: true });
   // le balcon
   const bx = (BALCON.x0 + BALCON.x1) / 2, bz = (BALCON.z0 + BALCON.z1) / 2, bl = BALCON.x1 - BALCON.x0, bp = BALCON.z1 - BALCON.z0;
   const deck = texParquet(170, 124, 84, 71); deck.repeat.set(2, 4);
@@ -2370,7 +2385,7 @@ function garde(x0, z0, x1, z1, h) {
 (function murRideau() {                                                     // la façade vitrée : haute au fond et à gauche, garde-corps devant et à droite (interrompus par l'accueil et le balcon)
   const X0 = -23, X1 = 23, Z0 = -16, Z1 = 17;
   garde(X0, Z0, X1, Z0, 3.3); garde(X0, Z0, X0, Z1, 3.3);
-  garde(X0, Z1, -10, Z1, 1.25); garde(14, Z1, X1, Z1, 1.25);
+  garde(X0, Z1, -10, Z1, 1.25); garde(20, Z1, X1, Z1, 1.25);
   garde(X1, Z0, X1, BALCON.z0, 1.25); garde(X1, BALCON.z1, X1, Z1, 1.25);
   garde(BALCON.x0, BALCON.z0, BALCON.x1, BALCON.z0, 1.2); garde(BALCON.x0, BALCON.z1, BALCON.x1, BALCON.z1, 1.2); garde(BALCON.x1, BALCON.z0, BALCON.x1, BALCON.z1, 1.2);
   for (const [x, z] of [[X0, Z0], [X1, Z0], [X0, Z1], [0, Z0], [X0, 0.5]]) cyl(decor, 0.42, 3.4, 0xf3f1ec, x + (x < 0 ? 0.6 : -0.6) * (x !== 0), 1.5, z + (z < 0 ? 0.6 : z > 10 ? -0.6 : 0), { rough: 0.6 });
@@ -2380,7 +2395,7 @@ function garde(x0, z0, x1, z1, h) {
 const SOLS = {
   accueil: () => texMarbre(5), accompagnement: () => texParquet(128, 84, 52, 12), projets: () => texParquet(188, 132, 80, 8), plan: () => texBeton("#dfe3ea", 14),
   attente: () => texParquet(200, 154, 104, 21), atelier: () => texBeton("#b9b3a8", 9), devis: () => texParquet(160, 110, 70, 30), bureau: () => texMoquette(92, 82, 170, 4),
-  marketing: () => texMoquette(84, 96, 128, 6), caisse: () => texMarbre(17), reunion: () => texParquet(150, 104, 66, 41), archives: () => texBeton("#a9a59c", 19),
+  marketing: () => texMoquette(84, 96, 128, 6), caisse: () => texMarbre(17), reunion: () => texParquet(150, 104, 66, 41), serveurs: () => texBeton("#c9ccd4", 33), archives: () => texBeton("#a9a59c", 19),
 };
 const sols = [], COULEUR_ETAT = { critique: 0xff4d52, attention: 0xffab1a, bon: 0x2fd08a, vide: 0x9a9fc0 };
 const faits = new Set();
@@ -2403,7 +2418,7 @@ function cloison(x0, z0, x1, z1, portes) {
 const PORTES = {
   marketing: { z1: [[-15]] }, projets: { z1: [[-1]] }, plan: { z1: [[10]] }, archives: { z1: [[18]] },
   attente: { z1: [[-18]] }, atelier: { z1: [[-8]] }, devis: { z1: [[3]] }, accompagnement: { z1: [[12]] }, bureau: { z1: [[19]], x1: [[3, 1.8]] },
-  accueil: { z0: "sans", x0: [[13.6, 4.6]], x1: [[13.2, 1.8], [17.7, 1.5]] }, caisse: { x0: "sans" }, reunion: { x0: "sans", z0: "sans" },   // (la salle de réunion s'ouvre par le mur de l'accueil et s'adosse à celui de la comptabilité)
+  accueil: { z0: "sans", x0: [[13.6, 4.6]], x1: [[13.2, 1.8], [17.7, 1.5]] }, caisse: { x0: "sans" }, reunion: { x0: "sans", z0: "sans" }, serveurs: { x0: "sans", z0: [[15.0, 1.4]] },   // (la salle de réunion s'ouvre par le mur de l'accueil et s'adosse à celui de la comptabilité)
 };
 for (const p of PIECES) {
   const w = p.x1 - p.x0, d = p.z1 - p.z0, cx = (p.x0 + p.x1) / 2, cz = (p.z0 + p.z1) / 2;
@@ -2436,6 +2451,20 @@ const TON_ETAT = { critique: "#e5484d", attention: "#f59e0b", bon: "#30a46c", vi
 const coupe = (t, n) => (t.length > n ? t.slice(0, n - 1).trimEnd() + "…" : t);
 const MOT_COURT = { "à rappeler": "rappel", "en retard": "retard", "à examiner": "examen", "à appeler": "appel", "à compléter": "à finir", "à relancer": "relance" };
 const lignesMur = (p, n, large) => (p.brut || p.liste).slice(0, n).map((l) => [coupe(l[0], large), MOT_COURT[l[3]] || coupe(l[3], 8), TON_ETAT[l[2]] || TON_ETAT.vide]);
+
+/* L'écran de la salle des serveurs : une jauge par limite, verte, orange au-delà de 60 %, rouge au-delà de 85 % */
+function dessinServeurs(c, W, H) {
+  c.fillStyle = "#0f1022"; c.fillRect(0, 0, W, H);
+  c.fillStyle = "#ffffff"; c.font = "600 36px Geist, system-ui, sans-serif"; c.textBaseline = "middle"; c.textAlign = "left"; c.fillText("SERVEURS", 40, 50);
+  const J = (parId.serveurs && parId.serveurs.jauges) || [];
+  J.slice(0, 5).forEach((j, i) => {
+    const y = 120 + i * 92, b = j.brut || [j.hote, j.nom, j.texte], part = j.part;
+    c.fillStyle = "#a9aed0"; c.font = "500 22px Geist, system-ui, sans-serif"; c.fillText(b[0] + " · " + b[1], 40, y);
+    c.fillStyle = "#262947"; arrondi(c, 40, y + 22, W - 220, 26, 13); c.fill();
+    if (part != null) { c.fillStyle = part >= 0.85 ? "#e5484d" : part >= 0.6 ? "#f59e0b" : "#30a46c"; arrondi(c, 40, y + 22, Math.max(26, (W - 220) * Math.min(1, part)), 26, 13); c.fill(); }
+    c.textAlign = "right"; c.fillStyle = part == null ? "#7b7f98" : "#ffffff"; c.font = "600 30px Geist, system-ui, sans-serif"; c.fillText(part == null ? "—" : part > 0 && part < 0.01 ? "< 1 %" : Math.round(part * 100) + " %", W - 40, y + 35); c.textAlign = "left";
+  });
+}
 
 /* L'écran de la salle de réunion : le planning des deux semaines, tiré des mêmes rendez-vous que la fiche */
 function dessinPlanning(c, W, H) {
@@ -2531,6 +2560,19 @@ function dessinPlanning(c, W, H) {
     portable(D, tx + 0.22, 0.78, tz + 0.55, -PI / 2); boiteM(D, 0.3, 0.012, 0.42, 0xffffff, tx - 0.2, 0.787, tz - 0.5, { sansOmbre: true, ry: 1.4 }); cyl(D, 0.04, 0.09, BLANC, tx - 0.25, 0.825, tz + 0.2, { fin: "ceramique", seg: 10, sansOmbre: true });
     cyl(D, 0.11, 0.035, NOIR, tx, 0.8, tz - 0.05, { fin: "metal", seg: 16, sansOmbre: true }); cyl(D, 0.03, 0.012, 0x30a46c, tx, 0.822, tz - 0.05, { lum: 1.4, seg: 10, sansOmbre: true });                 // le micro de table : l'appel est enregistré
     plante(D, p.x1 - 0.8, p.z1 - 0.8, 1.0, true);
+  }
+
+  p = parId.serveurs;                                                      // ── Salle des serveurs : les baies Supabase et Vercel, l'écran des jauges (en porte-à-faux, au bout)
+  { const z0 = p.z0, x0 = p.x0, rz = z0 + 0.62;
+    const baie = (x, nom, ton, encre) => {                                   // une baie : l'armoire noire, ses voyants, son nom au-dessus de la porte vitrée
+      emprise(x, rz, 0.66, 0.96); boiteM(D, 0.62, 2.05, 0.92, 0x15161c, x, 1.025, rz, { fin: "metal" }); boiteM(D, 0.54, 1.7, 0.02, 0x23252f, x, 1.0, rz + 0.465, { rough: 0.25, metal: 0.6, sansOmbre: true });
+      for (let i = 0; i < 9; i++) { const y = 0.3 + i * 0.18; boiteM(D, 0.44, 0.1, 0.015, 0x2c2f3b, x, y, rz + 0.48, { fin: "metal", sansOmbre: true }); boiteM(D, 0.03, 0.018, 0.012, i % 3 === 1 ? 0x5aa9ff : 0x3ad18a, x + 0.17, y, rz + 0.49, { lum: 1.6, sansOmbre: true }); }
+      panneauTexte(D, nom, 0.6, 0.16, x, 1.93, rz + 0.48, 0, ton, encre, 0.9);
+    };
+    baie(x0 + 1.95, "SUPABASE", "#1c1c1c", "#3ecf8e"); baie(x0 + 2.65, "SUPABASE", "#1c1c1c", "#3ecf8e"); baie(x0 + 3.75, "VERCEL", "#000000", "#ffffff"); baie(x0 + 4.45, "VERCEL", "#000000", "#ffffff");
+    boiteM(D, 3.4, 0.08, 0.3, 0x3a3d4a, x0 + 3.2, 2.1, rz - 0.1, { fin: "metal", sansOmbre: true });                                              // le chemin de câbles au-dessus
+    cimaise(D, x0 + 0.3, p.cz + 0.6, 2.6, 2.3, PI / 2, NUIT); ecranMural(D, 2.2, 1.24, x0 + 0.39, 1.38, p.cz + 0.6, PI / 2, lumineux(1024, 576, dessinServeurs, 0.95));
+    tapis(D, x0 + 3.2, p.z1 - 1.3, 2.6, 1.2, TAPIS.gris); plante(D, p.x1 - 0.7, p.z1 - 0.7, 0.9, true);
   }
 
   p = parId.accompagnement;                                                // ── Accompagnement : le salon où les clients attendent leur rappel, le bureau du conseiller
@@ -3301,8 +3343,8 @@ window.__essaiLumiere = {
 
 /* ───────────────────────── Caméra : déplacer, tourner, zoomer, voler vers une pièce ───────────────────────── */
 let vol = null, choisie = null, survol = null;
-const ENSEMBLE = { cible: new THREE.Vector3(1.6, 0, 3.2), az: Math.PI / 4, el: 0.6 };   // (l'étage s'est agrandi vers l'avant et la droite : accueil en porte-à-faux, balcon)
-function tailleEnsemble() { const a = boite.clientWidth / Math.max(1, boite.clientHeight); return Math.max(33, 63 / a); }
+const ENSEMBLE = { cible: new THREE.Vector3(2.2, 0, 4.2), az: Math.PI / 4, el: 0.6 };   // (l'étage s'est agrandi vers l'avant et la droite : accueil en porte-à-faux, balcon)
+function tailleEnsemble() { const a = boite.clientWidth / Math.max(1, boite.clientHeight); return Math.max(34.5, 66 / a); }
 function direction(az, el) { return new THREE.Vector3(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el)); }
 function poser() {
   const w = boite.clientWidth, h = boite.clientHeight; camera.aspect = w / Math.max(1, h);
@@ -3339,6 +3381,13 @@ function pastilles(p) {
 }
 /* L'insigne du responsable d'une pièce, redessiné quand l'état de son agent change */
 function majInsigne(p) { const r = persos.find((q) => q.piece === p && q.type === "responsable"); if (r && r.insigne) { r.g.remove(r.insigne); insigne(r, "responsable"); } }
+
+/* ── Les jauges de la salle des serveurs : une barre par limite ── */
+function jaugesHtml(p) {
+  const ton = (part) => (part == null ? "vide" : part >= 0.85 ? "critique" : part >= 0.6 ? "attention" : "bon");
+  return "<h3>" + p.titre + '</h3><ul class="jauges">' + p.jauges.map((j) => '<li><div class="j-tete"><b>' + j.hote + " · " + j.nom + '</b><span class="puce ' + ton(j.part) + '">' + (j.part == null ? "à brancher" : j.part > 0 && j.part < 0.01 ? "< 1 %" : Math.round(j.part * 100) + " %") + "</span></div>" +
+    '<div class="barre-j"><i class="' + ton(j.part) + '" style="width:' + (j.part == null ? 0 : Math.max(2, Math.min(100, j.part * 100))).toFixed(1) + '%"></i></div><span class="j-texte">' + j.texte + "</span></li>").join("") + "</ul>";
+}
 
 /* ── Le planning de la salle de réunion : deux onglets (cette semaine, la suivante), un jour par ligne, un clic ouvre le rendez-vous ── */
 let semaineVue = 0, rdvOuvert = null;
@@ -3388,7 +3437,7 @@ function ficheAgent(p) {
   }
   const absent = a.etat === "creer";
   if (SOURCE) return '<h3 id="fiche-agent">' + a.nom + ' · sa fiche de poste</h3><p class="mission">' + a.role + "</p>" + (a.taches.length ? '<ul class="liste">' + a.taches.map(ligne).join("") + "</ul>" : "") +
-    '<p class="limite">' + a.limite + '</p><p class="limite">Cet agent n\'est pas encore construit : cette fiche décrit ce qu\'il fera.</p>';
+    '<p class="limite">' + a.limite + "</p>" + (a.etat === "creer" ? '<p class="limite">Cet agent n\'est pas encore construit : cette fiche décrit ce qu\'il fera.</p>' : "");
   return '<h3 id="fiche-agent">' + a.nom + ' · sa fiche de poste</h3><p class="mission">' + a.role + '</p><ul class="liste">' + a.taches.map(ligne).join("") + "</ul>" +
     '<form class="donner"><input type="text" maxlength="80" aria-label="Donner une tâche à ' + a.nom + '" placeholder="' + (absent ? "Agent pas encore créé" : "Donner une tâche à cet agent…") + '"' + (absent ? " disabled" : "") + '><button type="submit"' + (absent ? " disabled" : "") + ">Donner</button></form>" +
     '<p class="limite">' + a.limite + "</p>";
@@ -3398,7 +3447,7 @@ function rendre(p) {
     '<span class="etat ' + p.etat + '"><span class="pt c-' + p.etat + '" style="width:8px;height:8px;border-radius:50%"></span>' + ETATS[p.etat] + (p.euro ? " · " + p.euro + " à aller chercher" : "") + "</span>" +
     ligneAgent(p) +
     '<div class="kpis">' + p.kpis.map((k) => '<div class="kpi"><span>' + k[0] + "</span><b>" + k[1] + "</b></div>").join("") + "</div>" +
-    (p.id === "reunion" ? planning() : "<h3>" + p.titre + '</h3><ul class="liste">' + p.liste.map(ligne).join("") + "</ul>") +
+    (p.id === "reunion" ? planning() : p.jauges ? jaugesHtml(p) : "<h3>" + p.titre + '</h3><ul class="liste">' + p.liste.map(ligne).join("") + "</ul>") +
     '<p class="conseil">' + p.conseil + "</p>" + (p.lien ? '<a class="ouvrir" href="' + p.lien + '">Ouvrir dans l\'admin</a>' : "") + ficheAgent(p);
   const redessiner = () => { const haut = panneau.scrollTop; rendre(p); panneau.scrollTop = haut; };
   panneau.querySelectorAll(".onglets button").forEach((b) => { b.onclick = () => { semaineVue = +b.dataset.s; rdvOuvert = null; redessiner(); }; });

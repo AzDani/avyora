@@ -174,3 +174,11 @@ button.agent:hover{background:var(--surface-2)}
   padding:16px 18px;border-radius:16px;background:var(--surface);border:1px solid var(--trait);box-shadow:var(--ombre);color:var(--encre)}
 .panne p{margin:0;font-size:14px}
 .panne button{border:0;border-radius:10px;background:var(--marque);color:#fff;font-size:13.5px;font-weight:600;padding:8px 14px}
+.jauges{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.jauges li{display:flex;flex-direction:column;gap:5px}
+.j-tete{display:flex;align-items:center;gap:8px}
+.j-tete b{flex:1;min-width:0;font-size:13px;font-weight:600}
+.barre-j{height:8px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+.barre-j i{display:block;height:100%;border-radius:999px}
+.barre-j i.bon{background:#30a46c} .barre-j i.attention{background:#f59e0b} .barre-j i.critique{background:#e5484d}
+.j-texte{font-size:12px;color:var(--discret)}

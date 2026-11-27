@@ -5,6 +5,8 @@ import { depuis, nomPage, type DemandeAccompagnement } from "@/lib/admin/outils"
 import { joursAvantFinDecennale } from "@/lib/reseau/artisan";
 import { aujourdhuiParis } from "@/lib/reseau/candidature";
 import { labelMetier } from "@/lib/reseau/metiers";
+import { LIMITES_SUPABASE, LIMITES_VERCEL, SEUIL_ATTENTION, SEUIL_CRITIQUE, poids } from "@/lib/bureaux/limites";
+import type { MesureServeurs } from "@/lib/bureaux/serveurs";
 
 /**
  * Les bureaux virtuels (/admin/bureaux, 27/11/2026) : l'étage en 3D où chaque pièce est une activité d'AVYORA.
@@ -20,7 +22,10 @@ export type Etat = "critique" | "attention" | "bon" | "vide";
 /** [titre, détail, couleur de la pastille, mot de la pastille] */
 export type Ligne = [string, string, Etat, string];
 export type IdPiece =
-  | "accueil" | "accompagnement" | "reunion" | "projets" | "plan" | "attente" | "atelier" | "devis" | "bureau" | "marketing" | "caisse" | "archives";
+  | "accueil" | "accompagnement" | "reunion" | "projets" | "plan" | "attente" | "atelier" | "devis" | "bureau" | "marketing" | "caisse" | "archives" | "serveurs";
+
+/** Une jauge de la salle des serveurs : part utilisée (0 à 1), ou null si elle ne se mesure pas encore. */
+export type Jauge = { cle: string; hote: "Supabase" | "Vercel"; nom: string; part: number | null; texte: string };
 
 export type PieceBureaux = {
   etat: Etat;
@@ -36,6 +41,8 @@ export type PieceBureaux = {
   gens: number;
   /** La vraie page de l'admin derrière cette pièce. */
   lien: string | null;
+  /** Salle des serveurs seulement : les jauges, dessinées sur l'écran mural. */
+  jauges?: Jauge[];
 };
 
 export type DonneesBureaux = {
@@ -54,6 +61,8 @@ export type SourcesBureaux = {
   avisAModerer: number | null;
   enLigne: EnLigne | null;
   journee: Journee | null;
+  /** La mesure des fichiers et de la base (lib/bureaux/serveurs.ts) ; null si elle n'a pas pu se faire. */
+  serveurs?: MesureServeurs | null;
   maintenant: Date;
 };
 
@@ -76,7 +85,7 @@ const illisible = (quoi: string, kpis: [string, string][], lien: string | null):
   piece({ etat: "vide", kpis, titre: "Lecture impossible", liste: [[quoi, "La lecture a échoué, la page réessaie dans une minute", "vide", "erreur"]], conseil: "Cette pièce reviendra toute seule dès que la lecture repasse.", lien });
 
 export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
-  const { inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, maintenant } = src;
+  const { inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs = null, maintenant } = src;
   const jour = aujourdhuiParis(maintenant);
   const projets = inscrits.flatMap((i) => i.projets);
   const projets7 = projets.filter((p) => depuis([p.createdAt], 7, maintenant) === 1);
@@ -246,6 +255,10 @@ export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
     lien: "/admin",
   });
 
+
+  // ── Salle des serveurs : où en est AVYORA face aux limites de Supabase et de Vercel
+  const salle = salleServeurs(serveurs, inscrits, maintenant);
+  const jaugeHaute = (salle.jauges ?? []).filter((j) => j.part != null && j.part >= SEUIL_ATTENTION).sort((a, b) => (b.part ?? 0) - (a.part ?? 0))[0];
   // ── Ton bureau : ce qui t'attend, trié par ce qui rapporte
   const sansArtisanTous = sansArtisan.length;
   const taches: { piece: IdPiece; n: number; texte: string; ou: string; gain: string; retard: number }[] = [
@@ -256,6 +269,9 @@ export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
     { piece: "atelier" as const, n: majs.length, texte: `Valider ${majs.length} mise${s(majs.length)} à jour d'artisan${s(majs.length)}`, ou: "Atelier du réseau", gain: "réseau", retard: 0 },
     { piece: "devis" as const, n: sansArtisanTous, texte: `${sansArtisanTous} demande${s(sansArtisanTous)} de devis sans artisan`, ou: "Un département où recruter", gain: "réseau", retard: 0 },
   ].filter((t) => t.n > 0);
+  // Une limite d'hébergeur presque atteinte passe en tête : quand elle tombe, c'est tout le site qui s'arrête.
+  if (jaugeHaute && jaugeHaute.part != null && jaugeHaute.part >= SEUIL_CRITIQUE)
+    taches.unshift({ piece: "serveurs", n: 1, texte: `${jaugeHaute.hote} : ${jaugeHaute.nom.toLowerCase()} à ${Math.round(jaugeHaute.part * 100)} %`, ou: "Salle des serveurs · passer en Pro", gain: "le site tient", retard: 1 });
   const aFaire = taches.reduce((t, x) => t + x.n, 0), enRetard = taches.reduce((t, x) => t + x.retard, 0);
   const bureau = piece({
     etat: enRetard ? "critique" : aFaire ? "attention" : "bon",
@@ -314,7 +330,46 @@ export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
 
   return {
     genereLe: maintenant.toISOString(),
-    pieces: { accueil, accompagnement, reunion, projets: salleProjets, plan: studio, attente, atelier, devis: salleDevis, bureau, marketing, caisse: comptabilite, archives },
+    pieces: { accueil, accompagnement, reunion, projets: salleProjets, plan: studio, attente, atelier, devis: salleDevis, bureau, marketing, caisse: comptabilite, archives, serveurs: salle },
     priorites,
   };
+}
+
+const pct = (part: number) => (part > 0 && part < 0.01 ? "< 1 %" : `${Math.round(part * 100)} %`);
+const etatPart = (part: number | null): Etat => (part == null ? "vide" : part >= SEUIL_CRITIQUE ? "critique" : part >= SEUIL_ATTENTION ? "attention" : "bon");
+
+/** Les jauges et la pièce « Salle des serveurs ». Ce qui ne se mesure pas encore le dit, sans chiffre inventé. */
+export function salleServeurs(m: MesureServeurs | null, inscrits: AdminInscrit[], maintenant: Date): PieceBureaux {
+  const planS = m?.planSupabase ?? "gratuit", planV = m?.planVercel ?? "gratuit", L = LIMITES_SUPABASE[planS];
+  const actifs = inscrits.filter((i) => i.lastSignIn && depuis([i.lastSignIn], 30, maintenant) === 1).length;
+  const jauges: Jauge[] = [
+    m?.fichiers
+      ? { cle: "fichiers", hote: "Supabase", nom: "Photos et fichiers", part: m.fichiers.octets / L.fichiers, texte: `${m.fichiers.partiel ? "au moins " : ""}${poids(m.fichiers.octets)} sur ${poids(L.fichiers)} · ${m.fichiers.nb} fichier${s(m.fichiers.nb)}` }
+      : { cle: "fichiers", hote: "Supabase", nom: "Photos et fichiers", part: null, texte: "Mesure impossible pour l'instant" },
+    m?.base != null
+      ? { cle: "base", hote: "Supabase", nom: "Base de données", part: m.base / L.base, texte: `${poids(m.base)} sur ${poids(L.base)}` }
+      : { cle: "base", hote: "Supabase", nom: "Base de données", part: null, texte: m ? "Migration 0015 à appliquer" : "Mesure impossible pour l'instant" },
+    L.actifs
+      ? { cle: "actifs", hote: "Supabase", nom: "Comptes actifs ce mois", part: actifs / L.actifs, texte: `${actifs.toLocaleString("fr-FR")} sur ${L.actifs.toLocaleString("fr-FR")} · connectés depuis 30 jours` }
+      : { cle: "actifs", hote: "Supabase", nom: "Comptes actifs ce mois", part: null, texte: `${actifs.toLocaleString("fr-FR")} connectés depuis 30 jours` },
+    { cle: "envoi-supabase", hote: "Supabase", nom: "Données envoyées", part: null, texte: `Limite ${poids(L.envoi)} par mois · clé d'accès à créer` },
+    { cle: "envoi-vercel", hote: "Vercel", nom: "Données envoyées", part: null, texte: `Limite ${poids(LIMITES_VERCEL[planV].envoi)} par mois · clé d'accès à créer` },
+  ];
+  const mesurees = jauges.filter((j) => j.part != null), haute = Math.max(0, ...mesurees.map((j) => j.part ?? 0));
+  const etat: Etat = !mesurees.length ? "vide" : etatPart(haute);
+  const nomPlan = (p: string) => (p === "pro" ? "Pro" : "gratuit");
+  return piece({
+    etat,
+    nb: mesurees.length ? Math.round(haute * 100) : 0,
+    kpis: jauges.slice(0, 3).map((j) => [j.nom, j.part == null ? "—" : pct(j.part)] as [string, string]),
+    titre: `Supabase ${nomPlan(planS)} · Vercel ${nomPlan(planV)}`,
+    liste: jauges.map((j): Ligne => [`${j.hote} · ${j.nom}`, j.texte, etatPart(j.part), j.part == null ? (j.cle.startsWith("envoi") ? "à brancher" : "—") : pct(j.part)]),
+    conseil: etat === "critique"
+      ? "Une limite est presque atteinte : quand elle tombe, la fonction concernée s'arrête jusqu'au mois suivant. Passe en Pro maintenant."
+      : planV === "gratuit"
+        ? "Vercel gratuit interdit l'usage commercial : AVYORA vend, le passage en Pro est à faire même si les jauges sont vertes."
+        : "Les jauges passent à l'orange à 60 % et au rouge à 85 %.",
+    jauges,
+    lien: null,
+  });
 }

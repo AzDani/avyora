@@ -3,6 +3,8 @@ import { construireBureaux, type SourcesBureaux } from "@/lib/bureaux/donnees";
 import type { AdminInscrit, AdminPlan, AdminProjet } from "@/lib/data/admin";
 import type { ArtisanListe, DemandeAdmin } from "@/lib/data/reseau";
 import type { DemandeAccompagnement } from "@/lib/admin/outils";
+import type { MesureServeurs } from "@/lib/bureaux/serveurs";
+import { planDe } from "@/lib/bureaux/limites";
 
 /** Les bureaux virtuels : le contenu des pièces se calcule à partir des listes de l'admin, sans rien inventer. */
 
@@ -26,7 +28,7 @@ describe("bureaux virtuels : le contenu des pièces", () => {
     expect(d.pieces.bureau.kpis).toEqual([["À faire", "0"], ["Qui rapportent", "0"], ["En retard", "0"]]);
     expect(d.priorites).toHaveLength(1);
     expect(d.priorites[0][0]).toBe("projets");
-    expect(Object.keys(d.pieces)).toHaveLength(12);
+    expect(Object.keys(d.pieces)).toHaveLength(13);
   });
 
   it("un rappel qui attend depuis 3 jours passe l'accompagnement en critique, les plus anciens d'abord", () => {
@@ -95,5 +97,48 @@ describe("bureaux virtuels : le contenu des pièces", () => {
     expect(d.pieces.projets.etat).not.toBe("vide");
     expect(JSON.stringify(d.pieces.caisse)).not.toMatch(/€/);
     expect(d.pieces.reunion.liste).toEqual([]);
+  });
+
+  describe("la salle des serveurs", () => {
+    const Mo = 1024 ** 2;
+    const mesure = (m: Partial<MesureServeurs>): MesureServeurs => ({ planSupabase: "gratuit", planVercel: "gratuit", fichiers: { octets: 312 * Mo, nb: 40, partiel: false }, base: 120 * Mo, mesureLe: MAINTENANT.toISOString(), ...m });
+
+    it("mesure les fichiers, la base et les comptes actifs face aux limites du plan gratuit", () => {
+      const d = construireBureaux(sources({ serveurs: mesure({}), inscrits: [inscrit({ id: "1", lastSignIn: ilYA(2) }), inscrit({ id: "2", lastSignIn: ilYA(45) })] }));
+      const p = d.pieces.serveurs;
+      expect(p.etat).toBe("bon");
+      expect(p.kpis).toEqual([["Photos et fichiers", "30 %"], ["Base de données", "24 %"], ["Comptes actifs ce mois", "< 1 %"]]);
+      expect(p.jauges?.find((j) => j.cle === "fichiers")?.texte).toBe("312 Mo sur 1 Go · 40 fichiers");
+      expect(p.jauges?.find((j) => j.cle === "actifs")?.texte).toMatch(/^1 sur 50/);
+      expect(p.titre).toBe("Supabase gratuit · Vercel gratuit");
+      expect(p.conseil).toMatch(/usage commercial/);
+    });
+
+    it("ce qui ne se mesure pas le dit, sans chiffre : base sans migration, données envoyées sans clé", () => {
+      const p = construireBureaux(sources({ serveurs: mesure({ base: null }) })).pieces.serveurs;
+      expect(p.jauges?.find((j) => j.cle === "base")).toMatchObject({ part: null, texte: "Migration 0015 à appliquer" });
+      expect(p.liste.filter((l) => l[3] === "à brancher")).toHaveLength(2);
+      // sans mesure du tout, les fichiers et la base le disent ; les comptes actifs, eux, se comptent toujours
+      const sans = construireBureaux(sources()).pieces.serveurs;
+      expect(sans.jauges?.slice(0, 2).map((j) => j.texte)).toEqual(["Mesure impossible pour l'instant", "Mesure impossible pour l'instant"]);
+      expect(sans.kpis.map((k) => k[1])).toEqual(["—", "—", "0 %"]);
+    });
+
+    it("une limite à 85 % passe la salle en critique et en tête des priorités", () => {
+      const d = construireBureaux(sources({ serveurs: mesure({ fichiers: { octets: 900 * Mo, nb: 500, partiel: true } }), demandes: [demande({})] }));
+      expect(d.pieces.serveurs.etat).toBe("critique");
+      expect(d.pieces.serveurs.jauges?.[0].texte).toMatch(/^au moins 900 Mo/);
+      expect(d.priorites[0]).toEqual(["serveurs", "Supabase : photos et fichiers à 88 %", "le site tient"]);
+      expect(d.pieces.bureau.kpis[2]).toEqual(["En retard", "1"]);
+    });
+
+    it("en Pro, les limites suivent le plan", () => {
+      const p = construireBureaux(sources({ serveurs: mesure({ planSupabase: "pro", planVercel: "pro" }) })).pieces.serveurs;
+      expect(p.kpis[0]).toEqual(["Photos et fichiers", "< 1 %"]);
+      expect(p.titre).toBe("Supabase Pro · Vercel Pro");
+      expect(p.conseil).not.toMatch(/usage commercial/);
+      expect(planDe(" PRO ")).toBe("pro");
+      expect(planDe(undefined)).toBe("gratuit");
+    });
   });
 });

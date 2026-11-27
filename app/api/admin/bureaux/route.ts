@@ -5,6 +5,7 @@ import { compteAModerer, listArtisansAdmin, listDemandesDevisAdmin } from "@/lib
 import { lireEnLigne, lireJournee } from "@/lib/presence";
 import { aujourdhuiParis } from "@/lib/reseau/candidature";
 import { construireBureaux } from "@/lib/bureaux/donnees";
+import { mesurerServeurs } from "@/lib/bureaux/serveurs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,7 +20,7 @@ export async function GET() {
   if (refus) return refus;
   try {
     const maintenant = new Date();
-    const [inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee] = await Promise.all([
+    const [inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs] = await Promise.all([
       listInscrits(),
       listPlansAdmin().catch(() => null),
       listDemandesAccompagnement().catch(() => null),
@@ -28,8 +29,9 @@ export async function GET() {
       compteAModerer().catch(() => null),
       lireEnLigne().catch(() => null),
       lireJournee(aujourdhuiParis(maintenant)).catch(() => null),
+      mesurerServeurs(maintenant.getTime()).catch(() => null),
     ]);
-    const donnees = construireBureaux({ inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, maintenant });
+    const donnees = construireBureaux({ inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs, maintenant });
     return NextResponse.json(donnees, { headers: { "Cache-Control": "no-store" } });
   } catch (e) {
     console.error("[admin/bureaux] lecture impossible :", e);

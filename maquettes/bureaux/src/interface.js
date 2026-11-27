@@ -15,6 +15,13 @@ function pastilles(p) {
 /* L'insigne du responsable d'une pièce, redessiné quand l'état de son agent change */
 function majInsigne(p) { const r = persos.find((q) => q.piece === p && q.type === "responsable"); if (r && r.insigne) { r.g.remove(r.insigne); insigne(r, "responsable"); } }
 
+/* ── Les jauges de la salle des serveurs : une barre par limite ── */
+function jaugesHtml(p) {
+  const ton = (part) => (part == null ? "vide" : part >= 0.85 ? "critique" : part >= 0.6 ? "attention" : "bon");
+  return "<h3>" + p.titre + '</h3><ul class="jauges">' + p.jauges.map((j) => '<li><div class="j-tete"><b>' + j.hote + " · " + j.nom + '</b><span class="puce ' + ton(j.part) + '">' + (j.part == null ? "à brancher" : j.part > 0 && j.part < 0.01 ? "< 1 %" : Math.round(j.part * 100) + " %") + "</span></div>" +
+    '<div class="barre-j"><i class="' + ton(j.part) + '" style="width:' + (j.part == null ? 0 : Math.max(2, Math.min(100, j.part * 100))).toFixed(1) + '%"></i></div><span class="j-texte">' + j.texte + "</span></li>").join("") + "</ul>";
+}
+
 /* ── Le planning de la salle de réunion : deux onglets (cette semaine, la suivante), un jour par ligne, un clic ouvre le rendez-vous ── */
 let semaineVue = 0, rdvOuvert = null;
 const JOURS = ["lun.", "mar.", "mer.", "jeu.", "ven.", "sam.", "dim."];
@@ -63,7 +70,7 @@ function ficheAgent(p) {
   }
   const absent = a.etat === "creer";
   if (SOURCE) return '<h3 id="fiche-agent">' + a.nom + ' · sa fiche de poste</h3><p class="mission">' + a.role + "</p>" + (a.taches.length ? '<ul class="liste">' + a.taches.map(ligne).join("") + "</ul>" : "") +
-    '<p class="limite">' + a.limite + '</p><p class="limite">Cet agent n\'est pas encore construit : cette fiche décrit ce qu\'il fera.</p>';
+    '<p class="limite">' + a.limite + "</p>" + (a.etat === "creer" ? '<p class="limite">Cet agent n\'est pas encore construit : cette fiche décrit ce qu\'il fera.</p>' : "");
   return '<h3 id="fiche-agent">' + a.nom + ' · sa fiche de poste</h3><p class="mission">' + a.role + '</p><ul class="liste">' + a.taches.map(ligne).join("") + "</ul>" +
     '<form class="donner"><input type="text" maxlength="80" aria-label="Donner une tâche à ' + a.nom + '" placeholder="' + (absent ? "Agent pas encore créé" : "Donner une tâche à cet agent…") + '"' + (absent ? " disabled" : "") + '><button type="submit"' + (absent ? " disabled" : "") + ">Donner</button></form>" +
     '<p class="limite">' + a.limite + "</p>";
@@ -73,7 +80,7 @@ function rendre(p) {
     '<span class="etat ' + p.etat + '"><span class="pt c-' + p.etat + '" style="width:8px;height:8px;border-radius:50%"></span>' + ETATS[p.etat] + (p.euro ? " · " + p.euro + " à aller chercher" : "") + "</span>" +
     ligneAgent(p) +
     '<div class="kpis">' + p.kpis.map((k) => '<div class="kpi"><span>' + k[0] + "</span><b>" + k[1] + "</b></div>").join("") + "</div>" +
-    (p.id === "reunion" ? planning() : "<h3>" + p.titre + '</h3><ul class="liste">' + p.liste.map(ligne).join("") + "</ul>") +
+    (p.id === "reunion" ? planning() : p.jauges ? jaugesHtml(p) : "<h3>" + p.titre + '</h3><ul class="liste">' + p.liste.map(ligne).join("") + "</ul>") +
     '<p class="conseil">' + p.conseil + "</p>" + (p.lien ? '<a class="ouvrir" href="' + p.lien + '">Ouvrir dans l\'admin</a>' : "") + ficheAgent(p);
   const redessiner = () => { const haut = panneau.scrollTop; rendre(p); panneau.scrollTop = haut; };
   panneau.querySelectorAll(".onglets button").forEach((b) => { b.onclick = () => { semaineVue = +b.dataset.s; rdvOuvert = null; redessiner(); }; });

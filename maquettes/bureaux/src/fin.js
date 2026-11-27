@@ -1,7 +1,7 @@
 /* ───────────────────────── Caméra : déplacer, tourner, zoomer, voler vers une pièce ───────────────────────── */
 let vol = null, choisie = null, survol = null;
-const ENSEMBLE = { cible: new THREE.Vector3(1.6, 0, 3.2), az: Math.PI / 4, el: 0.6 };   // (l'étage s'est agrandi vers l'avant et la droite : accueil en porte-à-faux, balcon)
-function tailleEnsemble() { const a = boite.clientWidth / Math.max(1, boite.clientHeight); return Math.max(33, 63 / a); }
+const ENSEMBLE = { cible: new THREE.Vector3(2.2, 0, 4.2), az: Math.PI / 4, el: 0.6 };   // (l'étage s'est agrandi vers l'avant et la droite : accueil en porte-à-faux, balcon)
+function tailleEnsemble() { const a = boite.clientWidth / Math.max(1, boite.clientHeight); return Math.max(34.5, 66 / a); }
 function direction(az, el) { return new THREE.Vector3(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el)); }
 function poser() {
   const w = boite.clientWidth, h = boite.clientHeight; camera.aspect = w / Math.max(1, h);

@@ -57,6 +57,13 @@ const PIECES = [
     kpis: [["Estimations", "412"], ["Demandes de devis", "23"], ["Plans", "54"]],
     titre: "Les rayons", liste: [["Estimations rénovation", "301 dossiers", "bon", "classé"], ["Estimations neuf", "111 dossiers", "bon", "classé"], ["Demandes de devis", "23 dossiers", "bon", "classé"], ["Plans", "54 dossiers", "bon", "classé"]],
     conseil: "Chaque dossier rouvre la vraie fiche dans l'admin." },
+  { id: "serveurs", nom: "Salle des serveurs", sur: "Vercel et Supabase", x0: 14, x1: 20, z0: 16.6, z1: 21, sol: 0xc9ccd4, etat: "bon", nb: 31,
+    kpis: [["Photos et fichiers", "31 %"], ["Base de données", "24 %"], ["Comptes actifs ce mois", "0 %"]],
+    titre: "Supabase gratuit · Vercel gratuit", liste: [],
+    jauges: [{ hote: "Supabase", nom: "Photos et fichiers", part: 0.31, texte: "312 Mo sur 1 Go · 418 fichiers" }, { hote: "Supabase", nom: "Base de données", part: 0.24, texte: "120 Mo sur 500 Mo" },
+      { hote: "Supabase", nom: "Comptes actifs ce mois", part: 0.003, texte: "148 sur 50 000 · connectés depuis 30 jours" }, { hote: "Supabase", nom: "Données envoyées", part: null, texte: "Limite 5 Go par mois · clé d'accès à créer" },
+      { hote: "Vercel", nom: "Données envoyées", part: null, texte: "Limite 100 Go par mois · clé d'accès à créer" }],
+    conseil: "Vercel gratuit interdit l'usage commercial : AVYORA vend, le passage en Pro est à faire même si les jauges sont vertes." },
 ];
 const PRIORITES = [["accompagnement", "Rappeler 3 demandes d'accompagnement", "jusqu'à 297 €"], ["attente", "Examiner 4 candidatures d'artisans", "réseau"], ["devis", "Publier 1 avis en attente", "confiance"]];
 const ICONES = {
@@ -65,7 +72,7 @@ const ICONES = {
   attente: "M8 2.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM8 5v3.2l2 1.3", atelier: "M3 11.5h10M4 11.5a4 4 0 0 1 8 0M8 5V3.5M5.2 6.2l-1-1M10.8 6.2l1-1",
   devis: "M4 1.8h5.2L12.5 5v9.2H4V1.8ZM9 1.8V5h3.5M6.2 8.2h4.1M6.2 10.8h4.1", bureau: "M8 8a2.6 2.6 0 1 0 0-5.2A2.6 2.6 0 0 0 8 8ZM3 13.5a5 5 0 0 1 10 0",
   marketing: "M3 10V6l7-3v10l-7-3ZM10 6.2c1.6.3 2.6 1 2.6 1.8s-1 1.5-2.6 1.8M5 10.5V13", caisse: "M2.5 5h11v7h-11zM2.5 7.5h11M5 10h2",
-  archives: "M3 3h10v3H3zM3.8 6v7h8.4V6M6.5 8.5h3", reunion: "M3 4h10v9.5H3zM3 7h10M5.5 2.5v3M10.5 2.5v3M5.6 9.6h1.6M8.8 9.6h1.6",
+  archives: "M3 3h10v3H3zM3.8 6v7h8.4V6M6.5 8.5h3", serveurs: "M3 2.5h10v4.5H3zM3 9h10v4.5H3zM5.3 4.75h.01M5.3 11.25h.01M8 4.75h3M8 11.25h3", reunion: "M3 4h10v9.5H3zM3 7h10M5.5 2.5v3M10.5 2.5v3M5.6 9.6h1.6M8.8 9.6h1.6",
 };
 const parId = Object.fromEntries(PIECES.map((p) => [p.id, p]));
 
@@ -106,6 +113,10 @@ const AGENTS = {
   caisse: { nom: "Agent Comptable", role: "Relie Stripe et tes charges fixes pour te dire chaque mois ce qu'il reste.", etat: "travail", fait: "Tient les comptes du mois",
     taches: [["Entrées Stripe", "2 paiements rapprochés · 198 €", "bon", "fait"], ["Charges fixes du mois", "Claude, Vercel, Supabase, nom de domaine · 226 €", "attention", "en cours"], ["Renouvellements", "Te prévient un mois avant chaque échéance", "vide", "en veille"], ["Paiement échoué", "Te prévient tout de suite", "vide", "en veille"], ["Bilan du mois", "Entrées, charges, résultat · sur ton bureau le 1er", "vide", "prévu le 1er"]],
     limite: "Il lit Stripe et tes factures. Il ne paie, n'encaisse et ne rembourse rien." },
+  serveurs: { nom: "Agent Serveurs", role: "Surveille les limites de Vercel et de Supabase, et te prévient avant qu'une fonction du site s'arrête.", etat: "travail", fait: "Surveille 5 jauges",
+    taches: [["Relever les jauges", "Fichiers, base, comptes actifs · toutes les 10 minutes", "bon", "en cours"], ["Alerte à 85 %", "Passe en tête de tes priorités", "vide", "en veille"], ["Données envoyées", "Attend les clés d'accès de Vercel et de Supabase", "vide", "à brancher"]],
+    fixes: [["Relever les jauges", "Fichiers, base, comptes actifs · toutes les 10 minutes", "bon", "en cours"], ["Alerte à 85 %", "Passe en tête de tes priorités", "vide", "en veille"]],
+    limite: "Il lit les compteurs. Il ne change jamais d'abonnement et ne paie rien." },
   archives: { nom: "Agent Archives", role: "Range chaque dossier et le retrouve quand tu le demandes.", etat: "repos", fait: "Rien à faire : tout est classé",
     taches: [["Classement", "489 dossiers rangés", "bon", "fait"], ["Résumé de la semaine", "Les chiffres des sept derniers jours", "vide", "prévu lundi"]],
     limite: "Il ne supprime jamais rien." },
@@ -160,6 +171,7 @@ function appliquerDonnees(d) {
     p.etat = ETATS[v.etat] ? v.etat : "vide"; p.nb = +v.nb || 0; p.euro = null; p.foule = Math.max(0, +v.gens || 0);   // (pas « p.gens » : les déplacements y rangent la LISTE des personnes de la pièce)
     p.kpis = (v.kpis || []).map((k) => [net(k[0]), net(k[1])]); p.titre = net(v.titre); p.conseil = net(v.conseil);
     p.liste = liste.map((l) => [net(l[0]), net(l[1]), ETATS[l[2]] ? l[2] : "vide", net(l[3])]); p.brut = liste.map((l) => [String(l[0]), String(l[1]), ETATS[l[2]] ? l[2] : "vide", String(l[3])]);
+    p.jauges = Array.isArray(v.jauges) ? v.jauges.map((j) => ({ hote: net(j.hote), nom: net(j.nom), texte: net(j.texte), brut: [String(j.hote), String(j.nom), String(j.texte)], part: typeof j.part === "number" && isFinite(j.part) ? Math.max(0, j.part) : null })) : p.jauges;
     p.lien = typeof v.lien === "string" && /^\/admin(\/[a-z-]+)*$/.test(v.lien) ? v.lien : null;
   }
   if (d && Array.isArray(d.priorites)) { PRIORITES.length = 0; for (const r of d.priorites) if (parId[r[0]]) PRIORITES.push([r[0], net(r[1]), net(r[2])]); }
@@ -172,7 +184,9 @@ async function lireDonnees() {
 }
 if (SOURCE) {
   RDVS.length = 0;                                                           // le planning se branche à l'étape suivante : aucun rendez-vous d'exemple sur le site
-  for (const p of PIECES) { const a = p.agent; if (!a) continue; a.etat = "creer"; a.fait = "Pas encore construit"; a.taches = (a.fixes || (p.id === "marketing" ? a.taches : [])).map((t) => [t[0], t[1], "vide", "à créer"]); }   // (les tâches d'exemple citent des noms inventés : sur le site, on ne garde que les missions générales)
+  for (const p of PIECES) { const a = p.agent; if (!a) continue;
+    if (p.id === "serveurs") { a.taches = a.fixes; a.fait = "Relève les jauges toutes les 10 minutes"; continue; }   // le relevé des jauges, lui, fonctionne déjà (sans IA)
+    a.etat = "creer"; a.fait = "Pas encore construit"; a.taches = (a.fixes || (p.id === "marketing" ? a.taches : [])).map((t) => [t[0], t[1], "vide", "à créer"]); }   // (les tâches d'exemple citent des noms inventés : sur le site, on ne garde que les missions générales)
   document.getElementById("retour").hidden = false; const e = document.getElementById("exemple"); e.textContent = "Lecture des données…"; e.className = "exemple";
 } else majReunion();
 function listeTelephone() { document.getElementById("tel-priorites").innerHTML = PRIORITES.map((r, i) => "<li><i>" + (i + 1) + "</i><span>" + r[1] + "</span><b>" + r[2] + "</b></li>").join(""); }
