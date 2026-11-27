@@ -7,6 +7,7 @@ import { aujourdhuiParis } from "@/lib/reseau/candidature";
 import { construireBureaux } from "@/lib/bureaux/donnees";
 import { mesurerServeurs } from "@/lib/bureaux/serveurs";
 import { entreesStripe, listCharges, listRendezVous } from "@/lib/data/gestion";
+import { appelsDuMois, dernierReleve } from "@/lib/data/claude";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,7 +22,9 @@ export async function GET() {
   if (refus) return refus;
   try {
     const maintenant = new Date();
-    const [inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs, charges, entrees, rendezVous] = await Promise.all([
+    let echecsClaude = 0;
+    const pasLu = () => { echecsClaude++; return null; };
+    const [inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs, charges, entrees, rendezVous, releveClaude, appelsClaude] = await Promise.all([
       listInscrits(),
       listPlansAdmin().catch(() => null),
       listDemandesAccompagnement().catch(() => null),
@@ -34,8 +37,10 @@ export async function GET() {
       listCharges().catch(() => null),
       entreesStripe(maintenant.getTime()).catch(() => null),
       listRendezVous(0, 2).catch(() => null),
+      dernierReleve().catch(pasLu),
+      appelsDuMois(maintenant).catch(pasLu),
     ]);
-    const donnees = construireBureaux({ inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs, charges, entrees, rendezVous, cleClaude: !!process.env.ANTHROPIC_API_KEY, maintenant });
+    const donnees = construireBureaux({ inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs, charges, entrees, rendezVous, cleClaude: !!process.env.ANTHROPIC_API_KEY, releveClaude, appelsClaude, sansTablesClaude: echecsClaude === 2, maintenant });
     return NextResponse.json(donnees, { headers: { "Cache-Control": "no-store" } });
   } catch (e) {
     console.error("[admin/bureaux] lecture impossible :", e);

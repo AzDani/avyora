@@ -6,12 +6,12 @@ boiteM(decor, 47.6, 0.35, 34.6, 0xf3f1ec, 0, -0.95, 0.5, { sansOmbre: true });
 
 /* L'accueil avance de 4 m au-dessus du vide (porte-à-faux), tenu par deux bracons d'acier ; son nez de dalle porte le bandeau AVYORA.
    Le balcon du bureau de Dani fait pareil sur le côté : 5 m dans le vide, plancher bois, garde-corps en verre. */
-const PAF = { x0: -10.7, x1: 20.7, z0: 17.5, z1: 21.7 }, BALCON = { x0: 23.5, x1: 28.6, z0: -1.7, z1: 7.7 };
+const PAF = { x0: -10.7, x1: 23.7, z0: 17.5, z1: 21.7 }, BALCON = { x0: 23.5, x1: 28.6, z0: -1.7, z1: 7.7 };
 (function porteAFaux() {
   const cx = (PAF.x0 + PAF.x1) / 2, cz = (PAF.z0 + PAF.z1) / 2, L = PAF.x1 - PAF.x0, P = PAF.z1 - PAF.z0;
   boiteM(decor, L, 0.6, P, 0xdedad2, cx, -0.52, cz, { mat: matDalle, sansOmbre: true, recoit: true });
   boiteM(decor, L + 0.3, 0.38, P + 0.15, 0xf3f1ec, cx, -0.98, cz + 0.07, { sansOmbre: true });
-  for (const x of [-7.2, 5.2, 12.6, 18.6]) { const b = boiteM(decor, 0.42, 0.42, 7.2, NOIR, x, -4.1, 19.3, { fin: "metal", sansOmbre: true }); b.rotation.x = -Math.atan2(5.6, 4.4); boiteM(decor, 0.7, 0.5, 0.5, NOIR, x, -6.9, 17.35, { fin: "metal", sansOmbre: true }); }
+  for (const x of [-7.2, 5.2, 12.6, 18.6, 22.4]) { const b = boiteM(decor, 0.42, 0.42, 7.2, NOIR, x, -4.1, 19.3, { fin: "metal", sansOmbre: true }); b.rotation.x = -Math.atan2(5.6, 4.4); boiteM(decor, 0.7, 0.5, 0.5, NOIR, x, -6.9, 17.35, { fin: "metal", sansOmbre: true }); }
   const bandeauX = -1;                                                        // le bandeau reste centré sur l'accueil, quelle que soit la longueur du porte-à-faux
   const band = image3d(decor, TEX_MARQUE.bandeau(), 17.6, 1.1, bandeauX, -0.72, PAF.z1 + 0.16, { lum: 0.75 }); band.renderOrder = 2;
   boiteM(decor, 17.9, 1.25, 0.12, 0x1e1b4b, bandeauX, -0.72, PAF.z1 + 0.09, { fin: "laque", sansOmbre: true });
@@ -32,7 +32,7 @@ function garde(x0, z0, x1, z1, h) {
 (function murRideau() {                                                     // la façade vitrée : haute au fond et à gauche, garde-corps devant et à droite (interrompus par l'accueil et le balcon)
   const X0 = -23, X1 = 23, Z0 = -16, Z1 = 17;
   garde(X0, Z0, X1, Z0, 3.3); garde(X0, Z0, X0, Z1, 3.3);
-  garde(X0, Z1, -10, Z1, 1.25); garde(20, Z1, X1, Z1, 1.25);
+  garde(X0, Z1, -10, Z1, 1.25);                                            // (à droite, la salle Claude Code occupe le bord : plus de garde-corps)
   garde(X1, Z0, X1, BALCON.z0, 1.25); garde(X1, BALCON.z1, X1, Z1, 1.25);
   garde(BALCON.x0, BALCON.z0, BALCON.x1, BALCON.z0, 1.2); garde(BALCON.x0, BALCON.z1, BALCON.x1, BALCON.z1, 1.2); garde(BALCON.x1, BALCON.z0, BALCON.x1, BALCON.z1, 1.2);
   for (const [x, z] of [[X0, Z0], [X1, Z0], [X0, Z1], [0, Z0], [X0, 0.5]]) cyl(decor, 0.42, 3.4, 0xf3f1ec, x + (x < 0 ? 0.6 : -0.6) * (x !== 0), 1.5, z + (z < 0 ? 0.6 : z > 10 ? -0.6 : 0), { rough: 0.6 });
@@ -42,7 +42,7 @@ function garde(x0, z0, x1, z1, h) {
 const SOLS = {
   accueil: () => texMarbre(5), accompagnement: () => texParquet(128, 84, 52, 12), projets: () => texParquet(188, 132, 80, 8), plan: () => texBeton("#dfe3ea", 14),
   attente: () => texParquet(200, 154, 104, 21), atelier: () => texBeton("#b9b3a8", 9), devis: () => texParquet(160, 110, 70, 30), bureau: () => texMoquette(92, 82, 170, 4),
-  marketing: () => texMoquette(84, 96, 128, 6), caisse: () => texMarbre(17), reunion: () => texParquet(150, 104, 66, 41), serveurs: () => texBeton("#c9ccd4", 33), archives: () => texBeton("#a9a59c", 19),
+  marketing: () => texMoquette(84, 96, 128, 6), caisse: () => texMarbre(17), reunion: () => texParquet(150, 104, 66, 41), serveurs: () => texBeton("#c9ccd4", 33), claude: () => texMoquette(150, 120, 104, 8), archives: () => texBeton("#a9a59c", 19),
 };
 const sols = [], COULEUR_ETAT = { critique: 0xff4d52, attention: 0xffab1a, bon: 0x2fd08a, vide: 0x9a9fc0 };
 const faits = new Set();
@@ -65,7 +65,7 @@ function cloison(x0, z0, x1, z1, portes) {
 const PORTES = {
   marketing: { z1: [[-15]] }, projets: { z1: [[-1]] }, plan: { z1: [[10]] }, archives: { z1: [[18]] },
   attente: { z1: [[-18]] }, atelier: { z1: [[-8]] }, devis: { z1: [[3]] }, accompagnement: { z1: [[12]] }, bureau: { z1: [[19]], x1: [[3, 1.8]] },
-  accueil: { z0: "sans", x0: [[13.6, 4.6]], x1: [[13.2, 1.8], [17.7, 1.5]] }, caisse: { x0: "sans" }, reunion: { x0: "sans", z0: "sans" }, serveurs: { x0: "sans", z0: [[15.0, 1.4]] },   // (la salle de réunion s'ouvre par le mur de l'accueil et s'adosse à celui de la comptabilité)
+  accueil: { z0: "sans", x0: [[13.6, 4.6]], x1: [[13.2, 1.8], [17.7, 1.5]] }, caisse: { x0: "sans" }, reunion: { x0: "sans", z0: "sans" }, serveurs: { x0: "sans", z0: [[15.0, 1.4]], x1: [[19.6, 1.2]] }, claude: { x0: "sans" },   // (la salle de réunion s'ouvre par le mur de l'accueil et s'adosse à celui de la comptabilité)
 };
 for (const p of PIECES) {
   const w = p.x1 - p.x0, d = p.z1 - p.z0, cx = (p.x0 + p.x1) / 2, cz = (p.z0 + p.z1) / 2;
@@ -99,19 +99,20 @@ const coupe = (t, n) => (t.length > n ? t.slice(0, n - 1).trimEnd() + "…" : t)
 const MOT_COURT = { "à rappeler": "rappel", "en retard": "retard", "à examiner": "examen", "à appeler": "appel", "à compléter": "à finir", "à relancer": "relance" };
 const lignesMur = (p, n, large) => (p.brut || p.liste).slice(0, n).map((l) => [coupe(l[0], large), MOT_COURT[l[3]] || coupe(l[3], 8), TON_ETAT[l[2]] || TON_ETAT.vide]);
 
-/* L'écran de la salle des serveurs : une jauge par limite, verte, orange au-delà de 60 %, rouge au-delà de 85 % */
-function dessinServeurs(c, W, H) {
+/* L'écran des salles des serveurs et de Claude Code : une jauge par limite, verte, orange au-delà de 60 %, rouge au-delà de 85 % */
+const dessinJauges = (id, titreEcran) => function (c, W, H) {
   c.fillStyle = "#0f1022"; c.fillRect(0, 0, W, H);
-  c.fillStyle = "#ffffff"; c.font = "600 36px Geist, system-ui, sans-serif"; c.textBaseline = "middle"; c.textAlign = "left"; c.fillText("SERVEURS", 40, 50);
-  const J = (parId.serveurs && parId.serveurs.jauges) || [];
+  c.fillStyle = "#ffffff"; c.font = "600 36px Geist, system-ui, sans-serif"; c.textBaseline = "middle"; c.textAlign = "left"; c.fillText(titreEcran, 40, 50);
+  const J = (parId[id] && parId[id].jauges) || [];
   J.slice(0, 5).forEach((j, i) => {
-    const y = 120 + i * 92, b = j.brut || [j.hote, j.nom, j.texte], part = j.part;
+    const y = 120 + i * 92, b = j.brut || [j.hote, j.nom, j.texte, j.mot || ""], part = j.part;
     c.fillStyle = "#a9aed0"; c.font = "500 22px Geist, system-ui, sans-serif"; c.fillText(b[0] + " · " + b[1], 40, y);
     c.fillStyle = "#262947"; arrondi(c, 40, y + 22, W - 220, 26, 13); c.fill();
     if (part != null) { c.fillStyle = part >= 0.85 ? "#e5484d" : part >= 0.6 ? "#f59e0b" : "#30a46c"; arrondi(c, 40, y + 22, Math.max(26, (W - 220) * Math.min(1, part)), 26, 13); c.fill(); }
-    c.textAlign = "right"; c.fillStyle = part == null ? "#7b7f98" : "#ffffff"; c.font = "600 30px Geist, system-ui, sans-serif"; c.fillText(part == null ? "—" : part > 0 && part < 0.01 ? "< 1 %" : Math.round(part * 100) + " %", W - 40, y + 35); c.textAlign = "left";
+    c.textAlign = "right"; c.fillStyle = part == null ? "#7b7f98" : "#ffffff"; c.font = "600 30px Geist, system-ui, sans-serif"; c.fillText(part == null ? (b[3] || "—") : part > 0 && part < 0.01 ? "< 1 %" : Math.round(part * 100) + " %", W - 40, y + 35); c.textAlign = "left";
   });
-}
+};
+const dessinServeurs = dessinJauges("serveurs", "SERVEURS"), dessinClaude = dessinJauges("claude", "CLAUDE CODE");
 
 /* L'écran de la salle de réunion : le planning des deux semaines, tiré des mêmes rendez-vous que la fiche */
 function dessinPlanning(c, W, H) {
@@ -220,6 +221,14 @@ function dessinPlanning(c, W, H) {
     boiteM(D, 3.4, 0.08, 0.3, 0x3a3d4a, x0 + 3.2, 2.1, rz - 0.1, { fin: "metal", sansOmbre: true });                                              // le chemin de câbles au-dessus
     cimaise(D, x0 + 0.3, p.cz + 0.6, 2.6, 2.3, PI / 2, NUIT); ecranMural(D, 2.2, 1.24, x0 + 0.39, 1.38, p.cz + 0.6, PI / 2, lumineux(1024, 576, dessinServeurs, 0.95));
     tapis(D, x0 + 3.2, p.z1 - 1.3, 2.6, 1.2, TAPIS.gris); plante(D, p.x1 - 0.7, p.z1 - 0.7, 0.9, true);
+  }
+
+  p = parId.claude;                                                        // ── Salle Claude Code : le poste de travail, l'écran des limites (au bout du porte-à-faux, après les serveurs)
+  { const x1 = p.x1, z0 = p.z0;
+    tapis(D, p.cx, p.cz + 0.3, 2.2, 2.6, TAPIS.gris);
+    bureauM(D, p.cx - 0.25, z0 + 0.75, 0, { double: true, large: 1.5, prof: 0.75, couleur: 0x1e1b4b });                                                      // le poste, dos à la terrasse
+    cimaise(D, x1 - 0.3, p.cz + 0.5, 2.4, 2.3, -PI / 2, NUIT); ecranMural(D, 2.0, 1.13, x1 - 0.39, 1.38, p.cz + 0.5, -PI / 2, lumineux(1024, 576, dessinClaude, 0.95));
+    panneauTexte(D, "CLAUDE CODE", 1.3, 0.2, x1 - 0.38, 2.14, p.cz + 0.5, -PI / 2, "#1a1a1a", "#d97757", 0.9);
   }
 
   p = parId.accompagnement;                                                // ── Accompagnement : le salon où les clients attendent leur rappel, le bureau du conseiller

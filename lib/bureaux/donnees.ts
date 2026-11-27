@@ -7,6 +7,7 @@ import { aujourdhuiParis } from "@/lib/reseau/candidature";
 import { labelMetier } from "@/lib/reseau/metiers";
 import { LIMITES_SUPABASE, LIMITES_VERCEL, SEUIL_ATTENTION, SEUIL_CRITIQUE, poids } from "@/lib/bureaux/limites";
 import type { MesureServeurs } from "@/lib/bureaux/serveurs";
+import { dateExpiration, dollars, jaugesClaude, joursAvantExpiration, releveVieux, type AppelsMois, type ReleveClaude } from "@/lib/bureaux/claude";
 import { MODES_RDV, TYPES_RDV, heureParis, jourDepuisLundi, libelle, lundiParis, montant, parMois, totalMensuel, totalTexte, type Charge, type EntreesStripe, type RendezVous } from "@/lib/admin/gestion";
 
 /**
@@ -23,10 +24,11 @@ export type Etat = "critique" | "attention" | "bon" | "vide";
 /** [titre, détail, couleur de la pastille, mot de la pastille] */
 export type Ligne = [string, string, Etat, string];
 export type IdPiece =
-  | "accueil" | "accompagnement" | "reunion" | "projets" | "plan" | "attente" | "atelier" | "devis" | "bureau" | "marketing" | "caisse" | "archives" | "serveurs";
+  | "accueil" | "accompagnement" | "reunion" | "projets" | "plan" | "attente" | "atelier" | "devis" | "bureau" | "marketing" | "caisse" | "archives" | "serveurs" | "claude";
 
 /** Une jauge de la salle des serveurs : part utilisée (0 à 1), ou null si elle ne se mesure pas encore. */
-export type Jauge = { cle: string; hote: "Supabase" | "Vercel"; nom: string; part: number | null; texte: string };
+/** `mot` : ce qu'affiche la pastille quand la jauge n'est pas mesurée (sinon « à brancher »). */
+export type Jauge = { cle: string; hote: "Supabase" | "Vercel" | "Claude Code" | "API Claude"; nom: string; part: number | null; texte: string; mot?: string };
 
 export type PieceBureaux = {
   etat: Etat;
@@ -42,7 +44,7 @@ export type PieceBureaux = {
   gens: number;
   /** La vraie page de l'admin derrière cette pièce. */
   lien: string | null;
-  /** Salle des serveurs seulement : les jauges, dessinées sur l'écran mural. */
+  /** Salles des serveurs et de Claude Code : les jauges, dessinées sur l'écran mural. */
   jauges?: Jauge[];
 };
 
@@ -76,6 +78,11 @@ export type SourcesBureaux = {
   rendezVous?: RendezVous[] | null;
   /** La clé de l'API Claude est posée (les agents Rappels et Agenda peuvent travailler). */
   cleClaude?: boolean;
+  /** Salle Claude Code (migration 0018) : le dernier relevé des limites et les appels du mois ; null = illisible. */
+  releveClaude?: ReleveClaude | null;
+  appelsClaude?: AppelsMois | null;
+  /** La migration 0018 n'est pas appliquée (les deux lectures ont échoué). */
+  sansTablesClaude?: boolean;
   maintenant: Date;
 };
 
@@ -98,7 +105,7 @@ const illisible = (quoi: string, kpis: [string, string][], lien: string | null):
   piece({ etat: "vide", kpis, titre: "Lecture impossible", liste: [[quoi, "La lecture a échoué, la page réessaie dans une minute", "vide", "erreur"]], conseil: "Cette pièce reviendra toute seule dès que la lecture repasse.", lien });
 
 export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
-  const { inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs = null, charges = null, entrees = null, rendezVous = null, cleClaude = false, maintenant } = src;
+  const { inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs = null, charges = null, entrees = null, rendezVous = null, cleClaude = false, releveClaude = null, appelsClaude = null, sansTablesClaude = false, maintenant } = src;
   const jour = aujourdhuiParis(maintenant);
   const projets = inscrits.flatMap((i) => i.projets);
   const projets7 = projets.filter((p) => depuis([p.createdAt], 7, maintenant) === 1);
@@ -279,6 +286,10 @@ export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
   // ── Salle des serveurs : où en est AVYORA face aux limites de Supabase et de Vercel
   const salle = salleServeurs(serveurs, inscrits, maintenant);
   const jaugeHaute = (salle.jauges ?? []).filter((j) => j.part != null && j.part >= SEUIL_ATTENTION).sort((a, b) => (b.part ?? 0) - (a.part ?? 0))[0];
+  // ── Salle Claude Code : les limites de Claude Code, les crédits de l'API, la clé
+  const salleIa = salleClaude(releveClaude, appelsClaude, cleClaude, sansTablesClaude, maintenant);
+  const iaHaute = (salleIa.jauges ?? []).filter((j) => j.part != null && j.part >= SEUIL_CRITIQUE).sort((a, b) => (b.part ?? 0) - (a.part ?? 0))[0];
+  const joursCle = joursAvantExpiration(maintenant);
   // ── Ton bureau : ce qui t'attend, trié par ce qui rapporte
   const sansArtisanTous = sansArtisan.length;
   const taches: { piece: IdPiece; n: number; texte: string; ou: string; gain: string; retard: number }[] = [
@@ -294,6 +305,9 @@ export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
   // Une limite d'hébergeur presque atteinte passe en tête : quand elle tombe, c'est tout le site qui s'arrête.
   if (jaugeHaute && jaugeHaute.part != null && jaugeHaute.part >= SEUIL_CRITIQUE)
     taches.unshift({ piece: "serveurs", n: 1, texte: `${jaugeHaute.hote} : ${jaugeHaute.nom.toLowerCase()} à ${Math.round(jaugeHaute.part * 100)} %`, ou: "Salle des serveurs · passer en Pro", gain: "le site tient", retard: 1 });
+  // Un quota Claude presque épuisé, ou la clé qui expire dans le mois : ça passe aussi en tête (les agents s'arrêteraient).
+  if (joursCle <= 30) taches.unshift({ piece: "claude", n: 1, texte: joursCle < 0 ? "La clé de l'API Claude a expiré" : `La clé de l'API Claude expire dans ${joursCle} jour${s(joursCle)}`, ou: "Salle Claude Code · console Anthropic", gain: "les agents tiennent", retard: joursCle < 0 ? 1 : 0 });
+  if (iaHaute && iaHaute.part != null) taches.unshift({ piece: "claude", n: 1, texte: `${iaHaute.hote} : ${iaHaute.nom.toLowerCase()} à ${Math.round(iaHaute.part * 100)} %`, ou: "Salle Claude Code", gain: "pas de débordement", retard: iaHaute.part >= 1 ? 1 : 0 });
   const aFaire = taches.reduce((t, x) => t + x.n, 0), enRetard = taches.reduce((t, x) => t + x.retard, 0);
   const bureau = piece({
     etat: enRetard ? "critique" : aFaire ? "attention" : "bon",
@@ -352,7 +366,7 @@ export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
 
   return {
     genereLe: maintenant.toISOString(),
-    pieces: { accueil, accompagnement, reunion, projets: salleProjets, plan: studio, attente, atelier, devis: salleDevis, bureau, marketing, caisse: comptabilite, archives, serveurs: salle },
+    pieces: { accueil, accompagnement, reunion, projets: salleProjets, plan: studio, attente, atelier, devis: salleDevis, bureau, marketing, caisse: comptabilite, archives, serveurs: salle, claude: salleIa },
     priorites,
     rdvs,
     agents: agentsBureaux(rendezVous, cleClaude, maintenant),
@@ -453,4 +467,45 @@ export function agentsBureaux(rendezVous: RendezVous[] | null, cleClaude: boolea
     ],
   };
   return { accompagnement: rappelsAgent, reunion: agenda };
+}
+
+/**
+ * La salle Claude Code : les trois limites de Claude Code (relevées depuis une session Claude), les crédits de l'API
+ * dépensés par les agents du site ce mois-ci, et l'expiration de la clé. Orange à 60 %, rouge à 85 % comme les serveurs.
+ */
+export function salleClaude(releve: ReleveClaude | null, appels: AppelsMois | null, cleClaude: boolean, sansTables: boolean, maintenant: Date): PieceBureaux {
+  const jours = joursAvantExpiration(maintenant), vieux = releveVieux(releve, maintenant);
+  const jauges: Jauge[] = [...jaugesClaude({ releve, appels, cleClaude, maintenant, sansTables }),
+    { cle: "cle", hote: "API Claude", nom: "Clé du site", part: null, texte: jours < 0 ? "Expirée : crée-en une nouvelle dans la console Anthropic" : `Expire le ${dateExpiration()} · à renouveler dans la console Anthropic`, mot: jours < 0 ? "expirée" : `${jours} j` }];
+  const mesurees = jauges.filter((j) => j.part != null), haute = Math.max(0, ...mesurees.map((j) => j.part ?? 0));
+  const etatCle: Etat = jours < 0 ? "critique" : jours <= 30 ? "attention" : "bon";
+  const rang = { vide: 0, bon: 1, attention: 2, critique: 3 } as const;
+  let etat: Etat = !mesurees.length ? "vide" : etatPart(haute);
+  if (rang[etatCle] > rang[etat]) etat = etatCle;
+  if (vieux && etat === "bon") etat = "attention";
+  const cle: Ligne = [`Clé de l'API · expire le ${dateExpiration()}`, jours < 0 ? "Expirée : crée-en une nouvelle dans la console Anthropic" : `Dans ${jours} jour${s(jours)} · à renouveler dans la console Anthropic`, etatCle, jours < 0 ? "expirée" : jours <= 30 ? "à renouveler" : `${jours} j`];
+  const parTache = appels ? Object.entries(appels.parTache).sort((a, b) => b[1] - a[1]) : [];
+  const nomTache: Record<string, string> = { compte_rendu: "Comptes rendus", fiche: "Pense-bêtes avant l'appel" };
+  return piece({
+    etat,
+    nb: mesurees.length ? Math.round(haute * 100) : 0,
+    kpis: [
+      ["Fenêtre de 5 h", jauges[0].part == null ? "—" : pct(jauges[0].part)],
+      ["Semaine · Fable", jauges[2].part == null ? "—" : pct(jauges[2].part)],
+      ["Crédits API du mois", appels ? dollars(appels.coutMicro) : "—"],
+    ],
+    titre: "Forfait Max · API Claude",
+    liste: [
+      ...jauges.filter((j) => j.cle !== "cle").map((j): Ligne => [`${j.hote} · ${j.nom}`, j.texte, etatPart(j.part), j.part == null ? (j.mot ?? "—") : pct(j.part)]),
+      cle,
+      ...parTache.slice(0, 3).map(([t, n]): Ligne => [`Agents · ${nomTache[t] ?? t}`, `${n} appel${s(n)} ce mois-ci`, "vide", String(n)]),
+    ],
+    conseil: vieux
+      ? "Le dernier relevé de Claude Code date de plus de 6 heures : le Mac était en veille ou l'app fermée. Les chiffres reviennent au prochain relevé."
+      : etat === "critique"
+        ? "Une limite est presque atteinte : ralentis, ou garde Fable pour ce qui en a vraiment besoin."
+        : "Les jauges passent à l'orange à 60 % et au rouge à 85 %. Les crédits API se comptent appel par appel, au tarif officiel.",
+    jauges,
+    lien: null,
+  });
 }

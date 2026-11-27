@@ -29,7 +29,7 @@ describe("bureaux virtuels : le contenu des pièces", () => {
     expect(d.pieces.bureau.kpis).toEqual([["À faire", "0"], ["Qui rapportent", "0"], ["En retard", "0"]]);
     expect(d.priorites).toHaveLength(1);
     expect(d.priorites[0][0]).toBe("projets");
-    expect(Object.keys(d.pieces)).toHaveLength(13);
+    expect(Object.keys(d.pieces)).toHaveLength(14);
   });
 
   it("un rappel qui attend depuis 3 jours passe l'accompagnement en critique, les plus anciens d'abord", () => {

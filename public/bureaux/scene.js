@@ -66,6 +66,13 @@ const PIECES = [
       { hote: "Supabase", nom: "Comptes actifs ce mois", part: 0.003, texte: "148 sur 50 000 · connectés depuis 30 jours" }, { hote: "Supabase", nom: "Données envoyées", part: null, texte: "Limite 5 Go par mois · clé d'accès à créer" },
       { hote: "Vercel", nom: "Données envoyées", part: null, texte: "Limite 100 Go par mois · clé d'accès à créer" }],
     conseil: "Vercel gratuit interdit l'usage commercial : AVYORA vend, le passage en Pro est à faire même si les jauges sont vertes." },
+  { id: "claude", nom: "Salle Claude Code", sur: "Limites et crédits", x0: 20, x1: 23, z0: 16.6, z1: 21, sol: 0x968878, etat: "attention", nb: 67,
+    kpis: [["Fenêtre de 5 h", "5 %"], ["Semaine · Fable", "67 %"], ["Crédits API du mois", "0,42 $"]],
+    titre: "Forfait Max · API Claude", liste: [],
+    jauges: [{ hote: "Claude Code", nom: "Fenêtre de 5 h", part: 0.05, texte: "5 % utilisés · se libère dans 1 h 04 · relevé il y a 12 min" }, { hote: "Claude Code", nom: "Semaine · tous modèles", part: 0.38, texte: "38 % utilisés · repart le mer. 3 déc." },
+      { hote: "Claude Code", nom: "Semaine · Fable", part: 0.67, texte: "67 % utilisés · repart le mer. 3 déc." }, { hote: "API Claude", nom: "Crédits du mois", part: 0.0042, texte: "0,42 $ sur 100 $ · 6 appels des agents" },
+      { hote: "API Claude", nom: "Clé du site", part: null, mot: "372 j", texte: "Expire le 4 décembre 2027 · à renouveler dans la console Anthropic" }],
+    conseil: "Les jauges passent à l'orange à 60 % et au rouge à 85 %. Les crédits API se comptent appel par appel, au tarif officiel." },
 ];
 const PRIORITES = [["accompagnement", "Rappeler 3 demandes d'accompagnement", "jusqu'à 297 €"], ["attente", "Examiner 4 candidatures d'artisans", "réseau"], ["devis", "Publier 1 avis en attente", "confiance"]];
 const ICONES = {
@@ -74,7 +81,7 @@ const ICONES = {
   attente: "M8 2.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM8 5v3.2l2 1.3", atelier: "M3 11.5h10M4 11.5a4 4 0 0 1 8 0M8 5V3.5M5.2 6.2l-1-1M10.8 6.2l1-1",
   devis: "M4 1.8h5.2L12.5 5v9.2H4V1.8ZM9 1.8V5h3.5M6.2 8.2h4.1M6.2 10.8h4.1", bureau: "M8 8a2.6 2.6 0 1 0 0-5.2A2.6 2.6 0 0 0 8 8ZM3 13.5a5 5 0 0 1 10 0",
   marketing: "M3 10V6l7-3v10l-7-3ZM10 6.2c1.6.3 2.6 1 2.6 1.8s-1 1.5-2.6 1.8M5 10.5V13", caisse: "M2.5 5h11v7h-11zM2.5 7.5h11M5 10h2",
-  archives: "M3 3h10v3H3zM3.8 6v7h8.4V6M6.5 8.5h3", serveurs: "M3 2.5h10v4.5H3zM3 9h10v4.5H3zM5.3 4.75h.01M5.3 11.25h.01M8 4.75h3M8 11.25h3", reunion: "M3 4h10v9.5H3zM3 7h10M5.5 2.5v3M10.5 2.5v3M5.6 9.6h1.6M8.8 9.6h1.6",
+  archives: "M3 3h10v3H3zM3.8 6v7h8.4V6M6.5 8.5h3", claude: "M2.5 3.5h11v9h-11zM4.8 6.4l2 1.6-2 1.6M8.2 10h3", serveurs: "M3 2.5h10v4.5H3zM3 9h10v4.5H3zM5.3 4.75h.01M5.3 11.25h.01M8 4.75h3M8 11.25h3", reunion: "M3 4h10v9.5H3zM3 7h10M5.5 2.5v3M10.5 2.5v3M5.6 9.6h1.6M8.8 9.6h1.6",
 };
 const parId = Object.fromEntries(PIECES.map((p) => [p.id, p]));
 
@@ -119,6 +126,10 @@ const AGENTS = {
     taches: [["Relever les jauges", "Fichiers, base, comptes actifs · toutes les 10 minutes", "bon", "en cours"], ["Alerte à 85 %", "Passe en tête de tes priorités", "vide", "en veille"], ["Données envoyées", "Attend les clés d'accès de Vercel et de Supabase", "vide", "à brancher"]],
     fixes: [["Relever les jauges", "Fichiers, base, comptes actifs · toutes les 10 minutes", "bon", "en cours"], ["Alerte à 85 %", "Passe en tête de tes priorités", "vide", "en veille"]],
     limite: "Il lit les compteurs. Il ne change jamais d'abonnement et ne paie rien." },
+  claude: { nom: "Agent Compteur", role: "Relève tes limites Claude Code et compte ce que les agents du site dépensent, pour qu'aucun quota ne déborde.", etat: "travail", fait: "Relève les limites toutes les heures",
+    taches: [["Relever les limites", "5 h, semaine, semaine Fable · toutes les heures", "bon", "en cours"], ["Compter les crédits API", "Chaque appel des agents, au tarif officiel", "bon", "en cours"], ["Alerte à 85 %", "Passe en tête de tes priorités", "vide", "en veille"]],
+    fixes: [["Relever les limites", "5 h, semaine, semaine Fable · toutes les heures", "bon", "en cours"], ["Compter les crédits API", "Chaque appel des agents, au tarif officiel", "bon", "en cours"], ["Alerte à 85 % · clé à renouveler", "Passe en tête de tes priorités", "vide", "en veille"]],
+    limite: "Il lit les compteurs. Il ne change jamais de forfait et ne paie rien." },
   archives: { nom: "Agent Archives", role: "Range chaque dossier et le retrouve quand tu le demandes.", etat: "repos", fait: "Rien à faire : tout est classé",
     taches: [["Classement", "489 dossiers rangés", "bon", "fait"], ["Résumé de la semaine", "Les chiffres des sept derniers jours", "vide", "prévu lundi"]],
     limite: "Il ne supprime jamais rien." },
@@ -173,7 +184,7 @@ function appliquerDonnees(d) {
     p.etat = ETATS[v.etat] ? v.etat : "vide"; p.nb = +v.nb || 0; p.euro = null; p.foule = Math.max(0, +v.gens || 0);   // (pas « p.gens » : les déplacements y rangent la LISTE des personnes de la pièce)
     p.kpis = (v.kpis || []).map((k) => [net(k[0]), net(k[1])]); p.titre = net(v.titre); p.conseil = net(v.conseil);
     p.liste = liste.map((l) => [net(l[0]), net(l[1]), ETATS[l[2]] ? l[2] : "vide", net(l[3])]); p.brut = liste.map((l) => [String(l[0]), String(l[1]), ETATS[l[2]] ? l[2] : "vide", String(l[3])]);
-    p.jauges = Array.isArray(v.jauges) ? v.jauges.map((j) => ({ hote: net(j.hote), nom: net(j.nom), texte: net(j.texte), brut: [String(j.hote), String(j.nom), String(j.texte)], part: typeof j.part === "number" && isFinite(j.part) ? Math.max(0, j.part) : null })) : p.jauges;
+    p.jauges = Array.isArray(v.jauges) ? v.jauges.map((j) => ({ hote: net(j.hote), nom: net(j.nom), texte: net(j.texte), mot: j.mot ? net(j.mot) : null, brut: [String(j.hote), String(j.nom), String(j.texte), j.mot ? String(j.mot) : ""], part: typeof j.part === "number" && isFinite(j.part) ? Math.max(0, j.part) : null })) : p.jauges;
     p.lien = typeof v.lien === "string" && /^\/admin(\/[a-z-]+)*$/.test(v.lien) ? v.lien : null;
   }
   if (d && Array.isArray(d.rdvs)) { RDVS.length = 0; for (const r of d.rdvs) RDVS.push({ j: +r.j || 0, h: /^\d\d:\d\d$/.test(r.h) ? r.h : "00:00", qui: net(r.qui), quoi: net(r.quoi), mode: net(r.mode), sujet: net(r.sujet), confirme: !!r.confirme, cr: r.cr === "envoye" || r.cr === "a_relire" ? r.cr : "aucun" }); }
@@ -192,7 +203,8 @@ async function lireDonnees() {
 if (SOURCE) {
   RDVS.length = 0;                                                           // sur le site, les rendez-vous viennent du planning de l'admin (jamais ceux d'exemple)
   for (const p of PIECES) { const a = p.agent; if (!a) continue;
-    if (p.id === "serveurs") { a.taches = a.fixes; a.fait = "Relève les jauges toutes les 10 minutes"; continue; }   // le relevé des jauges, lui, fonctionne déjà (sans IA)
+    if (p.id === "serveurs") { a.taches = a.fixes; a.fait = "Relève les jauges toutes les 10 minutes"; continue; }
+    if (p.id === "claude") { a.taches = a.fixes; a.fait = "Relève les limites et compte les crédits"; continue; }   // (sans IA, comme les serveurs)   // le relevé des jauges, lui, fonctionne déjà (sans IA)
     a.etat = "creer"; a.fait = "Pas encore construit"; a.taches = (a.fixes || (p.id === "marketing" ? a.taches : [])).map((t) => [t[0], t[1], "vide", "à créer"]); }   // (les tâches d'exemple citent des noms inventés : sur le site, on ne garde que les missions générales)
   document.getElementById("retour").hidden = false; const e = document.getElementById("exemple"); e.textContent = "Lecture des données…"; e.className = "exemple";
 } else majReunion();
@@ -2364,12 +2376,12 @@ boiteM(decor, 47.6, 0.35, 34.6, 0xf3f1ec, 0, -0.95, 0.5, { sansOmbre: true });
 
 /* L'accueil avance de 4 m au-dessus du vide (porte-à-faux), tenu par deux bracons d'acier ; son nez de dalle porte le bandeau AVYORA.
    Le balcon du bureau de Dani fait pareil sur le côté : 5 m dans le vide, plancher bois, garde-corps en verre. */
-const PAF = { x0: -10.7, x1: 20.7, z0: 17.5, z1: 21.7 }, BALCON = { x0: 23.5, x1: 28.6, z0: -1.7, z1: 7.7 };
+const PAF = { x0: -10.7, x1: 23.7, z0: 17.5, z1: 21.7 }, BALCON = { x0: 23.5, x1: 28.6, z0: -1.7, z1: 7.7 };
 (function porteAFaux() {
   const cx = (PAF.x0 + PAF.x1) / 2, cz = (PAF.z0 + PAF.z1) / 2, L = PAF.x1 - PAF.x0, P = PAF.z1 - PAF.z0;
   boiteM(decor, L, 0.6, P, 0xdedad2, cx, -0.52, cz, { mat: matDalle, sansOmbre: true, recoit: true });
   boiteM(decor, L + 0.3, 0.38, P + 0.15, 0xf3f1ec, cx, -0.98, cz + 0.07, { sansOmbre: true });
-  for (const x of [-7.2, 5.2, 12.6, 18.6]) { const b = boiteM(decor, 0.42, 0.42, 7.2, NOIR, x, -4.1, 19.3, { fin: "metal", sansOmbre: true }); b.rotation.x = -Math.atan2(5.6, 4.4); boiteM(decor, 0.7, 0.5, 0.5, NOIR, x, -6.9, 17.35, { fin: "metal", sansOmbre: true }); }
+  for (const x of [-7.2, 5.2, 12.6, 18.6, 22.4]) { const b = boiteM(decor, 0.42, 0.42, 7.2, NOIR, x, -4.1, 19.3, { fin: "metal", sansOmbre: true }); b.rotation.x = -Math.atan2(5.6, 4.4); boiteM(decor, 0.7, 0.5, 0.5, NOIR, x, -6.9, 17.35, { fin: "metal", sansOmbre: true }); }
   const bandeauX = -1;                                                        // le bandeau reste centré sur l'accueil, quelle que soit la longueur du porte-à-faux
   const band = image3d(decor, TEX_MARQUE.bandeau(), 17.6, 1.1, bandeauX, -0.72, PAF.z1 + 0.16, { lum: 0.75 }); band.renderOrder = 2;
   boiteM(decor, 17.9, 1.25, 0.12, 0x1e1b4b, bandeauX, -0.72, PAF.z1 + 0.09, { fin: "laque", sansOmbre: true });
@@ -2390,7 +2402,7 @@ function garde(x0, z0, x1, z1, h) {
 (function murRideau() {                                                     // la façade vitrée : haute au fond et à gauche, garde-corps devant et à droite (interrompus par l'accueil et le balcon)
   const X0 = -23, X1 = 23, Z0 = -16, Z1 = 17;
   garde(X0, Z0, X1, Z0, 3.3); garde(X0, Z0, X0, Z1, 3.3);
-  garde(X0, Z1, -10, Z1, 1.25); garde(20, Z1, X1, Z1, 1.25);
+  garde(X0, Z1, -10, Z1, 1.25);                                            // (à droite, la salle Claude Code occupe le bord : plus de garde-corps)
   garde(X1, Z0, X1, BALCON.z0, 1.25); garde(X1, BALCON.z1, X1, Z1, 1.25);
   garde(BALCON.x0, BALCON.z0, BALCON.x1, BALCON.z0, 1.2); garde(BALCON.x0, BALCON.z1, BALCON.x1, BALCON.z1, 1.2); garde(BALCON.x1, BALCON.z0, BALCON.x1, BALCON.z1, 1.2);
   for (const [x, z] of [[X0, Z0], [X1, Z0], [X0, Z1], [0, Z0], [X0, 0.5]]) cyl(decor, 0.42, 3.4, 0xf3f1ec, x + (x < 0 ? 0.6 : -0.6) * (x !== 0), 1.5, z + (z < 0 ? 0.6 : z > 10 ? -0.6 : 0), { rough: 0.6 });
@@ -2400,7 +2412,7 @@ function garde(x0, z0, x1, z1, h) {
 const SOLS = {
   accueil: () => texMarbre(5), accompagnement: () => texParquet(128, 84, 52, 12), projets: () => texParquet(188, 132, 80, 8), plan: () => texBeton("#dfe3ea", 14),
   attente: () => texParquet(200, 154, 104, 21), atelier: () => texBeton("#b9b3a8", 9), devis: () => texParquet(160, 110, 70, 30), bureau: () => texMoquette(92, 82, 170, 4),
-  marketing: () => texMoquette(84, 96, 128, 6), caisse: () => texMarbre(17), reunion: () => texParquet(150, 104, 66, 41), serveurs: () => texBeton("#c9ccd4", 33), archives: () => texBeton("#a9a59c", 19),
+  marketing: () => texMoquette(84, 96, 128, 6), caisse: () => texMarbre(17), reunion: () => texParquet(150, 104, 66, 41), serveurs: () => texBeton("#c9ccd4", 33), claude: () => texMoquette(150, 120, 104, 8), archives: () => texBeton("#a9a59c", 19),
 };
 const sols = [], COULEUR_ETAT = { critique: 0xff4d52, attention: 0xffab1a, bon: 0x2fd08a, vide: 0x9a9fc0 };
 const faits = new Set();
@@ -2423,7 +2435,7 @@ function cloison(x0, z0, x1, z1, portes) {
 const PORTES = {
   marketing: { z1: [[-15]] }, projets: { z1: [[-1]] }, plan: { z1: [[10]] }, archives: { z1: [[18]] },
   attente: { z1: [[-18]] }, atelier: { z1: [[-8]] }, devis: { z1: [[3]] }, accompagnement: { z1: [[12]] }, bureau: { z1: [[19]], x1: [[3, 1.8]] },
-  accueil: { z0: "sans", x0: [[13.6, 4.6]], x1: [[13.2, 1.8], [17.7, 1.5]] }, caisse: { x0: "sans" }, reunion: { x0: "sans", z0: "sans" }, serveurs: { x0: "sans", z0: [[15.0, 1.4]] },   // (la salle de réunion s'ouvre par le mur de l'accueil et s'adosse à celui de la comptabilité)
+  accueil: { z0: "sans", x0: [[13.6, 4.6]], x1: [[13.2, 1.8], [17.7, 1.5]] }, caisse: { x0: "sans" }, reunion: { x0: "sans", z0: "sans" }, serveurs: { x0: "sans", z0: [[15.0, 1.4]], x1: [[19.6, 1.2]] }, claude: { x0: "sans" },   // (la salle de réunion s'ouvre par le mur de l'accueil et s'adosse à celui de la comptabilité)
 };
 for (const p of PIECES) {
   const w = p.x1 - p.x0, d = p.z1 - p.z0, cx = (p.x0 + p.x1) / 2, cz = (p.z0 + p.z1) / 2;
@@ -2457,19 +2469,20 @@ const coupe = (t, n) => (t.length > n ? t.slice(0, n - 1).trimEnd() + "…" : t)
 const MOT_COURT = { "à rappeler": "rappel", "en retard": "retard", "à examiner": "examen", "à appeler": "appel", "à compléter": "à finir", "à relancer": "relance" };
 const lignesMur = (p, n, large) => (p.brut || p.liste).slice(0, n).map((l) => [coupe(l[0], large), MOT_COURT[l[3]] || coupe(l[3], 8), TON_ETAT[l[2]] || TON_ETAT.vide]);
 
-/* L'écran de la salle des serveurs : une jauge par limite, verte, orange au-delà de 60 %, rouge au-delà de 85 % */
-function dessinServeurs(c, W, H) {
+/* L'écran des salles des serveurs et de Claude Code : une jauge par limite, verte, orange au-delà de 60 %, rouge au-delà de 85 % */
+const dessinJauges = (id, titreEcran) => function (c, W, H) {
   c.fillStyle = "#0f1022"; c.fillRect(0, 0, W, H);
-  c.fillStyle = "#ffffff"; c.font = "600 36px Geist, system-ui, sans-serif"; c.textBaseline = "middle"; c.textAlign = "left"; c.fillText("SERVEURS", 40, 50);
-  const J = (parId.serveurs && parId.serveurs.jauges) || [];
+  c.fillStyle = "#ffffff"; c.font = "600 36px Geist, system-ui, sans-serif"; c.textBaseline = "middle"; c.textAlign = "left"; c.fillText(titreEcran, 40, 50);
+  const J = (parId[id] && parId[id].jauges) || [];
   J.slice(0, 5).forEach((j, i) => {
-    const y = 120 + i * 92, b = j.brut || [j.hote, j.nom, j.texte], part = j.part;
+    const y = 120 + i * 92, b = j.brut || [j.hote, j.nom, j.texte, j.mot || ""], part = j.part;
     c.fillStyle = "#a9aed0"; c.font = "500 22px Geist, system-ui, sans-serif"; c.fillText(b[0] + " · " + b[1], 40, y);
     c.fillStyle = "#262947"; arrondi(c, 40, y + 22, W - 220, 26, 13); c.fill();
     if (part != null) { c.fillStyle = part >= 0.85 ? "#e5484d" : part >= 0.6 ? "#f59e0b" : "#30a46c"; arrondi(c, 40, y + 22, Math.max(26, (W - 220) * Math.min(1, part)), 26, 13); c.fill(); }
-    c.textAlign = "right"; c.fillStyle = part == null ? "#7b7f98" : "#ffffff"; c.font = "600 30px Geist, system-ui, sans-serif"; c.fillText(part == null ? "—" : part > 0 && part < 0.01 ? "< 1 %" : Math.round(part * 100) + " %", W - 40, y + 35); c.textAlign = "left";
+    c.textAlign = "right"; c.fillStyle = part == null ? "#7b7f98" : "#ffffff"; c.font = "600 30px Geist, system-ui, sans-serif"; c.fillText(part == null ? (b[3] || "—") : part > 0 && part < 0.01 ? "< 1 %" : Math.round(part * 100) + " %", W - 40, y + 35); c.textAlign = "left";
   });
-}
+};
+const dessinServeurs = dessinJauges("serveurs", "SERVEURS"), dessinClaude = dessinJauges("claude", "CLAUDE CODE");
 
 /* L'écran de la salle de réunion : le planning des deux semaines, tiré des mêmes rendez-vous que la fiche */
 function dessinPlanning(c, W, H) {
@@ -2578,6 +2591,14 @@ function dessinPlanning(c, W, H) {
     boiteM(D, 3.4, 0.08, 0.3, 0x3a3d4a, x0 + 3.2, 2.1, rz - 0.1, { fin: "metal", sansOmbre: true });                                              // le chemin de câbles au-dessus
     cimaise(D, x0 + 0.3, p.cz + 0.6, 2.6, 2.3, PI / 2, NUIT); ecranMural(D, 2.2, 1.24, x0 + 0.39, 1.38, p.cz + 0.6, PI / 2, lumineux(1024, 576, dessinServeurs, 0.95));
     tapis(D, x0 + 3.2, p.z1 - 1.3, 2.6, 1.2, TAPIS.gris); plante(D, p.x1 - 0.7, p.z1 - 0.7, 0.9, true);
+  }
+
+  p = parId.claude;                                                        // ── Salle Claude Code : le poste de travail, l'écran des limites (au bout du porte-à-faux, après les serveurs)
+  { const x1 = p.x1, z0 = p.z0;
+    tapis(D, p.cx, p.cz + 0.3, 2.2, 2.6, TAPIS.gris);
+    bureauM(D, p.cx - 0.25, z0 + 0.75, 0, { double: true, large: 1.5, prof: 0.75, couleur: 0x1e1b4b });                                                      // le poste, dos à la terrasse
+    cimaise(D, x1 - 0.3, p.cz + 0.5, 2.4, 2.3, -PI / 2, NUIT); ecranMural(D, 2.0, 1.13, x1 - 0.39, 1.38, p.cz + 0.5, -PI / 2, lumineux(1024, 576, dessinClaude, 0.95));
+    panneauTexte(D, "CLAUDE CODE", 1.3, 0.2, x1 - 0.38, 2.14, p.cz + 0.5, -PI / 2, "#1a1a1a", "#d97757", 0.9);
   }
 
   p = parId.accompagnement;                                                // ── Accompagnement : le salon où les clients attendent leur rappel, le bureau du conseiller
@@ -3390,7 +3411,7 @@ function majInsigne(p) { const r = persos.find((q) => q.piece === p && q.type ==
 /* ── Les jauges de la salle des serveurs : une barre par limite ── */
 function jaugesHtml(p) {
   const ton = (part) => (part == null ? "vide" : part >= 0.85 ? "critique" : part >= 0.6 ? "attention" : "bon");
-  return "<h3>" + p.titre + '</h3><ul class="jauges">' + p.jauges.map((j) => '<li><div class="j-tete"><b>' + j.hote + " · " + j.nom + '</b><span class="puce ' + ton(j.part) + '">' + (j.part == null ? "à brancher" : j.part > 0 && j.part < 0.01 ? "< 1 %" : Math.round(j.part * 100) + " %") + "</span></div>" +
+  return "<h3>" + p.titre + '</h3><ul class="jauges">' + p.jauges.map((j) => '<li><div class="j-tete"><b>' + j.hote + " · " + j.nom + '</b><span class="puce ' + ton(j.part) + '">' + (j.part == null ? (j.mot || "à brancher") : j.part > 0 && j.part < 0.01 ? "< 1 %" : Math.round(j.part * 100) + " %") + "</span></div>" +
     '<div class="barre-j"><i class="' + ton(j.part) + '" style="width:' + (j.part == null ? 0 : Math.max(2, Math.min(100, j.part * 100))).toFixed(1) + '%"></i></div><span class="j-texte">' + j.texte + "</span></li>").join("") + "</ul>";
 }
 

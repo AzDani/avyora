@@ -18,7 +18,7 @@ function majInsigne(p) { const r = persos.find((q) => q.piece === p && q.type ==
 /* ── Les jauges de la salle des serveurs : une barre par limite ── */
 function jaugesHtml(p) {
   const ton = (part) => (part == null ? "vide" : part >= 0.85 ? "critique" : part >= 0.6 ? "attention" : "bon");
-  return "<h3>" + p.titre + '</h3><ul class="jauges">' + p.jauges.map((j) => '<li><div class="j-tete"><b>' + j.hote + " · " + j.nom + '</b><span class="puce ' + ton(j.part) + '">' + (j.part == null ? "à brancher" : j.part > 0 && j.part < 0.01 ? "< 1 %" : Math.round(j.part * 100) + " %") + "</span></div>" +
+  return "<h3>" + p.titre + '</h3><ul class="jauges">' + p.jauges.map((j) => '<li><div class="j-tete"><b>' + j.hote + " · " + j.nom + '</b><span class="puce ' + ton(j.part) + '">' + (j.part == null ? (j.mot || "à brancher") : j.part > 0 && j.part < 0.01 ? "< 1 %" : Math.round(j.part * 100) + " %") + "</span></div>" +
     '<div class="barre-j"><i class="' + ton(j.part) + '" style="width:' + (j.part == null ? 0 : Math.max(2, Math.min(100, j.part * 100))).toFixed(1) + '%"></i></div><span class="j-texte">' + j.texte + "</span></li>").join("") + "</ul>";
 }
 

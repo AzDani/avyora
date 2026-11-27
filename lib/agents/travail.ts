@@ -57,7 +57,7 @@ export async function preparerFiche(id: string, client?: ClientClaude): Promise<
   const r = await lireUn(id);
   if (!r) return non("Rendez-vous introuvable.");
   try {
-    const brut = await demanderJson({ systeme: SYSTEME_FICHE, contenu: contexteEnTexte(await contexteDe(r)), schema: SCHEMA_FICHE, maxTokens: 6000, client });
+    const brut = await demanderJson({ systeme: SYSTEME_FICHE, contenu: contexteEnTexte(await contexteDe(r)), schema: SCHEMA_FICHE, maxTokens: 6000, client, tache: "fiche" });
     const fiche = ficheValide(brut);
     if (!fiche) return non("La fiche reçue était vide. Réessaie.");
     const { error } = await supabaseAdmin().from(TABLE_RDV).update({ fiche, fiche_le: new Date().toISOString() }).eq("id", id);
@@ -75,7 +75,7 @@ export async function redigerCompteRendu(id: string, client?: ClientClaude): Pro
   if (!notes || notes.length < 40) return non("Colle d'abord la transcription de l'appel ou tes notes (quelques lignes au moins).");
   try {
     const contenu = `${contexteEnTexte(await contexteDe(r))}\n\n--- Transcription ou notes de l'appel ---\n${notes}`;
-    const cr = compteRenduValide(await demanderJson({ systeme: SYSTEME_COMPTE_RENDU, contenu, schema: SCHEMA_COMPTE_RENDU, maxTokens: 10000, client }));
+    const cr = compteRenduValide(await demanderJson({ systeme: SYSTEME_COMPTE_RENDU, contenu, schema: SCHEMA_COMPTE_RENDU, maxTokens: 10000, client, tache: "compte_rendu" }));
     if (!cr) return non("Le compte rendu reçu était vide. Réessaie.");
     const { error } = await supabaseAdmin().from(TABLE_RDV).update({ compte_rendu_texte: compteRenduEnTexte(cr, r.client), compte_rendu: "a_relire", compte_rendu_le: new Date().toISOString() }).eq("id", id);
     return error ? non(SANS_0017) : ok("Compte rendu rédigé : relis-le avant de l'envoyer.");
