@@ -16,7 +16,7 @@
  * `changerQui`, `puLigne`), sur le MÊME moteur que le rapide : une maison décrite pareil coûte pareil.
  */
 import { key, isAuto, isLoc, lineHT, puReel, tauxPerso, type Ctx, type Selection, type Finition, type Lot, type Tache, type CustomLine } from "./core";
-import { CATALOG_NEUF, POSTE_NEUF } from "./catalogue-neuf";
+import { CATALOG_NEUF, POSTE_NEUF, surCatalogue } from "./catalogue-neuf";
 import {
   ecartesParLeChoix, exclusifsDe, geometrieNeuf, maisonComplete, maisonParDefaut, parpaingAuChoixDesMurs, reponseDuPoste, selAvantN8, ID_PARPAING,
   type MaisonNeuve,
@@ -260,7 +260,7 @@ export const horsDecennaleNeuf = (l: Lot): boolean => LOTS_DECENNALE_NEUF.has(l.
 
 // ── Lignes perso ────────────────────────────────────────────────────────────────────────────────
 const PAR_CLE = new Map<string, { l: Lot; t: Tache }>();
-for (const l of CATALOG_NEUF) for (const t of l.t) PAR_CLE.set(key(l.c, t.n), { l, t });
+surCatalogue(() => { PAR_CLE.clear(); for (const l of CATALOG_NEUF) for (const t of l.t) PAR_CLE.set(key(l.c, t.n), { l, t }); });
 
 /** Lignes perso affichées sous un lot (N10 : chaque lot n'apparaît qu'une fois) : toutes celles de ce
  *  lot, quelle que soit leur étape du chantier. */

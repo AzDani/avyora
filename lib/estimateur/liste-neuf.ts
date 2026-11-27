@@ -24,7 +24,7 @@
  * le montant d'un lot reste celui de « Mon devis », et cocher l'un décoche toujours l'autre.
  */
 import { key, lineHT, visibleTask, type Ctx, type CustomLine, type Lot, type Selection, type Tache } from "./core";
-import { CATALOG_NEUF } from "./catalogue-neuf";
+import { CATALOG_NEUF, surCatalogue } from "./catalogue-neuf";
 import { geometrieNeuf, parpaingAuChoixDesMurs, reponseDuPoste, ID_PARPAING, SEUIL_ARCHITECTE_M2, type MaisonNeuve } from "./neuf";
 import { estJalon } from "./projet";
 import type { TexteFrEn } from "./etapes-neuf";
@@ -51,16 +51,8 @@ export const GRANDES_PHASES_NEUF: { nom: string; lots: string[] }[] = [
 ];
 
 /** Chaque lot du neuf, une seule fois : ses postes de tous ses blocs, dans l'ordre du chantier. */
-export const LOTS_NEUF: { c: string; postes: PosteListeNeuf[] }[] = (() => {
-  const m = new Map<string, PosteListeNeuf[]>();
-  for (const l of CATALOG_NEUF) {
-    const postes = m.get(l.c) ?? [];
-    for (const t of l.t) postes.push({ l, t });
-    m.set(l.c, postes);
-  }
-  return [...m].map(([c, postes]) => ({ c, postes }));
-})();
-const PAR_LOT = new Map(LOTS_NEUF.map((x) => [x.c, x.postes]));
+export const LOTS_NEUF: { c: string; postes: PosteListeNeuf[] }[] = [];
+const PAR_LOT = new Map<string, PosteListeNeuf[]>();
 
 /** La première étape du chantier où ce lot intervient (la phase d'une ligne perso ajoutée au lot). */
 export function premiereEtapeNeuf(lot: string): string {
@@ -77,7 +69,21 @@ export const CARTE_FRAIS = "$frais";
 export const CARTE_DEMARCHES = "$demarches";
 
 /** Les postes de la carte « Taxes, assurance et frais », dans l'ordre du catalogue. */
-export const POSTES_FRAIS_NEUF: PosteListeNeuf[] = CATALOG_NEUF.flatMap((l) => l.t.filter(estFraisNeuf).map((t) => ({ l, t })));
+export const POSTES_FRAIS_NEUF: PosteListeNeuf[] = [];
+
+/* Tables reconstruites à chaque installation du barème (catalogue-neuf.ts) : vides dans le navigateur avant la connexion. */
+surCatalogue(() => {
+  const m = new Map<string, PosteListeNeuf[]>();
+  for (const l of CATALOG_NEUF) {
+    const postes = m.get(l.c) ?? [];
+    for (const t of l.t) postes.push({ l, t });
+    m.set(l.c, postes);
+  }
+  LOTS_NEUF.splice(0, LOTS_NEUF.length, ...[...m].map(([c, postes]) => ({ c, postes })));
+  PAR_LOT.clear();
+  for (const x of LOTS_NEUF) PAR_LOT.set(x.c, x.postes);
+  POSTES_FRAIS_NEUF.splice(0, POSTES_FRAIS_NEUF.length, ...CATALOG_NEUF.flatMap((l) => l.t.filter(estFraisNeuf).map((t) => ({ l, t }))));
+});
 
 // ── Lignes de choix ──────────────────────────────────────────────────────────────────────────────
 export interface AlternativeNeuf { id: string; court: TexteFrEn }

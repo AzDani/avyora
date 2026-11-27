@@ -11,6 +11,7 @@ import { dict } from "@/lib/i18n/dictionaries";
 import { dictNeuf } from "@/lib/i18n/neuf";
 import { euroApres, euroAvant, euros } from "@/lib/i18n/nombres";
 import BilanRapideNeuf from "./BilanRapideNeuf";
+import { chiffresBilanNeuf } from "@/lib/estimateur/bilan-neuf";
 import { betaActive } from "@/lib/beta";
 import LienAccompagnement from "@/components/accompagnement/LienAccompagnement";
 
@@ -118,7 +119,7 @@ export default async function ResultatRapideNeuf({
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <p className="text-[15px] text-muted -mt-2 mb-4">{t.sub}</p>
 
-      <BilanRapideNeuf ctx={ctx} sel={sel} qui={reponses.qui} locale={locale} reel={isPro} beta={beta} />
+      <BilanRapideNeuf b={chiffresBilanNeuf(ctx, sel, reponses.qui, isPro, locale)} locale={locale} beta={beta} />
 
       <div className="sec">{t.resume}</div>
       <div className="recap">

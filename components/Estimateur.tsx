@@ -21,6 +21,7 @@
  * (`ListeLots`, règles dans `detaille-reno.ts`). Le filtre ne se garde pas : il n'est ni dans le brouillon
  * ni dans le projet, comme dans le neuf.
  */
+import AvecBareme from "@/components/estimateur/AvecBareme";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import NumStepper from "@/components/Stepper";
@@ -76,7 +77,12 @@ const CIBLES_LISTE_VISITE = {
   choixLigne: ".av-estim .acc.open .trow .choice",
 } as const;
 
+/** Le barème de prix arrive après connexion (27/11/2026) : l'estimateur s'affiche une fois installé (`AvecBareme`). */
 export default function Estimateur({ initialState, projectId }: { initialState?: Record<string, unknown>; projectId?: string } = {}) {
+  return <AvecBareme hauteur={900}><EstimateurInterne initialState={initialState} projectId={projectId} /></AvecBareme>;
+}
+
+function EstimateurInterne({ initialState, projectId }: { initialState?: Record<string, unknown>; projectId?: string } = {}) {
   const router = useRouter();
   const edition = !!projectId;
 

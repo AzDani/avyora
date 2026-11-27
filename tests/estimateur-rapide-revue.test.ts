@@ -221,7 +221,7 @@ describe("rappel de /inscription : le bon libellé, et rien sans estimation", ()
     expect(src).toContain("const d = lireBrouillonReno(localStorage.getItem(DRAFT_KEY));");
     expect(src).not.toContain("JSON.parse(raw)");
     // Et « Affiner » sur un formulaire vierge ne range plus de brouillon.
-    expect(lire("components/EstimateurRapide.tsx")).toContain("if (valid) saveDraft();");
+    expect(lire("components/EstimateurRapide.tsx")).toContain("if (valid) await saveDraft();");
   });
 });
 

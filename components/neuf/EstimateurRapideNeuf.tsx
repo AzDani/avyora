@@ -37,10 +37,15 @@
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  buildDevis, catalogueDe, presetNeuf, regionCoef, maisonComplete, piecesNeuf, BORNES_NEUF,
-  type Finition, type QuiRealise, type MaisonNeuve, type Niveaux,
-} from "@/lib/estimateur";
+// Ni moteur ni catalogue dans le bundle de cette page (27/11/2026) : le chiffrage se fait côté serveur
+// (`POST /api/estimateur/rapide`, lib/estimateur/rapide-serveur.ts). Ici, des constantes et des types seulement.
+import type { Finition } from "@/lib/estimateur/core";
+import type { QuiRealise } from "@/lib/estimateur/rapide-constantes";
+import type { MaisonNeuve, Niveaux } from "@/lib/estimateur/neuf";
+import { regionCoef } from "@/lib/estimateur/region";
+import { BORNES_NEUF } from "@/lib/estimateur/bornes-neuf";
+import type { SortieRapideNeuf } from "@/lib/estimateur/rapide-serveur";
+import { useCalculRapide } from "@/components/estimateur/useCalculRapide";
 import {
   brouillonRapideNeuf, corpsProjetNeuf, lireReponsesRapideNeuf, CLE_BROUILLON_NEUF, CLE_AFFINER_NEUF, CLE_RETOUR_NEUF,
   CLE_RECLAMATION_NEUF, type ReponsesRapideNeuf, type OrigineNeuf,
@@ -284,8 +289,12 @@ export default function EstimateurRapideNeuf({
     // `initial` vient du serveur et ne change pas pendant la vie de la page.
   }, [edit]);
   const baseEff = base ?? plan?.maison ?? retour?.base;
+  // Le chiffrage, côté serveur (27/11/2026) : les réponses et la maison décrite partent, le preset {ctx, sel} (postes et
+  // quantités, sans prix) et ce que l'écran affiche reviennent. Sans compte : aucun montant (26/11/2026).
+  const calcul = useCalculRapide<SortieRapideNeuf>({ nature: "neuf", R, base: baseEff, locale }, { compte: connecte || !!edit, pro: isPro });
+  const res = calcul.res;
   /** La maison du plan telle qu'elle est CHIFFRÉE (au moins une salle de bain et un WC) : le résumé dit vrai. */
-  const planChiffre = useMemo(() => (plan ? maisonComplete(plan.maison) : null), [plan]);
+  const planChiffre = plan ? res?.resumeBase ?? null : null;
   const origineEff: OrigineNeuf | undefined = origine ?? (plan ? { source: "plan", contrat: plan.contrat, ...lienPlan } : undefined);
 
   const maj = (patch: Partial<ReponsesRapideNeuf>) => {
@@ -293,17 +302,20 @@ export default function EstimateurRapideNeuf({
     if (champErr && ((champErr === "cp" && "codePostal" in patch) || (champErr === "surface" && "surface" in patch))) { setChampErr(null); setErreur(null); }
   };
 
-  const preset = useMemo(() => presetNeuf(R, baseEff), [R, baseEff]);
-  const tot = useMemo(() => buildDevis(catalogueDe(preset.ctx), preset.ctx, preset.sel).totaux, [preset]);
-  const surface = preset.ctx.surface || 0;
+  const preset = res?.preset ?? null;
+  const montants = res?.montants ?? null;
+  const tot = { ttc: montants?.ttc ?? 0 };
+  const surface = preset?.ctx.surface || 0;
   const valid = affiche && R.surface >= 30;
+  /** Les montants de la barre : une saisie valide ET leur réponse arrivée (sinon « — », jamais un total nul). */
+  const chiffre = valid && !!montants;
   const lo = Math.round((tot.ttc * 0.85) / 100) * 100;
   const hi = Math.round((tot.ttc * 1.15) / 100) * 100;
-  const m2 = valid && surface > 0 ? Math.round(tot.ttc / surface) : 0;
+  const m2 = chiffre && surface > 0 ? Math.round(tot.ttc / surface) : 0;
   const src = initial?.src ?? (plan ? "plan" : "direct");
 
   /** Estimation RÉELLE : une action, une saisie valide, un total non nul et un code postal. */
-  const estimationReelle = agi && valid && tot.ttc > 0 && CP.test(R.codePostal);
+  const estimationReelle = agi && valid && calcul.aJour && !!res?.positif && CP.test(R.codePostal);
   const convFired = useRef(false);
   useEffect(() => {
     if (convFired.current || !estimationReelle) return;
@@ -315,17 +327,11 @@ export default function EstimateurRapideNeuf({
     return () => window.clearTimeout(id);
   }, [estimationReelle, src]);
 
-  // Aperçus €/m² des cartes : la même maison, une seule réponse changée, chiffrée par le moteur.
-  const m2De = (o: Partial<ReponsesRapideNeuf>) => {
-    const p = presetNeuf({ ...R, ...o }, baseEff);
-    return p.ctx.surface > 0 ? Math.round(buildDevis(catalogueDe(p.ctx), p.ctx, p.sel).totaux.ttc / p.ctx.surface) : 0;
-  };
-  const m2ByFin = useMemo(() => Object.fromEntries(FINITIONS.map((f) => [f.v, m2De({ finition: f.v })])) as Record<Finition, number>,
-    [R.surface, R.niveaux, R.codePostal, R.qui, R.garage, R.assainissement, baseEff]);
-  const m2ByQui = useMemo(() => Object.fromEntries(QUIS.map((q) => [q.v, m2De({ qui: q.v })])) as Record<QuiRealise, number>,
-    [R.surface, R.niveaux, R.codePostal, R.finition, R.garage, R.assainissement, baseEff]);
+  // Aperçus €/m² des cartes : la même maison, une seule réponse changée, chiffrée côté serveur (vides sans compte).
+  const m2ByFin: Partial<Record<Finition, number>> = montants?.m2ByFin ?? {};
+  const m2ByQui: Partial<Record<QuiRealise, number>> = montants?.m2ByQui ?? {};
   // Surface du garage « oui » : celle de la maison décrite, sinon celle que le moteur met par défaut.
-  const garageM2 = useMemo(() => presetNeuf({ ...R, garage: true }, baseEff).ctx.neuf?.garage ?? 0, [R, baseEff]);
+  const garageM2 = res?.garageM2 ?? 0;
 
   const reg = regionCoef(R.codePostal);
   const regDelta = Math.round((reg.mo - 1) * 100);
@@ -338,12 +344,14 @@ export default function EstimateurRapideNeuf({
   affinerRef.current = affiner;
   /* Le bilan, replié sous les questions (N13). Sa répartition par phase : réelle pour un compte qui a les
      droits (abonné, inscrit pendant la bêta), sinon factice et floutée, avec le chemin vers le détail (D9). */
+  // Ses chiffres viennent du serveur, avec un compte seulement (sans compte : ni bilan, ni montant).
+  const chiffresBilan = res?.bilan ?? null;
   const bilan = useMemo(
-    () => (valid ? (
-      <BilanRapideNeuf ctx={preset.ctx} sel={preset.sel} qui={R.qui} locale={locale} reel={isPro} beta={beta}
+    () => (valid && chiffresBilan ? (
+      <BilanRapideNeuf b={chiffresBilan} locale={locale} beta={beta}
         ctaVerrou={<button type="button" className="cta-v" onClick={() => affinerRef.current()}>{versInscription ? T.beta.creerCompteFleche : rn.passPro}</button>} />
     ) : null),
-    [valid, preset, R.qui, locale, isPro, beta, versInscription, T, rn],
+    [valid, chiffresBilan, locale, beta, versInscription, T, rn],
   );
 
   /**
@@ -370,16 +378,20 @@ export default function EstimateurRapideNeuf({
   const eauxOpts: ("collectif" | "fosse" | "micro")[] = ["collectif", "fosse", ...(baseEff?.assainissement === "micro" ? (["micro"] as const) : [])];
   const eauxActif = R.assainissement ?? (baseEff?.assainissement === "micro" ? "micro" : "collectif");
 
-  const brouillon = () => brouillonRapideNeuf({ R, ctx: preset.ctx, sel: preset.sel, base: baseEff, origine: origineEff, statuts: edit ? statuts : undefined });
-  function saveDraft() {
-    try { localStorage.setItem(CLE_BROUILLON_NEUF, JSON.stringify(brouillon())); } catch { /* noop */ }
+  /** Le brouillon, avec le preset des réponses COURANTES (attendu du serveur s'il est en route). */
+  const brouillon = async () => {
+    const { preset: p } = await calcul.attendre();
+    return brouillonRapideNeuf({ R, ctx: p.ctx, sel: p.sel, base: baseEff, origine: origineEff, statuts: edit ? statuts : undefined });
+  };
+  async function saveDraft() {
+    try { localStorage.setItem(CLE_BROUILLON_NEUF, JSON.stringify(await brouillon())); } catch { /* noop */ }
   }
-  function affiner() {
+  async function affiner() {
     if (estimationReelle) {
       suivre("estimation_terminee", { action: "affiner", type: "neuf", nature: "neuf", src });
       conversionEstimation("neuf");
     }
-    saveDraft();
+    await saveDraft();
     try { sessionStorage.setItem(CLE_AFFINER_NEUF, JSON.stringify({ R, base: baseEff })); } catch { /* noop */ }
     // Le détaillé du neuf est réservé au Pro : un gratuit va directement aux tarifs (la page du
     // détaillé l'y renverrait de toute façon). Le brouillon reste prêt pour après l'abonnement, et
@@ -417,7 +429,8 @@ export default function EstimateurRapideNeuf({
     setAgi(true);
     // La conversion « estimation » compte une création, pas la modification d'un projet existant.
     if (!edit) { suivre("estimation_terminee", { action: "enregistrer", type: "neuf", nature: "neuf", src }); conversionEstimation("neuf"); }
-    const d = brouillon();
+    let d: Awaited<ReturnType<typeof brouillon>>;
+    try { d = await brouillon(); } catch { setErreur(s.errReseau); return; }
     /** Anonyme (ou session expirée) : le brouillon D'ABORD, le drapeau ensuite (un drapeau sans brouillon ne
      *  réclame rien), puis l'inscription. */
     const versCompte = () => {
@@ -472,7 +485,7 @@ export default function EstimateurRapideNeuf({
                 surface: Math.round(planChiffre.surface).toLocaleString(nf),
                 niveaux: s.niveaux[planChiffre.niveaux],
                 // Une suite parentale est une chambre ET une salle de bain : le résumé compte comme le moteur.
-                chambres: piecesNeuf(planChiffre).chambres, sdb: piecesNeuf(planChiffre).sdb, wc: planChiffre.wc,
+                chambres: planChiffre.chambres, sdb: planChiffre.sdb, wc: planChiffre.wc,
                 garage: planChiffre.garage > 0 ? Math.round(planChiffre.garage).toLocaleString(nf) : null,
               })}
               {plan.avertissements.length > 0 && (
@@ -538,8 +551,8 @@ export default function EstimateurRapideNeuf({
             {QUIS.map((q) => {
               const qi = carteQui(q.v);
               const price = m2ByQui[q.v] || 0;
-              const ref = m2ByQui.pros || 0;
-              const pct = ref > 0 && price > 0 ? Math.round((1 - price / ref) * 100) : 0;
+              // « −N % » face à « tout par des pros » : calculé côté serveur (aussi sans compte, sans montant).
+              const pct = res?.economies[q.v] ?? 0;
               return (
                 <button type="button" key={q.v} className={"qcard" + (R.qui === q.v ? " on" : "")} aria-pressed={R.qui === q.v} onClick={() => maj({ qui: q.v })}>
                   <span className="head">
@@ -616,8 +629,8 @@ export default function EstimateurRapideNeuf({
               </>
             ) : (
               <>
-                <div className="big">{valid ? <>{euroAvant(locale)}<CountUp value={lo} nf={nf} />{euroApres(locale)}<span style={{ opacity: .55 }}> – </span>{euroAvant(locale)}<CountUp value={hi} nf={nf} />{euroApres(locale)}</> : "—"}</div>
-                <div className="sub">{valid ? <>≈ {euroAvant(locale)}<CountUp value={m2} nf={nf} />{locale === "en" ? "" : " "}{s.parM2} · {locale === "en" ? "±15%" : "±15\u00a0%"}{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? s.attente : s.errSurface}</div>
+                <div className="big">{chiffre ? <>{euroAvant(locale)}<CountUp value={lo} nf={nf} />{euroApres(locale)}<span style={{ opacity: .55 }}> – </span>{euroAvant(locale)}<CountUp value={hi} nf={nf} />{euroApres(locale)}</> : "—"}</div>
+                <div className="sub">{chiffre ? <>≈ {euroAvant(locale)}<CountUp value={m2} nf={nf} />{locale === "en" ? "" : " "}{s.parM2} · {locale === "en" ? "±15%" : "±15\u00a0%"}{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? s.attente : s.errSurface}</div>
               </>
             )}
           </div>

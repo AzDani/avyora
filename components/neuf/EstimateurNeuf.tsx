@@ -42,6 +42,7 @@
  * finition de la rénovation ; « Budget & imprévus » aussi compacts ; une barre live de la hauteur de la
  * rénovation sur mobile ; le champ en faute signalé par la brique partagée (`useChampEnFaute`).
  */
+import AvecBareme from "@/components/estimateur/AvecBareme";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import NumStepper from "@/components/Stepper";
@@ -103,7 +104,12 @@ const CIBLES_LISTE_VISITE = {
   premierLot: ".av-neuf-d .tools ~ div:not(.dem-c) .acc-h",
 } as const;
 
+/** Le barème de prix arrive après connexion (27/11/2026) : l'estimateur s'affiche une fois installé (`AvecBareme`). */
 export default function EstimateurNeuf({ initialState, projectId }: { initialState?: Record<string, unknown>; projectId?: string } = {}) {
+  return <AvecBareme hauteur={900}><EstimateurNeufInterne initialState={initialState} projectId={projectId} /></AvecBareme>;
+}
+
+function EstimateurNeufInterne({ initialState, projectId }: { initialState?: Record<string, unknown>; projectId?: string } = {}) {
   const router = useRouter();
   const locale = useLocale();
   const T = useT();

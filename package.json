@@ -5,9 +5,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "node scripts/controle-bareme.mjs",
     "start": "next start",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "controle:bareme": "node scripts/controle-bareme.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.112.1",

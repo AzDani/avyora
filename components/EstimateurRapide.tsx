@@ -16,12 +16,14 @@
 import { useMemo, useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-// Sous-modules ciblés plutôt que le baril `@/lib/estimateur` : le baril réexporte aussi le moteur
-// de la construction neuve, qui n'a rien à faire dans le bundle de cette page.
-import { buildDevis, regionCoef, type TypeBien, type Finition } from "@/lib/estimateur/core";
-import { CATALOG } from "@/lib/estimateur/catalog";
-import { presetRapide, AMPLEURS, SURFACE_MIN_RAPIDE, SURFACE_MAX_RAPIDE, type Ampleur, type QuiRealise } from "@/lib/estimateur/presets";
-import { PIECES, presetPieces, type PieceKey, type PieceSel } from "@/lib/estimateur/pieces";
+// Ni moteur, ni catalogue, ni paniers dans le bundle de cette page (27/11/2026) : le chiffrage se fait côté serveur
+// (`POST /api/estimateur/rapide`, lib/estimateur/rapide-serveur.ts). Ici, des constantes et des types seulement.
+import type { TypeBien, Finition } from "@/lib/estimateur/core";
+import { regionCoef } from "@/lib/estimateur/region";
+import { AMPLEURS, PIECES, SURFACE_MIN_RAPIDE, SURFACE_MAX_RAPIDE, type Ampleur, type QuiRealise, type PieceKey } from "@/lib/estimateur/rapide-constantes";
+import type { PieceSel } from "@/lib/estimateur/pieces";
+import type { SortieRapideReno } from "@/lib/estimateur/rapide-serveur";
+import { useCalculRapide } from "@/components/estimateur/useCalculRapide";
 import {
   chiffreAfficheRapide, estimationReelleRapide, reponsesRapideReno, lireRetourRapideReno, codePostalValide, CLE_RETOUR_RENO, SURFACE_MAX_PIECE,
   type RapideEdit, type RetourRapideReno,
@@ -212,28 +214,26 @@ export default function EstimateurRapide({
     ? pieces.reduce((s, r) => s + (r.surface || 0), 0)
     : surface;
 
-  // {ctx, sel} pour le mode courant, réglages éventuellement remplacés (aperçus des cartes 2-3-4).
+  // Le chiffrage, côté serveur (27/11/2026) : les réponses partent, le preset {ctx, sel} (postes et quantités, sans
+  // prix) et ce que l'écran affiche reviennent. Sans compte : aucun montant, seulement les % d'économie des cartes.
   // Un projet rouvert garde sa provision pour aléas (D7) : seuls les nouveaux prennent le défaut.
-  function buildSel(o: { ampleur?: Ampleur; finition?: Finition; qui?: QuiRealise } = {}) {
-    const a = o.ampleur ?? ampleur, f = o.finition ?? finition, q = o.qui ?? qui;
-    const p = mode === "pieces"
-      ? presetPieces(pieces, a, f, q, cp)
-      : presetRapide({ type, surface, codePostal: cp, ampleur: a, finition: f, qui: q });
-    return edit?.aleas != null ? { ...p, ctx: { ...p.ctx, aleas: edit.aleas } } : p;
-  }
-
-  const preset = useMemo(() => buildSel(), [mode, type, surface, cp, ampleur, finition, qui, pieces]);
-  const tot = useMemo(() => buildDevis(CATALOG, preset.ctx, preset.sel).totaux, [preset]);
+  const calcul = useCalculRapide<SortieRapideReno>({ nature: "reno", mode, type, surface, pieces, cp, ampleur, finition, qui, aleas: edit?.aleas ?? null }, { compte: connecte !== false || !!edit, pro: isPro });
+  const chiffrage = calcul.res;
+  const preset = chiffrage?.preset ?? null;
+  const montants = chiffrage?.montants ?? null;
+  const tot = { ttc: montants?.ttc ?? 0 };
   // `affiche` d'abord : sans lui, les valeurs par défaut rendaient l'estimation valide au
   // chargement, donc affichaient un prix que personne n'avait demandé.
   const saisieValide = mode === "pieces" ? pieces.length > 0 && totalSurface > 0 : surface > 0;
   const valid = affiche && saisieValide;
+  /** Les montants de la barre : une saisie valide ET leur réponse arrivée (sinon « — », jamais un total nul). */
+  const chiffre = valid && !!montants;
   const lo = Math.round((tot.ttc * 0.85) / 100) * 100;
   const hi = Math.round((tot.ttc * 1.15) / 100) * 100;
   // Le €/m² divise par la surface CHIFFRÉE (bornée par le moteur), jamais par celle en cours de frappe :
   // « 1 » tapé donnait 24 033 €/m² (le total d'un bien de 8 m² divisé par 1).
   const surfaceChiffree = (c: { surface: number }) => (c.surface > 0 ? c.surface : 0);
-  const m2 = valid && surfaceChiffree(preset.ctx) > 0 ? Math.round(tot.ttc / surfaceChiffree(preset.ctx)) : 0;
+  const m2 = chiffre && preset && surfaceChiffree(preset.ctx) > 0 ? Math.round(tot.ttc / surfaceChiffree(preset.ctx)) : 0;
 
   /**
    * Les réponses gardées dans l'onglet à chaque changement, dès qu'un chiffre s'affiche : un retour
@@ -262,7 +262,7 @@ export default function EstimateurRapide({
    *
    * Elle exige `demarre`, jamais `affiche` : rouvrir un projet n'est pas une estimation.
    */
-  const estimationReelle = estimationReelleRapide({ demarre, saisieValide, ttc: tot.ttc, codePostal: cp, edition: !!edit, typeChoisi });
+  const estimationReelle = estimationReelleRapide({ demarre, saisieValide, ttc: calcul.aJour && chiffrage?.positif ? 1 : 0, codePostal: cp, edition: !!edit, typeChoisi });
   useEffect(() => {
     if (convFired.current || !estimationReelle) return;
     const id = window.setTimeout(() => {
@@ -293,27 +293,10 @@ export default function EstimateurRapide({
     ];
   }, [locale]);
   const prerempli = !!edit || retour || !!initial?.piece || !!initial?.cp || initial?.surface != null;
-  /** Aperçu d'une carte : le €/m² d'un réglage, sur la surface chiffrée (0 sans saisie). */
-  function prixM2De(p: ReturnType<typeof buildSel>): number {
-    const s = totalSurface > 0 ? surfaceChiffree(p.ctx) : 0;
-    return s > 0 ? Math.round(buildDevis(CATALOG, p.ctx, p.sel).totaux.ttc / s) : 0;
-  }
-
-  const m2ByAmp = useMemo(() => {
-    const out: Record<string, number> = {};
-    for (const a of AMPLEURS) { const p = buildSel({ ampleur: a.v }); out[a.v] = prixM2De(p); }
-    return out;
-  }, [mode, type, surface, cp, finition, qui, pieces]);
-  const m2ByFin = useMemo(() => {
-    const out: Record<string, number> = {};
-    for (const f of ["eco", "standard", "premium"] as Finition[]) { const p = buildSel({ finition: f }); out[f] = prixM2De(p); }
-    return out;
-  }, [mode, type, surface, cp, ampleur, qui, pieces]);
-  const m2ByQui = useMemo(() => {
-    const out: Record<string, number> = {};
-    for (const q of ["pros", "partie", "max"] as QuiRealise[]) { const p = buildSel({ qui: q }); out[q] = prixM2De(p); }
-    return out;
-  }, [mode, type, surface, cp, ampleur, finition, pieces]);
+  /** Aperçus des cartes : le €/m² de chaque réglage (calculés côté serveur, sur la surface chiffrée ; vides sans compte). */
+  const m2ByAmp: Record<string, number> = montants?.m2ByAmp ?? {};
+  const m2ByFin: Record<string, number> = montants?.m2ByFin ?? {};
+  const m2ByQui: Record<string, number> = montants?.m2ByQui ?? {};
 
   const reg = regionCoef(cp);
   const regDelta = Math.round((reg.mo - 1) * 100);
@@ -346,14 +329,17 @@ export default function EstimateurRapide({
   // Compteur d'instances par type (badge sur les tuiles) + ordinal d'affichage pour les doublons.
   const countByRoom = (k: PieceKey) => pieces.filter((r) => r.room === k).length;
 
-  function saveDraft() {
+  /** Le brouillon, rangé avec le preset des réponses COURANTES (attendu du serveur s'il est en route). */
+  async function saveDraft() {
     try {
+      const nom = nomProjet();
+      const { preset: p } = await calcul.attendre();
       localStorage.setItem(DRAFT_KEY, JSON.stringify(brouillonRapideReno({
-        nom: nomProjet(), ampleur, qui, ctx: preset.ctx, sel: preset.sel, codePostal: cp, pieces: mode === "pieces" ? pieces : undefined,
+        nom, ampleur, qui, ctx: p.ctx, sel: p.sel, codePostal: cp, pieces: mode === "pieces" ? pieces : undefined,
       })));
     } catch { /* noop */ }
   }
-  function affiner() {
+  async function affiner() {
     // Le clic mène toujours à l'estimateur détaillé — mais on ne déclare une estimation terminée,
     // et surtout pas une conversion payante, que s'il y en a réellement eu une.
     if (estimationReelle) {
@@ -362,7 +348,7 @@ export default function EstimateurRapide({
     }
     // Le brouillon seulement s'il y a une estimation : un formulaire vierge rangeait « Maison 100 m² »,
     // que l'inscription présentait comme « ton estimation ». Sinon, un ancien brouillon est retiré.
-    if (valid) saveDraft();
+    if (valid) await saveDraft();
     else { try { localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ } }
     try { sessionStorage.setItem("avyora-affiner", "1"); } catch { /* noop */ }
     // Sans les droits, hors bêta (ou projet rouvert) : /tarifs directement (le détaillé l'y renverrait, sans la
@@ -380,17 +366,17 @@ export default function EstimateurRapide({
    * le brouillon puis le drapeau de réclamation : une fois inscrit, `ClaimDraft` (/projets) crée le projet, multi-pièces
    * compris (il est Pro pendant la bêta). Le code postal d'abord : sans lui, la réclamation échouerait.
    */
-  function versInscriptionMultiPieces() {
+  async function versInscriptionMultiPieces() {
     setErreur(null); faute.effacer();
     if (!codePostalValide(cp)) { signaler(cp.length === 5 ? t.errCpInconnu : t.errCp, "cp"); return; }
-    saveDraft();
+    await saveDraft();
     try { localStorage.setItem(CLE_RECLAMATION_RENO, "1"); } catch { /* noop */ }
     router.push(lienInscriptionBeta(undefined, "multi-pieces"));
   }
 
   /** « Enregistrer » sans compte : le brouillon d'abord, le drapeau ensuite (un drapeau sans brouillon ne réclame rien). */
-  function versInscriptionEnregistrer() {
-    saveDraft();
+  async function versInscriptionEnregistrer() {
+    await saveDraft();
     try { localStorage.setItem(CLE_RECLAMATION_RENO, "1"); } catch { /* noop */ }
     router.push(beta ? lienInscriptionBeta(undefined, "enregistrer-reno") : "/inscription");
   }
@@ -418,21 +404,23 @@ export default function EstimateurRapide({
       conversionEstimation("reno");
     }
     // Visiteur anonyme (connu de la page) : le brouillon, le drapeau, l'inscription — sans POST voué au 401.
-    if (connecte === false && !edit) { versInscriptionEnregistrer(); return; }
+    if (connecte === false && !edit) { await versInscriptionEnregistrer(); return; }
     setSaving(true);
     const nom = nomProjet();
     const typeBien = (mode === "pieces" ? "Appartement" : type) as TypeBien;
-    // La liste des pièces (pour rouvrir le formulaire tel quel) et le suivi de chantier du projet
-    // rouvert (le PATCH remplace toutes les réponses : sans lui, il était effacé).
-    const reponses = reponsesRapideReno({
-      ampleur, qui, ctx: preset.ctx, sel: preset.sel, codePostal: cp,
-      pieces: mode === "pieces" ? pieces : undefined, statuts: edit?.statuts,
-    });
     try {
+      // Le preset des réponses courantes (calculé côté serveur), jamais celui d'un état précédent.
+      const { preset: p } = await calcul.attendre();
+      // La liste des pièces (pour rouvrir le formulaire tel quel) et le suivi de chantier du projet
+      // rouvert (le PATCH remplace toutes les réponses : sans lui, il était effacé).
+      const reponses = reponsesRapideReno({
+        ampleur, qui, ctx: p.ctx, sel: p.sel, codePostal: cp,
+        pieces: mode === "pieces" ? pieces : undefined, statuts: edit?.statuts,
+      });
       const res = await fetch(edit ? `/api/projects/${edit.projectId}` : "/api/projects", { method: edit ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nom, typeBien, surface: totalSurface, codePostal: cp, reponses }) });
       // Le brouillon d'abord, le drapeau ensuite : un drapeau sans brouillon ne réclame rien.
       // Session expirée (ou page qui ne sait pas) : même chemin que l'anonyme.
-      if (res.status === 401) { versInscriptionEnregistrer(); return; }
+      if (res.status === 401) { await versInscriptionEnregistrer(); return; }
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setErreur(data?.error || t.errSave); setSaving(false); return; }
       try { localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ }
@@ -515,7 +503,7 @@ export default function EstimateurRapide({
                   onChange={(n) => { setDemarre(true); setSurface(n); if (faute.champ === "surface" && n > 0) { faute.effacer(); setErreur(null); } }} />
                 {surface >= SURFACE_MAX_RAPIDE
                   ? <div className="fhint">{t.surfaceMax(SURFACE_MAX_RAPIDE)}</div>
-                  : valid && <div className="fhint">{t.hypotheses(preset.ctx.niveaux, preset.ctx.sdb)}</div>}
+                  : valid && preset && <div className="fhint">{t.hypotheses(preset.ctx.niveaux, preset.ctx.sdb)}</div>}
               </div>
             )}
             <div className="fld" style={mode === "pieces" ? { gridColumn: "1 / -1" } : undefined}>
@@ -580,10 +568,10 @@ export default function EstimateurRapide({
             {QUIS.map((q) => {
               const qi = t.quis[q.v];
               const price = m2ByQui[q.v] || 0;
-              const base = m2ByQui.pros || 0;
-              const pct = valid && base > 0 && price > 0 ? Math.round((1 - price / base) * 100) : 0;
+              // « −N % » face à « tout par des pros » : calculé côté serveur (aussi sans compte, sans montant).
+              const pct = valid ? (chiffrage?.economies?.pct[q.v] ?? 0) : 0;
               // « Je fais un max » au prix de « J'en bricole une partie » (tout le panier se fait déjà soi-même) : dit, pas laissé en doublon muet.
-              const identique = valid && !locked && q.v === "max" && price > 0 && price === (m2ByQui.partie || 0);
+              const identique = valid && !locked && q.v === "max" && !!chiffrage?.economies?.identiqueMax;
               return (
                 <button type="button" key={q.v} className={"qcard" + (qui === q.v ? " on" : "")} aria-pressed={qui === q.v} onClick={() => { setDemarre(true); setQui(q.v); }}>
                   <span className="head">
@@ -643,8 +631,8 @@ export default function EstimateurRapide({
             <>
               <div>
                 <div className="lbl">{t.liveLabel}</div>
-                <div className="big">{valid ? <>{euroAvant(locale)}<CountUp value={lo} nf={nf} />{euroApres(locale)}<span style={{ opacity: .55 }}> – </span>{euroAvant(locale)}<CountUp value={hi} nf={nf} />{euroApres(locale)}</> : "—"}</div>
-                <div className="sub">{valid ? <>≈ {euroAvant(locale)}<CountUp value={m2} nf={nf} />{`${euroApres(locale)}/m² · `}{ampName} · {locale === "en" ? "±15%" : "±15\u00a0%"}{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? t.step1q : (mode === "pieces" ? t.ajoutePiece : t.renseigneSurface)}</div>
+                <div className="big">{chiffre ? <>{euroAvant(locale)}<CountUp value={lo} nf={nf} />{euroApres(locale)}<span style={{ opacity: .55 }}> – </span>{euroAvant(locale)}<CountUp value={hi} nf={nf} />{euroApres(locale)}</> : "—"}</div>
+                <div className="sub">{chiffre ? <>≈ {euroAvant(locale)}<CountUp value={m2} nf={nf} />{`${euroApres(locale)}/m² · `}{ampName} · {locale === "en" ? "±15%" : "±15\u00a0%"}{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? t.step1q : (mode === "pieces" ? t.ajoutePiece : t.renseigneSurface)}</div>
               </div>
               <div className="btns" data-visite="rapide-actions">
                 <button type="button" className="ghost" onClick={affiner}>{libAffiner}</button>

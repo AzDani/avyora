@@ -98,8 +98,10 @@ describe("D7 · un projet enregistré garde ses aléas", () => {
     expect(editionRapideReno("p2", { ...rep, mode: "detaille" }, "45000").aleas).toBe(7);
     // Des réponses sans aléas lisibles : le défaut (rien n'est repris).
     expect(editionRapideReno("p3", { ...rep, ctx: { ...rep.ctx, aleas: "x" } }, "45000").aleas).toBeUndefined();
-    expect(fs.readFileSync("components/EstimateurRapide.tsx", "utf8"))
-      .toContain("return edit?.aleas != null ? { ...p, ctx: { ...p.ctx, aleas: edit.aleas } } : p;");
+    // Le chiffrage est côté serveur depuis le 27/11/2026 : l'écran envoie les aléas du projet rouvert, le serveur les applique.
+    expect(fs.readFileSync("components/EstimateurRapide.tsx", "utf8")).toContain("aleas: edit?.aleas ?? null }");
+    expect(fs.readFileSync("lib/estimateur/rapide-serveur.ts", "utf8"))
+      .toContain("return e.aleas != null ? { ...p, ctx: { ...p.ctx, aleas: e.aleas } } : p;");
   });
 
   it("détaillé neuf rouvert : ses aléas sont repris tels quels", () => {

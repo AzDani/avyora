@@ -1,19 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CATALOG, buildDevis, catalogueDe, type Ctx, type Selection } from "@/lib/estimateur";
-import { totauxAvecPerso } from "@/lib/estimateur/projet";
 import { CLE_BROUILLON_NEUF, lireBrouillonNeuf, reclamationNeufPosee } from "@/lib/estimateur/brouillon-neuf";
 import { CLE_BROUILLON_RENO, lireBrouillonReno, libelleBrouillonReno } from "@/lib/estimateur/brouillon-reno";
 import { useLocale, useT } from "@/components/i18n/LangProvider";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
-import { euroApres, euroAvant } from "@/lib/i18n/nombres";
 
 /**
  * Affiché sur /inscription quand l'utilisateur arrive depuis une estimation (brouillon présent) :
  * « Ton estimation est prête — on te la garde ». Rien si pas de brouillon (arrivée directe).
- * La fourchette part du même total que le projet qui sera créé : lignes perso comprises (D8).
- * Traduit (FR / EN), montants au format de l'estimation rapide de la langue. Masqué sur l'écran « C'est envoyé »
+ * SANS montant (décision de Dani du 27/11/2026, option 1) : le résultat se voit avec un compte, et le barème de prix
+ * ne part plus dans le JavaScript public ; le rappel dit quel bien est estimé (« Maison neuve 120 m² »). Traduit (FR / EN). Masqué sur l'écran « C'est envoyé »
  * (`AuthShell`) : l'écran dit lui-même que le lien ramène là où l'on en était. Compact (une ligne de texte) : sur un
  * portable (1366 × 657), le champ, le bouton et la mention des CGU restent au-dessus du pli.
  *
@@ -24,28 +21,24 @@ import { euroApres, euroAvant } from "@/lib/i18n/nombres";
 const DRAFT_KEY = CLE_BROUILLON_RENO;
 
 export function EstimationRappel() {
-  const [info, setInfo] = useState<{ lo: number; hi: number; label: string } | null>(null);
+  const [info, setInfo] = useState<{ label: string } | null>(null);
   const locale = useLocale();
   const tr = useT();
   const maisonNeuve = dictNeufCommun(locale).maisonNeuve;
   const nf = locale === "en" ? "en-US" : "fr-FR";
-  const fmt = (n: number) => n.toLocaleString(nf);
   // Le type de bien du brouillon est écrit en français (« Maison », « Appartement ») : dit dans la langue de la page.
   const typeBien = (v: string | undefined) =>
     v === "Maison" ? tr.rapide.typeMaison : v === "Appartement" ? tr.rapide.typeAppart : v || tr.auth.rappel.bien;
   const piece = (k: string) => tr.rapide.rooms[k] ?? k;
 
   useEffect(() => {
-    // Construction neuve (son drapeau posé) : son brouillon, chiffré sur le catalogue du neuf.
+    // Construction neuve (son drapeau posé) : son brouillon.
     // Brouillon absent ou illisible : on retombe sur le rappel de la rénovation, comme avant.
     try {
       if (reclamationNeufPosee((k) => localStorage.getItem(k))) {
         const d = lireBrouillonNeuf(localStorage.getItem(CLE_BROUILLON_NEUF));
-        const ttc = d ? totauxAvecPerso(buildDevis(catalogueDe(d.ctx), d.ctx, d.sel).totaux, d.custom, d.ctx.aleas).ttc : 0;
-        if (d && ttc > 0) {
-          const lo = Math.round((ttc * 0.85) / 100) * 100;
-          const hi = Math.round((ttc * 1.15) / 100) * 100;
-          setInfo({ lo, hi, label: `${maisonNeuve} ${d.ctx.surface} m²` });
+        if (d && d.ctx.surface > 0) {
+          setInfo({ label: `${maisonNeuve} ${d.ctx.surface} m²` });
           return;
         }
       }
@@ -55,13 +48,7 @@ export function EstimationRappel() {
     try {
       const d = lireBrouillonReno(localStorage.getItem(DRAFT_KEY));
       if (!d) return;
-      const ctx = d.ctx as Ctx;
-      const ttc = totauxAvecPerso(buildDevis(CATALOG, ctx, d.sel as Selection).totaux, d.custom, ctx.aleas).ttc;
-      if (!(ttc > 0)) return;
-      const lo = Math.round((ttc * 0.85) / 100) * 100;
-      const hi = Math.round((ttc * 1.15) / 100) * 100;
-      const label = libelleBrouillonReno(d, { type: typeBien, piece }, nf);
-      setInfo({ lo, hi, label });
+      setInfo({ label: libelleBrouillonReno(d, { type: typeBien, piece }, nf) });
     } catch {
       /* pas de brouillon lisible */
     }
@@ -72,10 +59,7 @@ export function EstimationRappel() {
   return (
     <div className="mb-4 rounded-field border border-brand-200 bg-brand-50 p-3 group-has-[[data-lien-envoye]]/auth:hidden sm:mb-5 sm:px-4" data-estimation-rappel="">
       <p className="eyebrow mb-0.5">{tr.auth.rappel.titre}</p>
-      <p className="data text-lg font-semibold text-ink">
-        {euroAvant(locale) + fmt(info.lo)} – {euroAvant(locale) + fmt(info.hi) + euroApres(locale)}
-      </p>
-      <p className="mt-0.5 text-[13px] leading-snug text-muted">{tr.auth.rappel.texte(info.label)}</p>
+      <p className="text-[14px] leading-snug text-ink">{tr.auth.rappel.texte(info.label)}</p>
     </div>
   );
 }

@@ -1,9 +1,5 @@
 import type { ReactNode } from "react";
-import {
-  buildDevis, catalogueDe, geometrieNeuf, maisonComplete, piecesNeuf, PHASES_NEUF, type Ctx, type Selection, type QuiRealise,
-} from "@/lib/estimateur";
-import { decoupe, parPhase, surcoutArgile, EXTERIEURS_HORS_PERIMETRE } from "@/lib/estimateur/etapes-neuf";
-import { catT } from "@/lib/estimateur/catalog-i18n";
+import type { ChiffresBilanNeuf } from "@/lib/estimateur/bilan-neuf";
 import { dictNeuf } from "@/lib/i18n/neuf";
 import { dict } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
@@ -21,8 +17,9 @@ import { euroApres, euroAvant, euros, pourcent } from "@/lib/i18n/nombres";
  * alors dans le HTML.
  *
  * Sans hook ni directive : importable par un composant serveur (fiche projet) comme par un
- * composant client (estimateur rapide public). Aucun montant écrit ici : tout vient du moteur
- * (`buildDevis`, `decoupe`, `parPhase`, `surcoutArgile`) ou d'une constante sourcée de `lib/`.
+ * composant client (estimateur rapide public). Aucun montant écrit ni CALCULÉ ici (27/11/2026) : les chiffres
+ * arrivent tout faits (`chiffresBilanNeuf`, lib/estimateur/bilan-neuf.ts), calculés côté serveur ; ce composant ne
+ * voit ni le moteur ni le barème, qui ne partent donc pas dans le JavaScript public.
  */
 export const BILAN_NEUF_CSS = `
 .av-bn{position:relative;overflow:hidden;border-radius:1.5rem;color:#fff;padding:24px;
@@ -82,11 +79,10 @@ const IconeX = () => (
 const FAUSSES_PHASES = [[64, 34], [52, 100], [70, 58], [46, 72], [60, 44], [56, 61], [68, 28], [50, 39], [58, 17]] as const;
 
 export default function BilanRapideNeuf({
-  ctx, sel, qui, locale, cta, reel, beta = false, ctaVerrou,
+  b, locale, cta, beta = false, ctaVerrou,
 }: {
-  ctx: Ctx; sel: Selection; qui?: QuiRealise; locale: Locale; cta?: ReactNode;
-  /** La répartition par phase en clair (compte qui a les droits) ; sinon factice et floutée (D9). */
-  reel: boolean;
+  /** Les chiffres du bilan (`chiffresBilanNeuf`) ; `b.phases` nul = répartition factice et floutée (D9). */
+  b: ChiffresBilanNeuf; locale: Locale; cta?: ReactNode;
   /** Bêta gratuite en cours (lib/beta.ts) : le cadenas dit « gratuit avec un compte », la pastille « Bêta ». */
   beta?: boolean;
   /** Bouton sous le texte du cadenas (rapide public) ; la fiche projet a le sien plus bas. */
@@ -98,20 +94,11 @@ export default function BilanRapideNeuf({
   const eur = (v: number) => euros(locale, v || 0);
   const num = (v: number) => Math.round(v || 0).toLocaleString(nf);
 
-  const dv = buildDevis(catalogueDe(ctx), ctx, sel);
-  const ttc = dv.totaux.ttc;
-  const lo = Math.round((ttc * 0.85) / 100) * 100, hi = Math.round((ttc * 1.15) / 100) * 100;
-  const surface = ctx.surface || 0;
-  const maison = maisonComplete(ctx.neuf);
-  const cut = decoupe(dv);
+  const { ttc, lo, hi, surface, mois, chambres, argile, ext } = b;
+  const cut = { constr: b.constr, annexes: b.annexes, aleas: b.aleas };
   // Rien de la répartition n'est calculé pour un aperçu verrouillé : elle ne peut pas fuiter dans le HTML.
-  const ph = reel ? parPhase(dv) : null;
-  const max = ph ? Math.max(0, ...PHASES_NEUF.map((p) => ph[p] ?? 0)) : 0;
-  const mois = geometrieNeuf(maison).moisChantier;
-  const chambres = piecesNeuf(maison).chambres;   // suites parentales comprises
-  // Avertissement « sans étude de sol » : la même maison sur un sol argileux, chiffrée par le moteur.
-  const argile = surcoutArgile(maison, { finition: ctx.finition, qui, codePostal: ctx.codePostal, aleas: ctx.aleas });
-  const ext = EXTERIEURS_HORS_PERIMETRE;
+  const ph = b.phases;
+  const max = ph ? Math.max(0, ...ph.map((x) => x.v)) : 0;
 
   return (
     <div className="av-bn" aria-live="polite">
@@ -125,18 +112,16 @@ export default function BilanRapideNeuf({
         <div className="kpi"><div className="v data">{eur(cut.annexes)}</div><div className="l">{n.annexes}</div></div>
       </div>
       <div className="small">
-        + {t.aleas} <span className="data">{eur(cut.aleas)}</span> ({pourcent(locale, ctx.aleas)} {n.pctAleas}) · {chambres} {chambres > 1 ? n.chambres : n.chambre} · ≈ {mois} {n.moisChantier}
+        + {t.aleas} <span className="data">{eur(cut.aleas)}</span> ({pourcent(locale, b.aleasPct)} {n.pctAleas}) · {chambres} {chambres > 1 ? n.chambres : n.chambre} · ≈ {mois} {n.moisChantier}
       </div>
       <div className="hr" />
       <div className="k" style={{ marginBottom: 6 }}>{t.phasesK}{!ph && <span className="chip">{beta ? dict(locale).beta.pastille : "Pro"}</span>}</div>
       {ph ? (
         <div className="bars">
-          {PHASES_NEUF.map((p) => {
-            const v = ph[p] ?? 0;
+          {ph.map(({ lbl, v }) => {
             const w = max > 0 ? (v / max) * 100 : 0;
-            const lbl = catT(locale, "phases", p);
             return (
-              <div className="bar" key={p}>
+              <div className="bar" key={lbl}>
                 <span className="t" title={lbl}>{lbl}</span>
                 <span className="track"><span className="fill" style={{ width: w.toFixed(1) + "%" }} /></span>
                 <span className="v data">{eur(v)}</span>

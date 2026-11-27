@@ -31,6 +31,7 @@ import { LangProvider } from "@/components/i18n/LangProvider";
 import EstimateurRapide from "@/components/EstimateurRapide";
 import EstimateurRapideNeuf from "@/components/neuf/EstimateurRapideNeuf";
 import BilanRapideNeuf from "@/components/neuf/BilanRapideNeuf";
+import { chiffresBilanNeuf } from "@/lib/estimateur/bilan-neuf";
 import PasserelleRapide from "@/components/PasserelleRapide";
 import { sansVisite } from "./sans-visite";
 
@@ -174,7 +175,7 @@ describe("N13 · bilan du neuf : la fourchette en grand, comme la rénovation", 
 
   for (const l of LOCALES) {
     it(`${l} : le gros chiffre est la fourchette, le total exact devient un repère`, () => {
-      const h = renderToStaticMarkup(createElement(BilanRapideNeuf, { ctx: p.ctx, sel: p.sel, qui: "pros", locale: l, reel: true }));
+      const h = renderToStaticMarkup(createElement(BilanRapideNeuf, { b: chiffresBilanNeuf(p.ctx, p.sel, "pros", true, l), locale: l }));
       const big = /<div class="big">([\s\S]*?)<\/div>/.exec(h)?.[1] ?? "";
       expect(big).toContain(esc(eur(r100(dv.totaux.ttc * 0.85), l)));
       expect(big).toContain(esc(eur(r100(dv.totaux.ttc * 1.15), l)));
@@ -183,7 +184,7 @@ describe("N13 · bilan du neuf : la fourchette en grand, comme la rénovation", 
     });
 
     it(`${l} : un compte qui a les droits voit les 9 phases en clair`, () => {
-      const h = renderToStaticMarkup(createElement(BilanRapideNeuf, { ctx: p.ctx, sel: p.sel, qui: "pros", locale: l, reel: true }));
+      const h = renderToStaticMarkup(createElement(BilanRapideNeuf, { b: chiffresBilanNeuf(p.ctx, p.sel, "pros", true, l), locale: l }));
       for (const ph9 of PHASES_NEUF) {
         expect(h).toContain(`>${esc(catT(l, "phases", ph9))}</span>`);
         expect(h).toContain(esc(eur(ph[ph9] ?? 0, l)));
@@ -195,7 +196,7 @@ describe("N13 · bilan du neuf : la fourchette en grand, comme la rénovation", 
     it(`${l} : sinon, des barres factices floutées : ni nom ni montant de phase dans le HTML (D9)`, () => {
       for (const beta of [false, true]) {
         const h = renderToStaticMarkup(createElement(BilanRapideNeuf, {
-          ctx: p.ctx, sel: p.sel, qui: "pros", locale: l, reel: false, beta,
+          b: chiffresBilanNeuf(p.ctx, p.sel, "pros", false, l), locale: l, beta,
           ctaVerrou: createElement("button", { type: "button", className: "cta-v" }, "→"),
         }));
         for (const ph9 of PHASES_NEUF) {
@@ -249,7 +250,9 @@ describe("N13 · rapide neuf : le bilan replié sous les questions, la règle co
     const src = lire("components/neuf/EstimateurRapideNeuf.tsx");
     expect(src).toContain("affinerRef.current = affiner;");
     expect(src).toContain('onClick={() => affinerRef.current()}');
-    expect(src).toContain("reel={isPro} beta={beta}");
+    // 27/11/2026 : la répartition par phase arrive du serveur, en clair pour un compte Pro seulement (`chiffresBilanNeuf`).
+    expect(src).toContain("<BilanRapideNeuf b={chiffresBilan} locale={locale} beta={beta}");
+    expect(lire("lib/estimateur/rapide-serveur.ts")).toContain("chiffresBilanNeuf(preset.ctx, preset.sel, R.qui, droits.pro, e.locale as Locale)");
   });
 });
 
@@ -435,7 +438,8 @@ describe("N13 · rapide réno : « Affiner » sans les droits mène à /tarifs, 
 describe("N13 · rapide réno : estimation_terminee et la conversion Google Ads partent exactement comme avant", () => {
   const src = lire("components/EstimateurRapide.tsx");
   it("une fois, 1,8 s après une fourchette stable, sur `estimationReelle` (bloc identique à celui d'avant N13)", () => {
-    expect(src).toContain(`  const estimationReelle = estimationReelleRapide({ demarre, saisieValide, ttc: tot.ttc, codePostal: cp, edition: !!edit, typeChoisi });
+    // 27/11/2026 : le total vient du serveur ; sans compte, seul « total non nul » (`positif`) arrive, la règle est la même.
+    expect(src).toContain(`  const estimationReelle = estimationReelleRapide({ demarre, saisieValide, ttc: calcul.aJour && chiffrage?.positif ? 1 : 0, codePostal: cp, edition: !!edit, typeChoisi });
   useEffect(() => {
     if (convFired.current || !estimationReelle) return;
     const id = window.setTimeout(() => {

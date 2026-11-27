@@ -23,19 +23,25 @@
  *    repli des statuts de chantier, qui tourne déjà en production.
  */
 import { CATALOG } from "./catalog";
+import { surCatalogue } from "./catalogue-neuf";
 import { key, type Tache } from "./core";
 
 export interface PosteIdentifie { id: string; lot: string; nom: string; tache: Tache }
 
 const PAR_ID = new Map<string, PosteIdentifie>();
 const PAR_NOM = new Map<string, PosteIdentifie>();
-for (const lot of CATALOG) {
-  for (const t of lot.t) {
-    const p: PosteIdentifie = { id: t.id, lot: lot.c, nom: t.n, tache: t };
-    PAR_ID.set(t.id, p);
-    PAR_NOM.set(key(lot.c, t.n), p);
+/* Reconstruit à chaque installation du barème (catalogue-neuf.ts) : vide dans le navigateur avant la connexion. */
+surCatalogue(() => {
+  PAR_ID.clear();
+  PAR_NOM.clear();
+  for (const lot of CATALOG) {
+    for (const t of lot.t) {
+      const p: PosteIdentifie = { id: t.id, lot: lot.c, nom: t.n, tache: t };
+      PAR_ID.set(t.id, p);
+      PAR_NOM.set(key(lot.c, t.n), p);
+    }
   }
-}
+});
 
 /**
  * Anciens libellés → identifiant, pour relire ce qui a été enregistré avant un renommage.

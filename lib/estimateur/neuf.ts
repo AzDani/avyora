@@ -21,7 +21,7 @@
  * Ce fichier n'importe RIEN du moteur à l'exécution (seulement des types) : le moteur l'appelle
  * depuis `autoQty`, et l'inverse créerait un cycle. `quantites.ts` et `bornes-neuf.ts` n'importent rien.
  */
-import { POSTE_NEUF } from "./catalogue-neuf";
+import { POSTE_NEUF, surCatalogue } from "./catalogue-neuf";
 import type { Ctx, LigneSel, Selection } from "./core";
 import { BORNES_NEUF, dansBorne, type Borne } from "./bornes-neuf";
 import { robinetsNeuf, specNeuf, spots, solCarrele, solSec, faienceSdb, plinthes } from "./quantites";
@@ -726,7 +726,7 @@ export function ecartesParLeChoix(id: string): string[] {
    change toujours la clé. */
 const CACHE = new Map<string, Record<string, number>>();
 const CLE_VERS_ID = new Map<string, string>();
-for (const [id, p] of POSTE_NEUF) CLE_VERS_ID.set(p.c + "|" + p.n, id);
+surCatalogue(() => { CLE_VERS_ID.clear(); for (const [id, p] of POSTE_NEUF) CLE_VERS_ID.set(p.c + "|" + p.n, id); });
 
 /** `autoQty` du neuf : la quantité d'un poste tirée de la maison décrite dans `ctx.neuf` (et, pour
  *  la robinetterie et l'étanchéité de douche, de la variante choisie dans `sel` ; pour les bandes de

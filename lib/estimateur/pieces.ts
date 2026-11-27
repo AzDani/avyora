@@ -8,17 +8,10 @@ import { key, ALEAS_RENO, type Ctx, type Selection, type Finition } from "./core
 import { DIY_PARTIE, type Ampleur, type QuiRealise } from "./presets";
 import { panierPiece, qtyReference, type PieceReference } from "./paniers-pieces";
 
-export type PieceKey = "cuisine" | "sdb" | "chambre" | "salon" | "suite" | "buanderie";
+export type { PieceKey } from "./rapide-constantes";
+import type { PieceKey } from "./rapide-constantes";
 
-/** Métadonnées d'une pièce (surface par défaut réaliste). Libellés/emojis = côté UI. */
-export const PIECES: { key: PieceKey; surfaceDefaut: number }[] = [
-  { key: "cuisine", surfaceDefaut: 10 },
-  { key: "sdb", surfaceDefaut: 5 },
-  { key: "chambre", surfaceDefaut: 12 },
-  { key: "salon", surfaceDefaut: 22 },
-  { key: "suite", surfaceDefaut: 20 },
-  { key: "buanderie", surfaceDefaut: 6 },
-];
+export { PIECES } from "./rapide-constantes";
 
 const AMP_LVL: Record<Ampleur, number> = { rafraich: 0, partielle: 1, complete: 2, lourde: 3 };
 

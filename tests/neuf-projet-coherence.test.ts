@@ -12,6 +12,7 @@ import {
 import { LangProvider } from "@/components/i18n/LangProvider";
 import EstimationResultat from "@/components/EstimationResultat";
 import BilanRapideNeuf from "@/components/neuf/BilanRapideNeuf";
+import { chiffresBilanNeuf } from "@/lib/estimateur/bilan-neuf";
 
 /** Cas de référence de la carte « affichage » : maison plain-pied de 100 m², Orléans, standard, tout par des pros. */
 const { ctx, sel } = presetNeuf({ surface: 100, niveaux: "pp", codePostal: "45000", finition: "standard", qui: "pros" });
@@ -83,7 +84,7 @@ describe("Neuf · un même projet, un même chiffre", () => {
   });
 
   it("le bilan rapide : même TTC, les 9 phases, les extérieurs formatés depuis lib/, FR et EN", () => {
-    const t = texte(renderToStaticMarkup(createElement(BilanRapideNeuf, { ctx: ctx as Ctx, sel: sel as Selection, qui: "pros", locale: "fr", reel: true })));
+    const t = texte(renderToStaticMarkup(createElement(BilanRapideNeuf, { b: chiffresBilanNeuf(ctx as Ctx, sel as Selection, "pros", true, "fr"), locale: "fr" })));
     // N13 : la fourchette en grand, comme la rénovation ; le même TTC en repère, « estimation centrale ».
     const r100 = (n: number) => Math.round(n / 100) * 100;
     expect(t).toContain(`Budget estimé · TTC tout compris ${eur(r100(dv.totaux.ttc * 0.85))} € – ${eur(r100(dv.totaux.ttc * 1.15))} €`);
@@ -92,7 +93,7 @@ describe("Neuf · un même projet, un même chiffre", () => {
     expect(t).toContain("≈ 8 000 € à 20 000 € sur 600 à 800 m² de terrain");
     expect(t).toMatch(/compte environ \+\d[\d ]* €/);
     expect(t).not.toMatch(/NaN|undefined/);
-    const en = texte(renderToStaticMarkup(createElement(BilanRapideNeuf, { ctx: ctx as Ctx, sel: sel as Selection, qui: "pros", locale: "en", reel: true })));
+    const en = texte(renderToStaticMarkup(createElement(BilanRapideNeuf, { b: chiffresBilanNeuf(ctx as Ctx, sel as Selection, "pros", true, "en"), locale: "en" })));
     expect(en).toContain("Estimated budget · all-in, incl. tax");
     expect(en).toContain("central estimate");
     expect(en).not.toMatch(/NaN|undefined/);

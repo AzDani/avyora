@@ -5,6 +5,7 @@
  * Remplace l'ancien RapportEstimation pour les projets au format estimateur. Même esthétique que
  * l'estimateur (hero nuit, Geist Mono, tuiles), + statistiques de travaux « à connaître ».
  */
+import AvecBareme from "@/components/estimateur/AvecBareme";
 import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import LienAccompagnement from "@/components/accompagnement/LienAccompagnement";
@@ -331,7 +332,12 @@ const NEUF_CSS = `
 const ANCRES: Record<Espace, string> = { estim: "estimation", chantier: "chantier", budget: "budget", invest: "investissement" };
 const ANCRES_INV: Record<string, Espace> = Object.fromEntries(Object.entries(ANCRES).map(([k, v]) => [v, k as Espace]));
 
-export default function EstimationResultat({ reponses, projectId, readOnly, depenses, invest }: { reponses: { ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; codePostal?: string; custom?: unknown }; projectId?: string; readOnly?: boolean; /** Dépenses réelles (M5) : la fiche du propriétaire les passe, l'admin et la lecture seule non. */ depenses?: Depense[]; /** Section « Investissement » (M3) : même règle que les dépenses. */ invest?: SaisieInvest }) {
+/** Le barème de prix arrive après connexion (27/11/2026) : la fiche se chiffre une fois installé (`AvecBareme`). */
+export default function EstimationResultat(props: Parameters<typeof EstimationResultatInterne>[0]) {
+  return <AvecBareme hauteur={700}><EstimationResultatInterne {...props} /></AvecBareme>;
+}
+
+function EstimationResultatInterne({ reponses, projectId, readOnly, depenses, invest }: { reponses: { ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; codePostal?: string; custom?: unknown }; projectId?: string; readOnly?: boolean; /** Dépenses réelles (M5) : la fiche du propriétaire les passe, l'admin et la lecture seule non. */ depenses?: Depense[]; /** Section « Investissement » (M3) : même règle que les dépenses. */ invest?: SaisieInvest }) {
   const locale = useLocale();
   const s = TR[locale];
   const dictT = useT();

@@ -21,6 +21,7 @@ import {
   type Finition, type Selection,
 } from "@/lib/estimateur";
 import { POSTE_NEUF, CATALOG_NEUF } from "@/lib/estimateur/catalogue-neuf";
+import { chiffresBilanNeuf } from "@/lib/estimateur/bilan-neuf";
 import { presetRapide } from "@/lib/estimateur/presets";
 import { etatDepuisPreset, changerReponseNeuf } from "@/lib/estimateur/detaille-neuf";
 import { catLigne } from "@/lib/estimateur/catalog-i18n";
@@ -153,7 +154,7 @@ describe("n° 67 et 68 · pièces et durée selon la surface", () => {
 describe("n° 69, 72, 73 · libellés", () => {
   it("la provision pour aléas dit sa base, et son montant est bien 7 % de cette base", () => {
     const p = presetNeuf(R("standard"));
-    const html = renderToStaticMarkup(createElement(BilanRapideNeuf, { ctx: p.ctx, sel: p.sel, locale: "fr", reel: false }));
+    const html = renderToStaticMarkup(createElement(BilanRapideNeuf, { b: chiffresBilanNeuf(p.ctx, p.sel, undefined, false, "fr"), locale: "fr" }));
     expect(html).toContain(`${pourcent("fr", 7)} ${dictNeufCommun("fr").pctAleas}`);
     expect(dictNeufCommun("fr").pctAleas).toBe("des travaux HT, hors études, taxes et assurance");
     const dv = buildDevis(catalogueDe(p.ctx), p.ctx, p.sel);

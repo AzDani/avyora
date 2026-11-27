@@ -44,7 +44,12 @@ export type EvenementSecurite =
   /** Une demande de devis envoyée au Réseau AVYORA. Payload : `demande` (id), `artisans` (combien de choisis). */
   | "demande_devis"
   /** La réponse d'un artisan à une demande. Payload : `mise` (id de la mise en relation), `statut`. */
-  | "reponse_devis";
+  | "reponse_devis"
+  /**
+   * Le barème de prix servi à un compte (`GET /api/estimateur/bareme`, 27/11/2026) : qui l'a chargé, quand, d'où.
+   * Payload : `refus` (« limite ») quand le plafond horaire est atteint. Sert à repérer une copie en série.
+   */
+  | "bareme_charge";
 
 export async function journaliser(
   type: EvenementSecurite,

@@ -61,12 +61,18 @@ const LIMITERS: Record<LimitKind, Ratelimit | null> = {
   devisDemande: make(Ratelimit.slidingWindow(5, "86400 s"), "avyora:devis-demande"), // 5 demandes / jour / compte
   // Avis publics, réponses, signalements et galerie (25/11/2026) : chaque envoi prévient Daniel par e-mail.
   reseauAvis: make(Ratelimit.slidingWindow(20, "86400 s"), "avyora:reseau-avis"), // 20 envois / jour / compte
+  // Barème de prix (27/11/2026) : servi aux seuls comptes, une fois par page ouverte (estimateur détaillé, fiche projet,
+  // budget réel, estimation née d'un plan). Un plafond horaire par compte : au-delà, ce n'est plus un usage, c'est une copie.
+  bareme: make(Ratelimit.slidingWindow(60, "3600 s"), "avyora:bareme"), // 60 chargements / h / compte
+  // Estimation rapide calculée côté serveur (27/11/2026) : une requête par réponse changée, groupées à ~0,2 s.
+  // Indexée sur le compte, sinon sur l'IP (le formulaire est public).
+  rapide: make(Ratelimit.slidingWindow(240, "60 s"), "avyora:rapide"), // 240 calculs / min
 };
 
 export type LimitKind =
   | "auth" | "api" | "ia" | "pdf" | "pdfHeure" | "pdfIp" | "lienAdresse" | "lienIp" | "plan" | "planCreation" | "planEstimation" | "marche"
   | "statut" | "contact" | "contactAccuse" | "artisanSiret" | "artisanFichier" | "artisanEnvoi"
-  | "devisRecherche" | "devisDemande" | "reseauAvis";
+  | "devisRecherche" | "devisDemande" | "reseauAvis" | "bareme" | "rapide";
 
 /**
  * Les catégories qui CRÉENT des lignes en base (« Mes plans ») ou qui coûtent cher (le plafond horaire des PDF) se
@@ -115,6 +121,9 @@ const MEMOIRE: Partial<Record<LimitKind, { max: number; fenetreMs: number }>> = 
   devisRecherche: { max: 60, fenetreMs: 3_600_000 },
   devisDemande: { max: 5, fenetreMs: 86_400_000 },
   reseauAvis: { max: 20, fenetreMs: 86_400_000 },
+  /* Barème et estimation rapide (27/11/2026) : comme Upstash. */
+  bareme: { max: 60, fenetreMs: 3_600_000 },
+  rapide: { max: 240, fenetreMs: 60_000 },
 };
 
 /**

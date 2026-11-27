@@ -14,6 +14,7 @@ import { nomProjetNeuf as nomDepuisIndex } from "@/lib/estimateur/etapes-neuf";
 import { contexteNeuf } from "@/lib/neuf-contexte";
 import { projetCreateSchema, projetPatchSchema } from "@/lib/validation";
 import BilanRapideNeuf from "@/components/neuf/BilanRapideNeuf";
+import { chiffresBilanNeuf } from "@/lib/estimateur/bilan-neuf";
 
 const R: RapideNeufInput = { surface: 100, niveaux: "pp", codePostal: "45000", finition: "standard", qui: "pros", garage: false, assainissement: "collectif" };
 const ttcDe = (p: { ctx: Ctx; sel: Selection }) => buildDevis(catalogueDe(p.ctx), p.ctx, p.sel).totaux.ttc;
@@ -134,7 +135,7 @@ describe("Neuf · contexte de l'URL publique", () => {
 describe("Neuf · alerte argile du bilan", () => {
   const rendre = (argile: "non" | "moyen") => {
     const p = presetNeuf(R, { argile });
-    return renderToStaticMarkup(createElement(BilanRapideNeuf, { ctx: p.ctx, sel: p.sel, qui: "pros", locale: "fr", reel: true }));
+    return renderToStaticMarkup(createElement(BilanRapideNeuf, { b: chiffresBilanNeuf(p.ctx, p.sel, "pros", true, "fr"), locale: "fr" }));
   };
   it("affichée pour une maison sans argile, avec un surcoût chiffré", () => {
     expect(rendre("non")).toContain('class="alert-n"');
