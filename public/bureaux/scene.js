@@ -154,7 +154,7 @@ function heureIci(r) {                                                       // 
 }
 const passe = (r) => quand(r) < new Date();
 /* [couleur de la pastille, mot de la pastille, état du compte rendu] */
-const etatRdv = (r) => passe(r) ? (r.cr === "envoye" ? ["vide", "fait", "Envoyé au client par e-mail"] : ["attention", "à relire", "Écrit depuis l'enregistrement, il attend ta relecture"])
+const etatRdv = (r) => passe(r) ? (r.cr === "envoye" ? ["vide", "fait", "Envoyé au client par e-mail"] : r.cr === "aucun" ? ["vide", "passé", "Pas encore de compte rendu"] : ["attention", "à relire", "Écrit depuis l'enregistrement, il attend ta relecture"])
   : r.confirme ? ["bon", "confirmé", "Écrit après l'appel"] : ["attention", "à confirmer", "Écrit après l'appel"];
 /* Tout ce qui se déduit du planning : les chiffres de la pièce, son état, et le travail de l'agent */
 function majReunion() {
@@ -176,6 +176,7 @@ function appliquerDonnees(d) {
     p.jauges = Array.isArray(v.jauges) ? v.jauges.map((j) => ({ hote: net(j.hote), nom: net(j.nom), texte: net(j.texte), brut: [String(j.hote), String(j.nom), String(j.texte)], part: typeof j.part === "number" && isFinite(j.part) ? Math.max(0, j.part) : null })) : p.jauges;
     p.lien = typeof v.lien === "string" && /^\/admin(\/[a-z-]+)*$/.test(v.lien) ? v.lien : null;
   }
+  if (d && Array.isArray(d.rdvs)) { RDVS.length = 0; for (const r of d.rdvs) RDVS.push({ j: +r.j || 0, h: /^\d\d:\d\d$/.test(r.h) ? r.h : "00:00", qui: net(r.qui), quoi: net(r.quoi), mode: net(r.mode), sujet: net(r.sujet), confirme: !!r.confirme, cr: r.cr === "envoye" || r.cr === "a_relire" ? r.cr : "aucun" }); }
   if (d && Array.isArray(d.priorites)) { PRIORITES.length = 0; for (const r of d.priorites) if (parId[r[0]]) PRIORITES.push([r[0], net(r[1]), net(r[2])]); }
 }
 async function lireDonnees() {
@@ -185,7 +186,7 @@ async function lireDonnees() {
   appliquerDonnees(await r.json()); return true;
 }
 if (SOURCE) {
-  RDVS.length = 0;                                                           // le planning se branche à l'étape suivante : aucun rendez-vous d'exemple sur le site
+  RDVS.length = 0;                                                           // sur le site, les rendez-vous viennent du planning de l'admin (jamais ceux d'exemple)
   for (const p of PIECES) { const a = p.agent; if (!a) continue;
     if (p.id === "serveurs") { a.taches = a.fixes; a.fait = "Relève les jauges toutes les 10 minutes"; continue; }   // le relevé des jauges, lui, fonctionne déjà (sans IA)
     a.etat = "creer"; a.fait = "Pas encore construit"; a.taches = (a.fixes || (p.id === "marketing" ? a.taches : [])).map((t) => [t[0], t[1], "vide", "à créer"]); }   // (les tâches d'exemple citent des noms inventés : sur le site, on ne garde que les missions générales)
@@ -2536,7 +2537,7 @@ function dessinPlanning(c, W, H) {
 
   p = parId.caisse;                                                        // ── Comptabilité (ancienne « Caisse », l'identifiant est resté) : le mur vert, le comptoir, le coffre, la file
   { const z0 = p.z0, cx = p.cx;
-    cimaise(D, cx - 0.4, z0 + 0.3, 3.4, 2.5, 0, 0x0b7a53); panneauTexte(D, "COMPTABILITÉ", 3.0, 0.5, cx - 0.4, 2.0, z0 + 0.37, 0, "#0b7a53", "#ffffff", 0.8); panneauTexte(D, SOURCE ? "Stripe et charges fixes : à brancher" : "Entrées 198 €  ·  Charges 226 €", 3.0, 0.3, cx - 0.4, 1.5, z0 + 0.37, 0, "#ffffff", "#0b7a53", 0.5);
+    cimaise(D, cx - 0.4, z0 + 0.3, 3.4, 2.5, 0, 0x0b7a53); panneauTexte(D, "COMPTABILITÉ", 3.0, 0.5, cx - 0.4, 2.0, z0 + 0.37, 0, "#0b7a53", "#ffffff", 0.8); panneauTexte(D, SOURCE ? (p.kpis[0] && p.kpis[0][1] !== "—" ? "Entrées " + p.kpis[0][1] + "  ·  Charges " + p.kpis[1][1] : "Entrées et charges : voir Compta").replace(/&amp;/g, "&") : "Entrées 198 €  ·  Charges 226 €", 3.0, 0.3, cx - 0.4, 1.5, z0 + 0.37, 0, "#ffffff", "#0b7a53", 0.5);
     emprise(cx - 0.4, z0 + 2.1, 3.3, 1.1); boiteM(D, 3, 1.0, 0.9, 0xffffff, cx - 0.4, 0.5, z0 + 2.1, { fin: "laque" }); boiteM(D, 3.2, 0.06, 1.05, 0x0b7a53, cx - 0.4, 1.03, z0 + 2.1, { rough: 0.2 });
     boiteM(D, 2.8, 0.05, 0.02, 0x2fd08a, cx - 0.4, 0.08, z0 + 2.58, { lum: 1.3, sansOmbre: true });
     boiteM(D, 0.5, 0.2, 0.42, NOIR, cx - 1.1, 1.16, z0 + 2.1, { fin: "metal" }); boiteM(D, 0.44, 0.3, 0.03, NOIR, cx - 1.1, 1.45, z0 + 1.95, { fin: "metal", sansOmbre: true }); ecran(D, 0.4, 0.26, cx - 1.1, 1.45, z0 + 1.93, PI);   // la caisse et son écran
@@ -3393,7 +3394,7 @@ function jaugesHtml(p) {
 let semaineVue = 0, rdvOuvert = null;
 const JOURS = ["lun.", "mar.", "mer.", "jeu.", "ven.", "sam.", "dim."];
 function planning() {
-  if (SOURCE && !RDVS.length) return '<h3>Le planning</h3><p class="mission">Aucun rendez-vous à afficher : le planning se branche à l\'étape suivante.</p>';
+  if (SOURCE && !RDVS.length) return '<h3>Le planning</h3><p class="mission">Aucun rendez-vous cette semaine ni la suivante. Cale-les dans le planning de l\'admin.</p>';
   const auj = new Date().toDateString();
   let h = "<h3>Le planning</h3>" + '<div class="onglets" role="tablist">' + ["Cette semaine", "Semaine prochaine"].map((t, s) => '<button type="button" role="tab" data-s="' + s + '" aria-selected="' + (s === semaineVue) + '">' + t + "</button>").join("") + "</div>" +
     '<p class="fuseau">' + (RDVS.some(heureIci) ? "Heure de France, et <i>ton heure</i> en dessous" : "Heures de France") + " · clique pour le détail</p>";
@@ -3403,8 +3404,8 @@ function planning() {
     h += '<div class="jour' + (d.toDateString() === auj ? " auj" : "") + '"><div class="date"><b>' + d.getDate() + "</b>" + JOURS[j] + '</div><div class="rdvs">' + (liste.length ? liste.map(([r, i]) => {
       const e = etatRdv(r), ouvert = rdvOuvert === i, ici = heureIci(r);
       return '<button type="button" class="rdv" data-i="' + i + '" aria-expanded="' + ouvert + '"><span class="h">' + r.h + (ici ? "<i>" + ici.h + "</i>" : "") + '</span><span class="t"><b>' + r.qui + "</b><span>" + r.quoi + " · " + r.mode + '</span></span><span class="puce ' + e[0] + '">' + e[1] + "</span></button>" +
-        (ouvert ? '<div class="detail"><p>' + r.sujet + "</p><dl><dt>Heure</dt><dd>" + r.h + " en France" + (ici ? " · " + ici.h + " pour toi" + (ici.jour ? " (" + ici.jour + ")" : "") : "") + "</dd><dt>Fiche du client</dt><dd>" + (passe(r) ? "Utilisée pendant l'appel" : "Prête la veille (Agent Rappels)") + "</dd><dt>Compte rendu</dt><dd>" + e[2] + "</dd></dl>" +
-          (!passe(r) && !r.confirme ? '<button type="button" data-confirmer="' + i + '">Confirmer le créneau</button>' : "") + "</div>" : "");
+        (ouvert ? '<div class="detail"><p>' + r.sujet + "</p><dl><dt>Heure</dt><dd>" + r.h + " en France" + (ici ? " · " + ici.h + " pour toi" + (ici.jour ? " (" + ici.jour + ")" : "") : "") + "</dd><dt>Fiche du client</dt><dd>" + (SOURCE ? "À préparer (l'Agent Rappels n'est pas encore créé)" : passe(r) ? "Utilisée pendant l'appel" : "Prête la veille (Agent Rappels)") + "</dd><dt>Compte rendu</dt><dd>" + e[2] + "</dd></dl>" +
+          (!passe(r) && !r.confirme ? (SOURCE ? '<a class="ouvrir" href="/admin/planning">Confirmer dans le planning</a>' : '<button type="button" data-confirmer="' + i + '">Confirmer le créneau</button>') : "") + "</div>" : "");
     }).join("") : '<span class="libre">Libre</span>') + "</div></div>";
   }
   return h;

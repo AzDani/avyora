@@ -7,6 +7,7 @@ import { aujourdhuiParis } from "@/lib/reseau/candidature";
 import { labelMetier } from "@/lib/reseau/metiers";
 import { LIMITES_SUPABASE, LIMITES_VERCEL, SEUIL_ATTENTION, SEUIL_CRITIQUE, poids } from "@/lib/bureaux/limites";
 import type { MesureServeurs } from "@/lib/bureaux/serveurs";
+import { MODES_RDV, TYPES_RDV, heureParis, jourDepuisLundi, libelle, lundiParis, montant, parMois, totalMensuel, totalTexte, type Charge, type EntreesStripe, type RendezVous } from "@/lib/admin/gestion";
 
 /**
  * Les bureaux virtuels (/admin/bureaux, 27/11/2026) : l'étage en 3D où chaque pièce est une activité d'AVYORA.
@@ -50,7 +51,10 @@ export type DonneesBureaux = {
   pieces: Record<IdPiece, PieceBureaux>;
   /** Les trois premières choses à faire : [pièce, texte, ce que ça apporte]. */
   priorites: [IdPiece, string, string][];
+  /** Les rendez-vous de cette semaine et de la suivante, pour la salle de réunion : j = jours depuis le lundi (heure de France). */
+  rdvs: RdvBureaux[];
 };
+export type RdvBureaux = { j: number; h: string; qui: string; quoi: string; mode: string; sujet: string; confirme: boolean; cr: "envoye" | "a_relire" | null };
 
 export type SourcesBureaux = {
   inscrits: AdminInscrit[];
@@ -63,6 +67,10 @@ export type SourcesBureaux = {
   journee: Journee | null;
   /** La mesure des fichiers et de la base (lib/bureaux/serveurs.ts) ; null si elle n'a pas pu se faire. */
   serveurs?: MesureServeurs | null;
+  /** Compta et planning (migration 0016, Stripe) : null si illisible ; absent = pas encore lu. */
+  charges?: Charge[] | null;
+  entrees?: EntreesStripe | null;
+  rendezVous?: RendezVous[] | null;
   maintenant: Date;
 };
 
@@ -85,7 +93,7 @@ const illisible = (quoi: string, kpis: [string, string][], lien: string | null):
   piece({ etat: "vide", kpis, titre: "Lecture impossible", liste: [[quoi, "La lecture a échoué, la page réessaie dans une minute", "vide", "erreur"]], conseil: "Cette pièce reviendra toute seule dès que la lecture repasse.", lien });
 
 export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
-  const { inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs = null, maintenant } = src;
+  const { inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs = null, charges = null, entrees = null, rendezVous = null, maintenant } = src;
   const jour = aujourdhuiParis(maintenant);
   const projets = inscrits.flatMap((i) => i.projets);
   const projets7 = projets.filter((p) => depuis([p.createdAt], 7, maintenant) === 1);
@@ -256,6 +264,13 @@ export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
   });
 
 
+
+  // ── Salle de réunion : les rendez-vous de cette semaine et de la suivante (heure de France)
+  const lundi = lundiParis(maintenant);
+  const rdvsActifs = (rendezVous ?? []).filter((r) => r.statut !== "annule").map((r) => ({ r, t: new Date(r.debut), j: jourDepuisLundi(new Date(r.debut), lundi) })).filter((x) => x.j >= 0 && x.j < 14);
+  const aConfirmer = rdvsActifs.filter((x) => x.r.statut === "a_confirmer" && x.t > maintenant);
+  const aRelire = (rendezVous ?? []).filter((r) => r.compteRendu === "a_relire");
+  const rdvs: RdvBureaux[] = rdvsActifs.map(({ r, t, j }) => ({ j, h: heureParis(t), qui: r.client, quoi: libelle(TYPES_RDV, r.type), mode: libelle(MODES_RDV, r.mode), sujet: r.sujet ?? "", confirme: r.statut !== "a_confirmer", cr: r.compteRendu === "aucun" ? null : r.compteRendu }));
   // ── Salle des serveurs : où en est AVYORA face aux limites de Supabase et de Vercel
   const salle = salleServeurs(serveurs, inscrits, maintenant);
   const jaugeHaute = (salle.jauges ?? []).filter((j) => j.part != null && j.part >= SEUIL_ATTENTION).sort((a, b) => (b.part ?? 0) - (a.part ?? 0))[0];
@@ -263,6 +278,8 @@ export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
   const sansArtisanTous = sansArtisan.length;
   const taches: { piece: IdPiece; n: number; texte: string; ou: string; gain: string; retard: number }[] = [
     { piece: "accompagnement" as const, n: aRappeler.length, texte: `Rappeler ${aRappeler.length} demande${s(aRappeler.length)} d'accompagnement`, ou: "Bureau Accompagnement", gain: "ce qui rapporte", retard: rappelsEnRetard },
+    { piece: "reunion" as const, n: aConfirmer.length, texte: `Confirmer ${aConfirmer.length} rendez-vous`, ou: "Salle de réunion", gain: "ce qui rapporte", retard: 0 },
+    { piece: "reunion" as const, n: aRelire.length, texte: `Relire ${aRelire.length} compte${s(aRelire.length)} rendu${s(aRelire.length)} d'appel`, ou: "Salle de réunion", gain: "ce qui rapporte", retard: 0 },
     { piece: "attente" as const, n: enAttente.length, texte: `Examiner ${enAttente.length} candidature${s(enAttente.length)} d'artisan${s(enAttente.length)}`, ou: "Salle d'attente artisans", gain: "réseau", retard: candidaturesEnRetard },
     { piece: "devis" as const, n: nbAvis, texte: `Modérer ${nbAvis} avis en attente`, ou: "Salle des devis", gain: "confiance", retard: 0 },
     { piece: "atelier" as const, n: decennales.length, texte: `Relancer ${decennales.length} décennale${s(decennales.length)}`, ou: "Atelier du réseau", gain: "réseau", retard: expirees },
@@ -285,20 +302,20 @@ export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
 
   // ── Les pièces qui se branchent à l'étape suivante : rien d'inventé d'ici là
   const pros = inscrits.filter((i) => i.plan === "pro").length;
-  const comptabilite = piece({
-    etat: "vide",
-    kpis: [["Abonnés Pro", String(pros)], ["Inscrits", String(inscrits.length)], ["Rappels / 30 j", demandes ? String(depuis(demandes.map((d) => d.recueLe), 30, maintenant)) : "—"]],
-    titre: "À brancher",
-    liste: [["Entrées Stripe", "Les paiements encaissés, mois par mois", "vide", "à brancher"], ["Charges fixes", "Abonnements et nom de domaine, à saisir", "vide", "à brancher"], ["Résultat du mois", "Entrées moins charges", "vide", "à brancher"]],
-    conseil: "La comptabilité arrive à l'étape suivante : aucun montant n'est affiché tant qu'il ne vient pas de Stripe ou de toi.",
-  });
-  const reunion = piece({
-    etat: "vide",
-    kpis: [["Cette semaine", "—"], ["Semaine prochaine", "—"], ["À confirmer", "—"]],
-    titre: "Le planning",
-    liste: [],
-    conseil: "Le planning des rendez-vous arrive à l'étape suivante.",
-  });
+  const comptabilite = salleCompta(charges, entrees, rendezVous === null && charges === null);
+  const s0 = rdvsActifs.filter((x) => x.j < 7).length;
+  const reunion = rendezVous === null
+    ? illisible("Rendez-vous", [["Cette semaine", "—"], ["Semaine prochaine", "—"], ["À confirmer", "—"]], "/admin/planning")
+    : piece({
+        etat: aConfirmer.length || aRelire.length ? "attention" : rdvsActifs.length ? "bon" : "vide",
+        nb: s0,
+        kpis: [["Cette semaine", String(s0)], ["Semaine prochaine", String(rdvsActifs.length - s0)], ["À confirmer", String(aConfirmer.length)]],
+        titre: "Le planning",
+        liste: [],
+        conseil: aConfirmer.length ? "Un rendez-vous confirmé, c'est un accompagnement qui se tient : réponds vite aux créneaux en attente." : rdvsActifs.length ? "Les fiches des clients se préparent la veille de chaque rendez-vous." : "Aucun rendez-vous : cale-les depuis les demandes de rappel.",
+        gens: Math.min(4, rdvsActifs.filter((x) => x.j === jourDepuisLundi(maintenant, lundi)).length),
+        lien: "/admin/planning",
+      });
   const marketing = piece({
     etat: "vide",
     kpis: [["Agents actifs", "0"], ["E-mails envoyés", "0"], ["Réponses", "0"]],
@@ -332,6 +349,7 @@ export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
     genereLe: maintenant.toISOString(),
     pieces: { accueil, accompagnement, reunion, projets: salleProjets, plan: studio, attente, atelier, devis: salleDevis, bureau, marketing, caisse: comptabilite, archives, serveurs: salle },
     priorites,
+    rdvs,
   };
 }
 
@@ -371,5 +389,29 @@ export function salleServeurs(m: MesureServeurs | null, inscrits: AdminInscrit[]
         : "Les jauges passent à l'orange à 60 % et au rouge à 85 %.",
     jauges,
     lien: null,
+  });
+}
+
+/** La comptabilité : les entrées Stripe du mois, les charges fixes saisies, le résultat (en euros seulement). */
+export function salleCompta(charges: Charge[] | null, entrees: EntreesStripe | null, migrationAbsente: boolean): PieceBureaux {
+  if (charges === null && entrees === null)
+    return piece({ etat: "vide", kpis: [["Entrées du mois", "—"], ["Charges fixes", "—"], ["Résultat", "—"]], titre: "À brancher", liste: [["Compta", migrationAbsente ? "Migration 0016 à appliquer" : "Stripe et les charges ne répondent pas", "vide", "à brancher"]], conseil: "Aucun montant n'est affiché tant qu'il ne vient pas de Stripe ou de toi.", lien: "/admin/compta" });
+  const total = charges ? totalMensuel(charges) : {};
+  const resultat = entrees && charges ? entrees.mois.net - (total.EUR ?? 0) : null;
+  const actives = (charges ?? []).filter((c) => c.actif);
+  return piece({
+    etat: resultat == null ? "vide" : resultat < 0 ? "attention" : "bon",
+    nb: actives.length,
+    kpis: [["Entrées du mois", entrees ? montant(entrees.mois.net) : "—"], ["Charges fixes", charges ? totalTexte(total) : "—"], ["Résultat", resultat == null ? "—" : montant(resultat)]],
+    titre: "Ce mois-ci",
+    liste: [
+      entrees
+        ? [`Entrées · Stripe`, `${entrees.mois.nb} paiement${s(entrees.mois.nb)} · ${montant(entrees.mois.brut)} encaissés, ${montant(entrees.mois.frais)} de frais`, entrees.mois.nb ? "bon" : "vide", entrees.mois.nb ? "encaissé" : "rien"]
+        : ["Entrées · Stripe", "Stripe ne répond pas pour l'instant", "vide", "—"],
+      ...actives.slice(0, 5).map((c): Ligne => [c.nom, `${montant(parMois(c), c.devise)} par mois${c.frequence === "an" ? ` (${montant(c.montantCentimes, c.devise)} par an)` : ""}`, "vide", "charge"]),
+      ...(charges && !actives.length ? [["Aucune charge saisie", "Ajoute tes abonnements dans Compta", "attention", "à saisir"] as Ligne] : []),
+    ],
+    conseil: resultat == null ? "Il manque les entrées ou les charges pour calculer le résultat." : resultat < 0 ? "Les charges dépassent encore les entrées ce mois-ci." : "Les entrées couvrent les charges ce mois-ci.",
+    lien: "/admin/compta",
   });
 }

@@ -183,7 +183,7 @@ function dessinPlanning(c, W, H) {
 
   p = parId.caisse;                                                        // ── Comptabilité (ancienne « Caisse », l'identifiant est resté) : le mur vert, le comptoir, le coffre, la file
   { const z0 = p.z0, cx = p.cx;
-    cimaise(D, cx - 0.4, z0 + 0.3, 3.4, 2.5, 0, 0x0b7a53); panneauTexte(D, "COMPTABILITÉ", 3.0, 0.5, cx - 0.4, 2.0, z0 + 0.37, 0, "#0b7a53", "#ffffff", 0.8); panneauTexte(D, SOURCE ? "Stripe et charges fixes : à brancher" : "Entrées 198 €  ·  Charges 226 €", 3.0, 0.3, cx - 0.4, 1.5, z0 + 0.37, 0, "#ffffff", "#0b7a53", 0.5);
+    cimaise(D, cx - 0.4, z0 + 0.3, 3.4, 2.5, 0, 0x0b7a53); panneauTexte(D, "COMPTABILITÉ", 3.0, 0.5, cx - 0.4, 2.0, z0 + 0.37, 0, "#0b7a53", "#ffffff", 0.8); panneauTexte(D, SOURCE ? (p.kpis[0] && p.kpis[0][1] !== "—" ? "Entrées " + p.kpis[0][1] + "  ·  Charges " + p.kpis[1][1] : "Entrées et charges : voir Compta").replace(/&amp;/g, "&") : "Entrées 198 €  ·  Charges 226 €", 3.0, 0.3, cx - 0.4, 1.5, z0 + 0.37, 0, "#ffffff", "#0b7a53", 0.5);
     emprise(cx - 0.4, z0 + 2.1, 3.3, 1.1); boiteM(D, 3, 1.0, 0.9, 0xffffff, cx - 0.4, 0.5, z0 + 2.1, { fin: "laque" }); boiteM(D, 3.2, 0.06, 1.05, 0x0b7a53, cx - 0.4, 1.03, z0 + 2.1, { rough: 0.2 });
     boiteM(D, 2.8, 0.05, 0.02, 0x2fd08a, cx - 0.4, 0.08, z0 + 2.58, { lum: 1.3, sansOmbre: true });
     boiteM(D, 0.5, 0.2, 0.42, NOIR, cx - 1.1, 1.16, z0 + 2.1, { fin: "metal" }); boiteM(D, 0.44, 0.3, 0.03, NOIR, cx - 1.1, 1.45, z0 + 1.95, { fin: "metal", sansOmbre: true }); ecran(D, 0.4, 0.26, cx - 1.1, 1.45, z0 + 1.93, PI);   // la caisse et son écran

@@ -43,6 +43,13 @@ const GROUPES: Groupe[] = [
     items: [{ href: "/admin/accompagnement", label: "Accompagnement", icone: <IconeAccompagnement className="h-4 w-4" />, badge: "accompagnement" }],
   },
   {
+    titre: "Gestion",
+    items: [
+      { href: "/admin/planning", label: "Planning", icone: ic(<><rect x="2.5" y="3.5" width="11" height="10" rx="1.5" /><path d="M2.5 6.8h11M5.5 2v3M10.5 2v3M5.4 9.6h1.4M8.6 9.6h1.4" /></>) },
+      { href: "/admin/compta", label: "Compta", icone: ic(<><rect x="2" y="3.5" width="12" height="9" rx="1.5" /><path d="M2 6.5h12M4.8 10h2.4" /></>) },
+    ],
+  },
+  {
     titre: "Réseau AVYORA",
     items: [
       { href: "/admin/artisans", label: "Artisans", badge: "artisans", icone: ic(<><path d="M3 13.5h10" /><path d="M4.5 13.5V9.8a3.5 3.5 0 0 1 7 0v3.7" /><path d="M3.5 9.8h9" /><path d="M8 6.3V4.8" /></>) },

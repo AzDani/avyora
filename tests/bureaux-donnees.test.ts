@@ -5,6 +5,7 @@ import type { ArtisanListe, DemandeAdmin } from "@/lib/data/reseau";
 import type { DemandeAccompagnement } from "@/lib/admin/outils";
 import type { MesureServeurs } from "@/lib/bureaux/serveurs";
 import { planDe } from "@/lib/bureaux/limites";
+import { lireDebut, type Charge, type RendezVous } from "@/lib/admin/gestion";
 
 /** Les bureaux virtuels : le contenu des pièces se calcule à partir des listes de l'admin, sans rien inventer. */
 
@@ -79,7 +80,6 @@ describe("bureaux virtuels : le contenu des pièces", () => {
     expect(d.pieces.projets.kpis).toEqual([["Inscrits", "3"], ["Estimations / 7 j", "2"], ["Sans « Tu es… »", "1"]]);
     expect(d.pieces.projets.liste[0][1]).toBe("1 estimation cette semaine");
     expect(d.pieces.plan.kpis).toEqual([["Plans dessinés", "3"], ["Cette semaine", "2"], ["Vers l'estimation", "1"]]);
-    expect(d.pieces.caisse.kpis[0]).toEqual(["Abonnés Pro", "1"]);
     expect(d.pieces.archives.kpis[0]).toEqual(["Estimations", "3"]);
   });
 
@@ -96,7 +96,7 @@ describe("bureaux virtuels : le contenu des pièces", () => {
     for (const id of ["attente", "atelier", "plan", "accompagnement", "devis"] as const) { expect(d.pieces[id].etat).toBe("vide"); expect(d.pieces[id].liste[0][3]).toBe("erreur"); }
     expect(d.pieces.projets.etat).not.toBe("vide");
     expect(JSON.stringify(d.pieces.caisse)).not.toMatch(/€/);
-    expect(d.pieces.reunion.liste).toEqual([]);
+    expect(d.pieces.reunion.liste[0][3]).toBe("erreur");
   });
 
   describe("la salle des serveurs", () => {
@@ -139,6 +139,42 @@ describe("bureaux virtuels : le contenu des pièces", () => {
       expect(p.conseil).not.toMatch(/usage commercial/);
       expect(planDe(" PRO ")).toBe("pro");
       expect(planDe(undefined)).toBe("gratuit");
+    });
+  });
+
+  describe("compta et planning", () => {
+    const charge = (o: Partial<Charge>): Charge => ({ id: "c", nom: "Abonnement", montantCentimes: 2000, devise: "EUR", frequence: "mois", echeance: null, actif: true, ...o });
+    const e = (net: number) => ({ mois: { brut: net + 100, frais: 100, rembourse: 0, net, nb: 2 }, precedent: { brut: 0, frais: 0, rembourse: 0, net: 0, nb: 0 }, lu: MAINTENANT.toISOString() });
+
+    it("la comptabilité : entrées Stripe, charges saisies, résultat en euros", () => {
+      const p = construireBureaux(sources({ charges: [charge({}), charge({ id: "d", nom: "Domaine", montantCentimes: 1200, frequence: "an" }), charge({ id: "u", devise: "USD", montantCentimes: 10000 })], entrees: e(19800) })).pieces.caisse;
+      expect(p.kpis).toEqual([["Entrées du mois", "198 €"], ["Charges fixes", "21 € + 100 $"], ["Résultat", "177 €"]]);
+      expect(p.etat).toBe("bon");
+      expect(p.liste[0][1]).toMatch(/^2 paiements/);
+      expect(p.liste[2][1]).toBe("1 € par mois (12 € par an)");
+      expect(p.lien).toBe("/admin/compta");
+    });
+    it("sans rien de lisible, rien n'est chiffré ; des charges qui dépassent les entrées passent en attention", () => {
+      expect(construireBureaux(sources()).pieces.caisse.kpis.map((k) => k[1])).toEqual(["—", "—", "—"]);
+      expect(construireBureaux(sources({ charges: [charge({ montantCentimes: 50000 })], entrees: e(19800) })).pieces.caisse.etat).toBe("attention");
+    });
+    it("la salle de réunion : les rendez-vous des deux semaines, les créneaux à confirmer en priorité", () => {
+      const rdv = (o: Partial<RendezVous>): RendezVous => ({ id: "r", debut: lireDebut("2026-11-30T15:00")!.toISOString(), dureeMin: 45, client: "Léa D.", sujet: null, type: "avis_achat", mode: "telephone", statut: "confirme", compteRendu: "aucun", demandeId: null, ...o });
+      const d = construireBureaux(sources({ rendezVous: [
+        rdv({}),
+        rdv({ id: "2", client: "Nadia P.", debut: lireDebut("2026-12-01T18:00")!.toISOString(), statut: "a_confirmer", mode: "visio" }),
+        rdv({ id: "3", debut: lireDebut("2026-12-02T10:00")!.toISOString(), statut: "annule" }),
+        rdv({ id: "4", debut: lireDebut("2026-11-24T10:00")!.toISOString(), compteRendu: "a_relire" }),
+      ] }));
+      // le 27/11/2026 est un vendredi : le lundi de référence est le 23/11
+      expect(d.rdvs).toEqual([
+        { j: 7, h: "15:00", qui: "Léa D.", quoi: "Avis avant achat", mode: "par téléphone", sujet: "", confirme: true, cr: null },
+        { j: 8, h: "18:00", qui: "Nadia P.", quoi: "Avis avant achat", mode: "en visio", sujet: "", confirme: false, cr: null },
+        { j: 1, h: "10:00", qui: "Léa D.", quoi: "Avis avant achat", mode: "par téléphone", sujet: "", confirme: true, cr: "a_relire" },
+      ]);
+      expect(d.pieces.reunion.kpis).toEqual([["Cette semaine", "1"], ["Semaine prochaine", "2"], ["À confirmer", "1"]]);
+      expect(d.pieces.reunion.etat).toBe("attention");
+      expect(d.priorites.map((r) => r[1])).toEqual(["Confirmer 1 rendez-vous", "Relire 1 compte rendu d'appel"]);
     });
   });
 });

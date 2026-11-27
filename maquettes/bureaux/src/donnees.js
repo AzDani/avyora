@@ -152,7 +152,7 @@ function heureIci(r) {                                                       // 
 }
 const passe = (r) => quand(r) < new Date();
 /* [couleur de la pastille, mot de la pastille, état du compte rendu] */
-const etatRdv = (r) => passe(r) ? (r.cr === "envoye" ? ["vide", "fait", "Envoyé au client par e-mail"] : ["attention", "à relire", "Écrit depuis l'enregistrement, il attend ta relecture"])
+const etatRdv = (r) => passe(r) ? (r.cr === "envoye" ? ["vide", "fait", "Envoyé au client par e-mail"] : r.cr === "aucun" ? ["vide", "passé", "Pas encore de compte rendu"] : ["attention", "à relire", "Écrit depuis l'enregistrement, il attend ta relecture"])
   : r.confirme ? ["bon", "confirmé", "Écrit après l'appel"] : ["attention", "à confirmer", "Écrit après l'appel"];
 /* Tout ce qui se déduit du planning : les chiffres de la pièce, son état, et le travail de l'agent */
 function majReunion() {
@@ -174,6 +174,7 @@ function appliquerDonnees(d) {
     p.jauges = Array.isArray(v.jauges) ? v.jauges.map((j) => ({ hote: net(j.hote), nom: net(j.nom), texte: net(j.texte), brut: [String(j.hote), String(j.nom), String(j.texte)], part: typeof j.part === "number" && isFinite(j.part) ? Math.max(0, j.part) : null })) : p.jauges;
     p.lien = typeof v.lien === "string" && /^\/admin(\/[a-z-]+)*$/.test(v.lien) ? v.lien : null;
   }
+  if (d && Array.isArray(d.rdvs)) { RDVS.length = 0; for (const r of d.rdvs) RDVS.push({ j: +r.j || 0, h: /^\d\d:\d\d$/.test(r.h) ? r.h : "00:00", qui: net(r.qui), quoi: net(r.quoi), mode: net(r.mode), sujet: net(r.sujet), confirme: !!r.confirme, cr: r.cr === "envoye" || r.cr === "a_relire" ? r.cr : "aucun" }); }
   if (d && Array.isArray(d.priorites)) { PRIORITES.length = 0; for (const r of d.priorites) if (parId[r[0]]) PRIORITES.push([r[0], net(r[1]), net(r[2])]); }
 }
 async function lireDonnees() {
@@ -183,7 +184,7 @@ async function lireDonnees() {
   appliquerDonnees(await r.json()); return true;
 }
 if (SOURCE) {
-  RDVS.length = 0;                                                           // le planning se branche à l'étape suivante : aucun rendez-vous d'exemple sur le site
+  RDVS.length = 0;                                                           // sur le site, les rendez-vous viennent du planning de l'admin (jamais ceux d'exemple)
   for (const p of PIECES) { const a = p.agent; if (!a) continue;
     if (p.id === "serveurs") { a.taches = a.fixes; a.fait = "Relève les jauges toutes les 10 minutes"; continue; }   // le relevé des jauges, lui, fonctionne déjà (sans IA)
     a.etat = "creer"; a.fait = "Pas encore construit"; a.taches = (a.fixes || (p.id === "marketing" ? a.taches : [])).map((t) => [t[0], t[1], "vide", "à créer"]); }   // (les tâches d'exemple citent des noms inventés : sur le site, on ne garde que les missions générales)

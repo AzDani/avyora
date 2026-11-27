@@ -26,7 +26,7 @@ function jaugesHtml(p) {
 let semaineVue = 0, rdvOuvert = null;
 const JOURS = ["lun.", "mar.", "mer.", "jeu.", "ven.", "sam.", "dim."];
 function planning() {
-  if (SOURCE && !RDVS.length) return '<h3>Le planning</h3><p class="mission">Aucun rendez-vous à afficher : le planning se branche à l\'étape suivante.</p>';
+  if (SOURCE && !RDVS.length) return '<h3>Le planning</h3><p class="mission">Aucun rendez-vous cette semaine ni la suivante. Cale-les dans le planning de l\'admin.</p>';
   const auj = new Date().toDateString();
   let h = "<h3>Le planning</h3>" + '<div class="onglets" role="tablist">' + ["Cette semaine", "Semaine prochaine"].map((t, s) => '<button type="button" role="tab" data-s="' + s + '" aria-selected="' + (s === semaineVue) + '">' + t + "</button>").join("") + "</div>" +
     '<p class="fuseau">' + (RDVS.some(heureIci) ? "Heure de France, et <i>ton heure</i> en dessous" : "Heures de France") + " · clique pour le détail</p>";
@@ -36,8 +36,8 @@ function planning() {
     h += '<div class="jour' + (d.toDateString() === auj ? " auj" : "") + '"><div class="date"><b>' + d.getDate() + "</b>" + JOURS[j] + '</div><div class="rdvs">' + (liste.length ? liste.map(([r, i]) => {
       const e = etatRdv(r), ouvert = rdvOuvert === i, ici = heureIci(r);
       return '<button type="button" class="rdv" data-i="' + i + '" aria-expanded="' + ouvert + '"><span class="h">' + r.h + (ici ? "<i>" + ici.h + "</i>" : "") + '</span><span class="t"><b>' + r.qui + "</b><span>" + r.quoi + " · " + r.mode + '</span></span><span class="puce ' + e[0] + '">' + e[1] + "</span></button>" +
-        (ouvert ? '<div class="detail"><p>' + r.sujet + "</p><dl><dt>Heure</dt><dd>" + r.h + " en France" + (ici ? " · " + ici.h + " pour toi" + (ici.jour ? " (" + ici.jour + ")" : "") : "") + "</dd><dt>Fiche du client</dt><dd>" + (passe(r) ? "Utilisée pendant l'appel" : "Prête la veille (Agent Rappels)") + "</dd><dt>Compte rendu</dt><dd>" + e[2] + "</dd></dl>" +
-          (!passe(r) && !r.confirme ? '<button type="button" data-confirmer="' + i + '">Confirmer le créneau</button>' : "") + "</div>" : "");
+        (ouvert ? '<div class="detail"><p>' + r.sujet + "</p><dl><dt>Heure</dt><dd>" + r.h + " en France" + (ici ? " · " + ici.h + " pour toi" + (ici.jour ? " (" + ici.jour + ")" : "") : "") + "</dd><dt>Fiche du client</dt><dd>" + (SOURCE ? "À préparer (l'Agent Rappels n'est pas encore créé)" : passe(r) ? "Utilisée pendant l'appel" : "Prête la veille (Agent Rappels)") + "</dd><dt>Compte rendu</dt><dd>" + e[2] + "</dd></dl>" +
+          (!passe(r) && !r.confirme ? (SOURCE ? '<a class="ouvrir" href="/admin/planning">Confirmer dans le planning</a>' : '<button type="button" data-confirmer="' + i + '">Confirmer le créneau</button>') : "") + "</div>" : "");
     }).join("") : '<span class="libre">Libre</span>') + "</div></div>";
   }
   return h;

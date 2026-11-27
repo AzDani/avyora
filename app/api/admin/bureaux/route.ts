@@ -6,6 +6,7 @@ import { lireEnLigne, lireJournee } from "@/lib/presence";
 import { aujourdhuiParis } from "@/lib/reseau/candidature";
 import { construireBureaux } from "@/lib/bureaux/donnees";
 import { mesurerServeurs } from "@/lib/bureaux/serveurs";
+import { entreesStripe, listCharges, listRendezVous } from "@/lib/data/gestion";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,7 +21,7 @@ export async function GET() {
   if (refus) return refus;
   try {
     const maintenant = new Date();
-    const [inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs] = await Promise.all([
+    const [inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs, charges, entrees, rendezVous] = await Promise.all([
       listInscrits(),
       listPlansAdmin().catch(() => null),
       listDemandesAccompagnement().catch(() => null),
@@ -30,8 +31,11 @@ export async function GET() {
       lireEnLigne().catch(() => null),
       lireJournee(aujourdhuiParis(maintenant)).catch(() => null),
       mesurerServeurs(maintenant.getTime()).catch(() => null),
+      listCharges().catch(() => null),
+      entreesStripe(maintenant.getTime()).catch(() => null),
+      listRendezVous(0, 2).catch(() => null),
     ]);
-    const donnees = construireBureaux({ inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs, maintenant });
+    const donnees = construireBureaux({ inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs, charges, entrees, rendezVous, maintenant });
     return NextResponse.json(donnees, { headers: { "Cache-Control": "no-store" } });
   } catch (e) {
     console.error("[admin/bureaux] lecture impossible :", e);

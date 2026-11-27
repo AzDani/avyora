@@ -1,3 +1,4 @@
+import Link from "next/link";
 import ContactRapide from "@/components/admin/ContactRapide";
 import BoutonTraitee from "@/components/admin/BoutonTraitee";
 import { dateCourte, messageWhatsApp, type DemandeAccompagnement } from "@/lib/admin/outils";
@@ -42,6 +43,11 @@ export default function DemandeCarte({ d, compacte = false }: { d: DemandeAccomp
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
         <ContactRapide tel={d.telephone} email={d.email} whatsapp={messageWhatsApp.demande(d.prenom)} />
         <div className="flex items-center gap-2">
+          {!traitee && (
+            <Link href={`/admin/planning?demande=${d.id}`} className="inline-flex min-h-9 items-center rounded-lg px-3 text-[12.5px] font-semibold text-brand-700 hover:bg-surface-2">
+              Caler un rendez-vous
+            </Link>
+          )}
           {traitee && <span className="num text-[12px] font-semibold text-[#0b7a53]">Traitée le {dateCourte(d.traiteeLe!)}</span>}
           <BoutonTraitee id={d.id} traitee={traitee} />
         </div>
