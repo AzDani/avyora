@@ -16,7 +16,7 @@ describe("l'appel à Claude", () => {
     const vu: Record<string, unknown>[] = [];
     const r = await demanderJson<{ a: number }>({ systeme: "S", contenu: "C", schema: { type: "object" }, client: faux({ stop_reason: "end_turn", texte: '{"a":1}' }, vu) });
     expect(r).toEqual({ a: 1 });
-    expect(vu[0]).toMatchObject({ model: MODELE_DEFAUT, thinking: { type: "disabled" }, output_config: { format: { type: "json_schema", schema: { type: "object" } } }, system: "S", messages: [{ role: "user", content: "C" }] });
+    expect(vu[0]).toMatchObject({ model: MODELE_DEFAUT, thinking: { type: "between_tools" }, output_config: { format: { type: "json_schema", schema: { type: "object" } } }, system: "S", messages: [{ role: "user", content: "C" }] });
   });
   it("refus, réponse coupée, JSON illisible, panne et clé absente : une erreur claire, jamais un faux résultat", async () => {
     const code = (p: Promise<unknown>) => p.then(() => "aucune", (e) => (e instanceof AgentErreur ? e.code : "autre"));
@@ -81,10 +81,13 @@ describe("l'Agent Rappels", () => {
     expect(mail.subject).toBe("Notre échange");
     expect(mail.html).not.toContain("<script>x");
     expect(mail.html).toContain("&lt;script&gt;");
+    expect(mail.html).toContain("Cet e-mail vous est envoyé dans le cadre de votre accompagnement");
   });
   it("le rappel de la veille donne le jour et l'heure de France", () => {
     const m = emailRappelRendezVous({ prenom: "Léa", quoi: "Avis avant achat", mode: "par téléphone", jour: "lundi 30 novembre", heure: "15:00" });
     expect(m.subject).toBe("Rappel : notre rendez-vous lundi 30 novembre à 15:00");
     expect(m.html).toContain("(heure de France)");
+    expect(m.html).toContain("pour votre avis avant achat");
+    expect(m.html).not.toMatch(/\b(tu|ton|réponds)\b/);
   });
 });

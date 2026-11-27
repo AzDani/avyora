@@ -41,7 +41,9 @@ export async function demanderJson<T>(o: { systeme: string; contenu: string; sch
     r = await c.messages.create({
       model: process.env.AVYORA_MODELE_AGENTS || MODELE_DEFAUT,
       max_tokens: o.maxTokens ?? 8000,
-      thinking: { type: "disabled" },
+      // Sans réflexion : sur Sonnet 5.5, l'API refuse « disabled » et demande « between_tools » (pas de réflexion avant de
+      // répondre ; nos agents n'ont pas d'outils). Le SDK 0.112 ne connaît pas encore cette valeur, d'où la conversion.
+      thinking: { type: "between_tools" } as unknown as Anthropic.ThinkingConfigParam,
       output_config: { format: { type: "json_schema", schema: o.schema } },
       system: o.systeme,
       messages: [{ role: "user", content: o.contenu }],

@@ -69,7 +69,7 @@ function bouton(label: string, url: string): string {
 }
 
 /** Gabarit complet : préheader caché + en-tête nuit + carte blanche + pied. */
-function layout(opts: { preheader: string; eyebrow: string; titre: string; corps: string; en?: boolean }): string {
+function layout(opts: { preheader: string; eyebrow: string; titre: string; corps: string; en?: boolean; vous?: boolean }): string {
   return `<!doctype html><html lang="${opts.en ? "en" : "fr"}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"></head>
 <body style="margin:0;padding:0;background:#f4f5fb;">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#f4f5fb;font-size:1px;line-height:1px">${opts.preheader}</div>
@@ -89,7 +89,7 @@ function layout(opts: { preheader: string; eyebrow: string; titre: string; corps
         </td></tr>
         <!-- Pied -->
         <tr><td style="padding:18px 28px 24px;border-top:1px solid #eef0f6;font-family:Arial,Helvetica,sans-serif">
-          <p style="font-size:11px;color:#8a8fa8;line-height:1.6;margin:0">${opts.en ? "AVYORA · renovation and new-build cost estimates. You're receiving this email because of your activity on AVYORA." : "AVYORA · estimation de travaux, en rénovation comme en construction neuve. Cet e-mail t'est envoyé suite à ton activité sur AVYORA."}</p>
+          <p style="font-size:11px;color:#8a8fa8;line-height:1.6;margin:0">${opts.en ? "AVYORA · renovation and new-build cost estimates. You're receiving this email because of your activity on AVYORA." : "AVYORA · estimation de travaux, en rénovation comme en construction neuve. " + (opts.vous ? "Cet e-mail vous est envoyé dans le cadre de votre accompagnement AVYORA." : "Cet e-mail t'est envoyé suite à ton activité sur AVYORA.")}</p>
         </td></tr>
       </table>
     </td></tr>
@@ -462,16 +462,16 @@ export function emailRappelRendezVous(d: { prenom: string; quoi: string; mode: s
   const e = echapperHtml;
   const corps = `
     ${P(`Bonjour ${e(d.prenom)},`)}
-    ${P(`Petit rappel : nous avons rendez-vous <b style="color:#15172b">${e(d.jour)} à ${e(d.heure)}</b> (heure de France), ${e(d.mode)}, pour ton ${e(d.quoi.toLowerCase())}.`)}
-    ${P("Si tu as des documents (annonce, plans, devis, photos), garde-les sous la main : on ira plus vite. Pour décaler, réponds simplement à cet e-mail.")}
-    ${P("À demain,<br>Daniel · AVYORA")}
+    ${P(`Je vous rappelle notre rendez-vous <b style="color:#15172b">${e(d.jour)} à ${e(d.heure)}</b> (heure de France), ${e(d.mode)}, pour votre ${e(d.quoi.toLowerCase())}.`)}
+    ${P("Si vous avez des documents (annonce, plans, devis, photos), gardez-les sous la main : nous irons plus vite. Pour décaler, répondez simplement à cet e-mail.")}
+    ${P("À demain, bien cordialement,<br>Daniel Leal · AVYORA")}
   `;
-  return { subject: `Rappel : notre rendez-vous ${d.jour} à ${d.heure}`, html: layout({ preheader: `${d.jour} à ${d.heure}, ${d.mode}`, eyebrow: "Accompagnement", titre: "À demain", corps }) };
+  return { subject: `Rappel : notre rendez-vous ${d.jour} à ${d.heure}`, html: layout({ preheader: `${d.jour} à ${d.heure}, ${d.mode}`, eyebrow: "Accompagnement", titre: "À demain", corps, vous: true }) };
 }
 
 /** Au client : le compte rendu de l'appel, relu et corrigé par Daniel avant l'envoi. Le texte est repris tel quel, échappé. */
 export function emailCompteRendu(d: { objet: string; corps: string }): { subject: string; html: string } {
   const paragraphes = echapperHtml(d.corps).split(/\n{2,}/).map((b) => b.split("\n").join("<br>"));
   const corps = paragraphes.map((b) => P(b)).join("\n");
-  return { subject: d.objet, html: layout({ preheader: "Le compte rendu de notre échange", eyebrow: "Accompagnement", titre: "Compte rendu de notre échange", corps }) };
+  return { subject: d.objet, html: layout({ preheader: "Le compte rendu de notre échange", eyebrow: "Accompagnement", titre: "Compte rendu de notre échange", corps, vous: true }) };
 }
