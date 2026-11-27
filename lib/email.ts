@@ -470,8 +470,14 @@ export function emailRappelRendezVous(d: { prenom: string; quoi: string; mode: s
 }
 
 /** Au client : le compte rendu de l'appel, relu et corrigé par Daniel avant l'envoi. Le texte est repris tel quel, échappé. */
-export function emailCompteRendu(d: { objet: string; corps: string }): { subject: string; html: string } {
+export const PREFIXE_COPIE_COMPTE_RENDU = "[Compte rendu envoyé]";
+/**
+ * `copie` : la copie gardée par Daniel (décision du 27/11/2026). Même texte, objet préfixé par PREFIXE_COPIE_COMPTE_RENDU
+ * (une règle de sa boîte la range dans un dossier), et une ligne en tête : à qui et quand c'est parti.
+ */
+export function emailCompteRendu(d: { objet: string; corps: string; copie?: { a: string; le: string } }): { subject: string; html: string } {
   const paragraphes = echapperHtml(d.corps).split(/\n{2,}/).map((b) => b.split("\n").join("<br>"));
-  const corps = paragraphes.map((b) => P(b)).join("\n");
-  return { subject: d.objet, html: layout({ preheader: "Le compte rendu de notre échange", eyebrow: "Accompagnement", titre: "Compte rendu de notre échange", corps, vous: true }) };
+  const tete = d.copie ? `<p style="font-size:12.5px;color:#5b6078;background:#f4f5fb;border-radius:10px;padding:10px 12px;margin:0 0 16px">Copie : envoyé à <b>${echapperHtml(d.copie.a)}</b> le ${echapperHtml(d.copie.le)}.</p>` : "";
+  const corps = tete + paragraphes.map((b) => P(b)).join("\n");
+  return { subject: d.copie ? `${PREFIXE_COPIE_COMPTE_RENDU} ${d.objet}` : d.objet, html: layout({ preheader: "Le compte rendu de notre échange", eyebrow: "Accompagnement", titre: "Compte rendu de notre échange", corps, vous: true }) };
 }

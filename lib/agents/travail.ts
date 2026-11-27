@@ -20,6 +20,11 @@ export type Resultat = { ok: boolean; message: string };
 const ok = (message: string): Resultat => ({ ok: true, message });
 const non = (message: string): Resultat => ({ ok: false, message });
 const SANS_0017 = "La migration 0017 n'est pas encore appliquée.";
+/** L'adresse de Daniel (la même que pour les demandes de rappel : ACCOMPAGNEMENT_TO, sinon contact@getavyora.fr). */
+function adresseDaniel(): string {
+  const v = process.env.ACCOMPAGNEMENT_TO?.trim();
+  return v && /^[^\s@<>,;]+@[^\s@<>,;]+\.[^\s@<>,;]+$/.test(v) ? v : DESTINATAIRE_DEFAUT;
+}
 
 async function lireUn(id: string): Promise<RendezVous | null> {
   const { data, error } = await supabaseAdmin().from(TABLE_RDV).select(COLONNES_RDV_AGENTS).eq("id", id).maybeSingle();
@@ -98,7 +103,11 @@ export async function envoyerCompteRendu(id: string): Promise<Resultat> {
     return non(issue === "non_configure" ? "L'envoi d'e-mails n'est pas configuré ici." : "L'e-mail n'est pas parti. Réessaie.");
   }
   await supabaseAdmin().from(TABLE_RDV).update({ compte_rendu: "envoye" }).eq("id", id);
-  return ok(`Compte rendu envoyé à ${a.email}.`);
+  // La copie pour Daniel (décision du 27/11/2026) : objet préfixé, pour la ranger dans un dossier. Si elle échoue, le
+  // client a quand même reçu le sien : on le dit, sans renvoyer.
+  const le = new Date(maintenant).toLocaleString("fr-FR", { timeZone: "Europe/Paris", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  const copie = await envoyerEmailSuivi({ to: adresseDaniel(), ...emailCompteRendu({ objet, corps, copie: { a: a.email, le } }) });
+  return ok(`Compte rendu envoyé à ${a.email}.${copie === "envoye" ? " Copie dans ta boîte." : " (La copie pour toi n'est pas partie.)"}`);
 }
 
 /**

@@ -82,6 +82,11 @@ describe("l'Agent Rappels", () => {
     expect(mail.html).not.toContain("<script>x");
     expect(mail.html).toContain("&lt;script&gt;");
     expect(mail.html).toContain("Cet e-mail vous est envoyé dans le cadre de votre accompagnement");
+    // La copie pour Daniel : objet préfixé (rangement en dossier), à qui et quand, échappé.
+    const copie = emailCompteRendu({ objet, corps, copie: { a: "l<b>@x.fr", le: "27 novembre 2026 à 22:10" } });
+    expect(copie.subject).toBe("[Compte rendu envoyé] Notre échange");
+    expect(copie.html).toContain("Copie : envoyé à <b>l&lt;b&gt;@x.fr</b> le 27 novembre 2026 à 22:10.");
+    expect(mail.html).not.toContain("Copie :");
   });
   it("le rappel de la veille donne le jour et l'heure de France", () => {
     const m = emailRappelRendezVous({ prenom: "Léa", quoi: "Avis avant achat", mode: "par téléphone", jour: "lundi 30 novembre", heure: "15:00" });
