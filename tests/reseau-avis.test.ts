@@ -278,6 +278,9 @@ describe("la base, les pages et les textes", () => {
   });
   it("les avis et fiches sont réservés aux membres Pro ; aucun prix affiché", () => {
     for (const f of ["app/avis-artisans/page.tsx", "app/avis-artisans/[id]/page.tsx"]) expect(lire(f)).toMatch(/estPro\(user\)/);
+    // noindex plutôt que Disallow : bloquée au crawl, la page ne laisserait pas Google lire son noindex (27/11/2026).
+    for (const f of ["app/avis-artisans/page.tsx", "app/avis-artisans/[id]/page.tsx"]) expect(lire(f)).toMatch(/robots: \{ index: false/);
+    expect(lire("app/robots.ts")).not.toMatch(/disallow: \[[^\]]*"\/avis-artisans"/);
     expect(lire("components/reseau/avis/AccesPro.tsx")).not.toMatch(/€|\d+,\d{2}/);
   });
   it("l'ordre des artisans proposés ne dépend pas de la note", () => {

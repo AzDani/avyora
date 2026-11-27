@@ -30,7 +30,9 @@ export default function robots(): MetadataRoute.Robots {
       // l'en-tête reste utile aux humains connectés, mais Googlebot cesse de dépenser une requête
       // par page explorée pour une 307 vers une page noindex (507 pages le portaient).
       // /espace-artisan renvoie un visiteur sans compte vers l'inscription (307) : rien à explorer.
-      disallow: ["/mon-espace", "/artisans", "/espace-artisan", "/avis-artisans", "/demandes-devis", "/admin", "/api/", "/auth/", "/projets$", "/projets/"],
+      // /avis-artisans (et ses fiches) a été RETIRÉ le 27/11/2026, même raison que /reset/definir : ces pages portent
+      // `noindex`, et un Disallow empêcherait Googlebot de le lire (Search Console signalait « bloquée par robots.txt »).
+      disallow: ["/mon-espace", "/artisans", "/espace-artisan", "/demandes-devis", "/admin", "/api/", "/auth/", "/projets$", "/projets/"],
     },
     sitemap: `${siteUrl}/sitemap.xml`,
     host: siteUrl,
