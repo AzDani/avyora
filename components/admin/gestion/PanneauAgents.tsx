@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { agentCompteRendu, agentEmail, agentEnvoyer, agentFiche, agentNotes, agentTexteCompteRendu } from "@/lib/actions/agents";
 import type { Resultat } from "@/lib/agents/travail";
 
 /**
  * Sous un rendez-vous du planning : ce que font les agents Rappels et Agenda (27/11/2026).
- * Avant l'appel, la fiche ; après, les notes (ou la transcription), le compte rendu à relire, puis l'envoi au client.
+ * Après l'appel : la transcription (ou les notes), le compte rendu à relire, puis l'envoi au client. Avant l'appel, un
+ * pense-bête facultatif (les questions à poser), seulement si Daniel le demande.
  * Rien ne part sans le bouton « Envoyer au client » (décision de Dani : relecture au début).
  */
 type Fiche = { resume?: string; points?: string[]; questions?: string[]; vigilance?: string[] } | null;
@@ -25,12 +26,14 @@ export default function PanneauAgents({ id, client, passe, a }: { id: string; cl
   const [notes, setNotes] = useState(a.notes ?? "");
   const [texte, setTexte] = useState(a.compteRenduTexte ?? "");
   const lancer = (f: () => Promise<Resultat>) => demarrer(async () => setR(await f().catch(() => ({ ok: false, message: "Échec : réessaie." }))));
+  // Après « Rédiger », la page se recharge avec le nouveau texte : la case doit le reprendre (sinon elle reste vide).
+  useEffect(() => { setTexte(a.compteRenduTexte ?? ""); }, [a.compteRenduTexte]);
   const envoye = !!a.compteRenduEnvoyeLe, f = a.fiche;
 
   return (
     <details className="mt-2 w-full rounded-xl border border-line bg-surface-2/40 px-3 py-2" open={passe && !envoye && !!a.compteRenduTexte}>
       <summary className="cursor-pointer text-[12.5px] font-semibold text-brand-700">
-        Agents · {f ? "fiche prête" : "pas de fiche"}{a.compteRenduTexte ? (envoye ? " · compte rendu envoyé" : " · compte rendu à relire") : ""}{a.rappelEnvoyeLe ? " · rappel envoyé" : ""}
+        Compte rendu · {a.compteRenduTexte ? (envoye ? "envoyé" : "à relire") : "à rédiger après l'appel"}{a.rappelEnvoyeLe ? " · rappel envoyé" : ""}
       </summary>
       <div className="mt-2 grid gap-4">
         <div className="flex flex-wrap items-end gap-2">
@@ -39,21 +42,6 @@ export default function PanneauAgents({ id, client, passe, a }: { id: string; cl
           </label>
           <button type="button" disabled={enCours} onClick={() => lancer(() => agentEmail(id, email))} className={leger}>Enregistrer</button>
         </div>
-
-        <section>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h4 className="text-[13px] font-semibold text-ink">Fiche avant l'appel{a.ficheLe && <span className="ml-2 font-normal text-faint">préparée le {date(a.ficheLe)}</span>}</h4>
-            <button type="button" disabled={enCours} onClick={() => lancer(() => agentFiche(id))} className={leger}>{enCours ? "L'agent travaille…" : f ? "Refaire la fiche" : "Préparer la fiche"}</button>
-          </div>
-          {f?.resume && (
-            <div className="mt-1 space-y-2 text-[13px] text-ink">
-              <p>{f.resume}</p>
-              {[["À vérifier", f.points], ["Questions à poser", f.questions], ["Vigilance", f.vigilance]].map(([titre, l]) => Array.isArray(l) && l.length > 0 && (
-                <div key={titre as string}><p className="text-[12px] font-semibold uppercase tracking-[0.05em] text-faint">{titre as string}</p><ul className="ml-4 list-disc">{(l as string[]).map((x, i) => <li key={i}>{x}</li>)}</ul></div>
-              ))}
-            </div>
-          )}
-        </section>
 
         <section>
           <h4 className="text-[13px] font-semibold text-ink">Après l'appel</h4>
@@ -82,6 +70,21 @@ export default function PanneauAgents({ id, client, passe, a }: { id: string; cl
             )}
           </section>
         )}
+        <section>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h4 className="text-[13px] font-semibold text-ink">Pense-bête avant l'appel <span className="font-normal text-faint">(facultatif)</span>{a.ficheLe && <span className="ml-2 font-normal text-faint">préparée le {date(a.ficheLe)}</span>}</h4>
+            <button type="button" disabled={enCours} onClick={() => lancer(() => agentFiche(id))} className={leger}>{enCours ? "L'agent travaille…" : f ? "Refaire le pense-bête" : "Préparer les questions à poser"}</button>
+          </div>
+          {f?.resume && (
+            <div className="mt-1 space-y-2 text-[13px] text-ink">
+              <p>{f.resume}</p>
+              {[["À vérifier", f.points], ["Questions à poser", f.questions], ["Vigilance", f.vigilance]].map(([titre, l]) => Array.isArray(l) && l.length > 0 && (
+                <div key={titre as string}><p className="text-[12px] font-semibold uppercase tracking-[0.05em] text-faint">{titre as string}</p><ul className="ml-4 list-disc">{(l as string[]).map((x, i) => <li key={i}>{x}</li>)}</ul></div>
+              ))}
+            </div>
+          )}
+        </section>
+
         {r && <p role={r.ok ? "status" : "alert"} className={"text-[13px] " + (r.ok ? "text-[#0b7a53]" : "text-[#b42318]")}>{r.message}</p>}
       </div>
     </details>

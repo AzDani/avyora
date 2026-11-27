@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 import { AgentErreur, demanderJson, MODELE_DEFAUT, type ClientClaude } from "@/lib/agents/claude";
 import {
-  SCHEMA_COMPTE_RENDU, SYSTEME_COMPTE_RENDU, SYSTEME_FICHE, compteRenduEnTexte, compteRenduValide, contexteEnTexte, decouperCompteRendu, ficheValide,
+  SCHEMA_COMPTE_RENDU, SYSTEME_COMPTE_RENDU, SYSTEME_FICHE, compteRenduEnTexte, compteRenduValide, SIGNATURE, contexteEnTexte, decouperCompteRendu, ficheValide,
 } from "@/lib/agents/rappels";
 import { emailCompteRendu, emailRappelRendezVous } from "@/lib/email";
 
@@ -16,7 +16,7 @@ describe("l'appel à Claude", () => {
     const vu: Record<string, unknown>[] = [];
     const r = await demanderJson<{ a: number }>({ systeme: "S", contenu: "C", schema: { type: "object" }, client: faux({ stop_reason: "end_turn", texte: '{"a":1}' }, vu) });
     expect(r).toEqual({ a: 1 });
-    expect(vu[0]).toMatchObject({ model: MODELE_DEFAUT, thinking: { type: "adaptive" }, output_config: { format: { type: "json_schema", schema: { type: "object" } } }, system: "S", messages: [{ role: "user", content: "C" }] });
+    expect(vu[0]).toMatchObject({ model: MODELE_DEFAUT, thinking: { type: "disabled" }, output_config: { format: { type: "json_schema", schema: { type: "object" } } }, system: "S", messages: [{ role: "user", content: "C" }] });
   });
   it("refus, réponse coupée, JSON illisible, panne et clé absente : une erreur claire, jamais un faux résultat", async () => {
     const code = (p: Promise<unknown>) => p.then(() => "aucune", (e) => (e instanceof AgentErreur ? e.code : "autre"));
@@ -68,6 +68,15 @@ describe("l'Agent Rappels", () => {
     expect(objet).toBe("Notre échange");
     expect(corps.startsWith("Bonjour Léa,")).toBe(true);
     expect(decouperCompteRendu("Sans objet")).toEqual({ objet: "Notre échange", corps: "Sans objet" });
+    // Décision du 27/11 : poli, vouvoiement, « Bonjour Monsieur Dupont, », et les coordonnées de Daniel en bas.
+    const poli = compteRenduEnTexte(cr, "Monsieur Dupont");
+    expect(poli).toContain("Bonjour Monsieur Dupont,");
+    expect(poli).toContain("Les prochaines étapes de votre côté :");
+    expect(poli).toContain("Bien cordialement,");
+    expect(poli.trimEnd().endsWith(SIGNATURE.join("\n"))).toBe(true);
+    expect(SIGNATURE).toContain("contact@getavyora.fr");
+    expect(poli).not.toMatch(/\b(tu|te|ton|ta|tes)\b/i);
+    expect(SYSTEME_COMPTE_RENDU).toMatch(/VOUVOIES le client/);
     const mail = emailCompteRendu({ objet, corps: corps + "\n\n<script>x</script>" });
     expect(mail.subject).toBe("Notre échange");
     expect(mail.html).not.toContain("<script>x");

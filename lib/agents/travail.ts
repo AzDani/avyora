@@ -101,15 +101,18 @@ export async function envoyerCompteRendu(id: string): Promise<Resultat> {
   return ok(`Compte rendu envoyé à ${a.email}.`);
 }
 
-/** Agent Agenda, chaque matin (tâche quotidienne) : le rappel aux clients du lendemain, et leur fiche préparée d'avance. */
-export async function tourneeAgenda(maintenant = new Date()): Promise<{ rappels: number; fiches: number; echecs: number }> {
+/**
+ * Agent Agenda, chaque matin (tâche quotidienne) : le rappel aux clients du lendemain (un simple e-mail, sans Claude).
+ * La fiche avant l'appel n'est PLUS préparée d'office (décision de Daniel, 27/11/2026) : c'est un bouton facultatif.
+ */
+export async function tourneeAgenda(maintenant = new Date()): Promise<{ rappels: number; echecs: number }> {
   const p = enParis(maintenant), demain = new Date(Date.UTC(p.y, p.m - 1, p.d) + 864e5), apres = new Date(demain.getTime() + 864e5);
   const debut = instantParis(demain.getUTCFullYear(), demain.getUTCMonth() + 1, demain.getUTCDate(), 0, 0), fin = instantParis(apres.getUTCFullYear(), apres.getUTCMonth() + 1, apres.getUTCDate(), 0, 0);
   const sb = supabaseAdmin();
   const { data, error } = await sb.from(TABLE_RDV).select(COLONNES_RDV_AGENTS).gte("debut", debut.toISOString()).lt("debut", fin.toISOString()).in("statut", ["a_confirmer", "confirme"]).limit(30);
-  if (error) return { rappels: 0, fiches: 0, echecs: 0 };
+  if (error) return { rappels: 0, echecs: 0 };
   const rdvs = (data as unknown as Parameters<typeof lireRdv>[0][]).map(lireRdv);
-  let rappels = 0, fiches = 0, echecs = 0;
+  let rappels = 0, echecs = 0;
   const jour = new Intl.DateTimeFormat("fr-FR", { timeZone: "Europe/Paris", weekday: "long", day: "numeric", month: "long" });
   for (const r of rdvs) {
     if (r.statut === "confirme" && r.agents?.email && !r.agents.rappelEnvoyeLe) {
@@ -121,7 +124,6 @@ export async function tourneeAgenda(maintenant = new Date()): Promise<{ rappels:
         else { echecs++; await sb.from(TABLE_RDV).update({ rappel_envoye_le: null }).eq("id", r.id); }
       }
     }
-    if (!r.agents?.ficheLe && process.env.ANTHROPIC_API_KEY) { const f = await preparerFiche(r.id); if (f.ok) fiches++; else echecs++; }
   }
-  return { rappels, fiches, echecs };
+  return { rappels, echecs };
 }

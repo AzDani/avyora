@@ -317,7 +317,7 @@ export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
         kpis: [["Cette semaine", String(s0)], ["Semaine prochaine", String(rdvsActifs.length - s0)], ["À confirmer", String(aConfirmer.length)]],
         titre: "Le planning",
         liste: [],
-        conseil: aConfirmer.length ? "Un rendez-vous confirmé, c'est un accompagnement qui se tient : réponds vite aux créneaux en attente." : rdvsActifs.length ? "Les fiches des clients se préparent la veille de chaque rendez-vous." : "Aucun rendez-vous : cale-les depuis les demandes de rappel.",
+        conseil: aConfirmer.length ? "Un rendez-vous confirmé, c'est un accompagnement qui se tient : réponds vite aux créneaux en attente." : rdvsActifs.length ? "Après chaque appel, colle la transcription : l'agent rédige le compte rendu." : "Aucun rendez-vous : cale-les depuis les demandes de rappel.",
         gens: Math.min(4, rdvsActifs.filter((x) => x.j === jourDepuisLundi(maintenant, lundi)).length),
         lien: "/admin/planning",
       });
@@ -436,7 +436,7 @@ export function agentsBureaux(rendezVous: RendezVous[] | null, cleClaude: boolea
     ? { etat: "creer", fait: "Attend la clé de l'API Claude", taches: [cle] }
     : {
         etat: aRelire.length ? "attend" : aVenir.length ? "travail" : "repos",
-        fait: aRelire.length ? `${aRelire.length} compte${s(aRelire.length)} rendu${s(aRelire.length)} à relire` : fiches.length ? `${fiches.length} fiche${s(fiches.length)} prête${s(fiches.length)}` : aVenir.length ? "Prépare les fiches la veille" : "Aucun appel à préparer",
+        fait: aRelire.length ? `${aRelire.length} compte${s(aRelire.length)} rendu${s(aRelire.length)} à relire` : fiches.length ? `${fiches.length} fiche${s(fiches.length)} prête${s(fiches.length)}` : aVenir.length ? "Attend tes notes après l'appel" : "Aucun appel à préparer",
         taches: [
           ...aRelire.slice(0, 3).map((r): Ligne => [`Compte rendu · ${r.client}`, "Écrit, à relire avant l'envoi", "attention", "t'attend"]),
           ...fiches.slice(0, 3).map((r): Ligne => [`Fiche de ${r.client}`, `${libelle(TYPES_RDV, r.type)} · ${heureParis(new Date(r.debut))}`, "bon", "prête"]),

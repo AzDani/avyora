@@ -52,7 +52,10 @@ export function FormulaireRdv({ client = "", demande = "", sujet = "", email = "
   const [r, action, enCours] = useActionState(ajouterRendezVous, null);
   return (
     <form action={action} className="grid gap-3 rounded-2xl border border-line bg-surface p-4 sm:grid-cols-2 lg:grid-cols-4">
-      <label className={etiquette}>Client<input name="client" required maxLength={80} defaultValue={client} placeholder="Prénom et initiale" className={champ} /></label>
+      <div className="grid grid-cols-[auto_1fr] gap-2">
+        <label className={etiquette}>Civilité<select name="civilite" required defaultValue="" className={champ}><option value="" disabled>—</option><option value="Monsieur">Monsieur</option><option value="Madame">Madame</option></select></label>
+        <label className={etiquette}>Nom du client<input name="client" required maxLength={70} defaultValue={client} placeholder="Dupont" className={champ} /></label>
+      </div>
       <label className={etiquette}>Date et heure (heure de France)<input name="debut" type="datetime-local" required className={champ} /></label>
       <label className={etiquette}>Type<select name="type" defaultValue="avis_achat" className={champ}>{TYPES_RDV.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
       <label className={etiquette}>Mode<select name="mode" defaultValue="telephone" className={champ}>{MODES_RDV.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>

@@ -6,11 +6,12 @@ import Anthropic from "@anthropic-ai/sdk";
  *
  * - La clé est ANTHROPIC_API_KEY, posée par Daniel lui-même dans Vercel (et dans .env.local pour essayer en local).
  *   Sans elle, rien ne part : l'agent répond « clé à poser ».
- * - Le modèle se règle par AVYORA_MODELE_AGENTS ; par défaut le plus capable (claude-opus-5-5).
+ * - Le modèle se règle par AVYORA_MODELE_AGENTS ; par défaut Sonnet 5.5, sans réflexion : les agents RÉDIGENT (mettre en
+ *   forme des notes, un compte rendu), Opus n'apporterait rien et coûterait plus cher (décision de Daniel, 27/11/2026).
  * - La réponse est un JSON imposé par un schéma (sortie structurée) : jamais de texte à deviner.
  * - On n'envoie que ce dont l'agent a besoin : prénom, projet, échanges ; jamais l'e-mail ni le téléphone du client.
  */
-export const MODELE_DEFAUT = "claude-opus-5-5";
+export const MODELE_DEFAUT = "claude-sonnet-5-5";
 export type ErreurAgent = "cle_absente" | "refus" | "coupe" | "illisible" | "panne";
 export class AgentErreur extends Error {
   constructor(public code: ErreurAgent, message: string) { super(message); }
@@ -40,7 +41,7 @@ export async function demanderJson<T>(o: { systeme: string; contenu: string; sch
     r = await c.messages.create({
       model: process.env.AVYORA_MODELE_AGENTS || MODELE_DEFAUT,
       max_tokens: o.maxTokens ?? 8000,
-      thinking: { type: "adaptive" },
+      thinking: { type: "disabled" },
       output_config: { format: { type: "json_schema", schema: o.schema } },
       system: o.systeme,
       messages: [{ role: "user", content: o.contenu }],

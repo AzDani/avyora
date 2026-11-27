@@ -53,11 +53,13 @@ export type CompteRenduIA = { objet: string; resume: string; points: { titre: st
 export const SYSTEME_COMPTE_RENDU = `${REGLES}
 
 Ta tâche : rédiger le COMPTE RENDU de l'appel, envoyé ensuite AU CLIENT par e-mail, après relecture par Daniel.
-Tu tutoies le client (c'est le ton d'AVYORA) et tu écris au nom de Daniel, à la première personne.
-- objet : l'objet de l'e-mail, court (ex. « Notre échange sur la maison de Pessac »).
-- resume : 2 ou 3 phrases qui rappellent la situation et la conclusion de l'échange.
+Tu écris au nom de Daniel, à la première personne. Tu VOUVOIES le client : ton poli, professionnel et chaleureux, comme un
+conseiller qui écrit à un client qu'il vient d'avoir au téléphone.
+N'écris NI la formule d'appel (« Bonjour Monsieur… ») NI la formule de politesse finale NI la signature : elles sont ajoutées automatiquement.
+- objet : l'objet de l'e-mail, court (ex. « Compte rendu de notre échange sur la maison de Pessac »).
+- resume : 2 ou 3 phrases qui remercient le client pour l'échange, rappellent sa situation et la conclusion.
 - points : les sujets abordés (au plus 6), chacun avec ce qui a été dit et conseillé.
-- etapes : ce qu'il reste à faire au client, concrètement (au plus 5).
+- etapes : ce qu'il reste à faire au client, concrètement (au plus 5), au vouvoiement.
 Reprends UNIQUEMENT ce qui a été dit dans la transcription ou les notes : rien d'ajouté, aucun chiffre qui n'y figure pas.
 Si un passage est flou ou contradictoire, écris-le prudemment (« à confirmer ») plutôt que de trancher.`;
 
@@ -90,21 +92,28 @@ export function compteRenduValide(v: unknown): CompteRenduIA | null {
   return c.objet && c.resume ? c : null;
 }
 
-/** Le compte rendu en texte, tel que Daniel le relit et le corrige (puis tel qu'il part, mis en page). */
-export function compteRenduEnTexte(c: CompteRenduIA, prenom: string): string {
+/** La signature de Daniel, en bas de chaque compte rendu (ses coordonnées). */
+export const SIGNATURE = ["Daniel Leal", "Fondateur d'AVYORA", "contact@getavyora.fr", "getavyora.fr"];
+
+/**
+ * Le compte rendu en texte, tel que Daniel le relit et le corrige (puis tel qu'il part, mis en page).
+ * `client` est le nom tel que saisi au planning, avec la civilité (« Monsieur Dupont ») : « Bonjour Monsieur Dupont, ».
+ */
+export function compteRenduEnTexte(c: CompteRenduIA, client: string): string {
   return [
     `Objet : ${c.objet}`,
     "",
-    `Bonjour ${prenom},`,
+    `Bonjour ${client},`,
     "",
     c.resume,
     ...c.points.flatMap((p) => ["", `${p.titre}`, p.detail]),
-    ...(c.etapes.length ? ["", "Ce qu'il te reste à faire :", ...c.etapes.map((e) => `- ${e}`)] : []),
+    ...(c.etapes.length ? ["", "Les prochaines étapes de votre côté :", ...c.etapes.map((e) => `- ${e}`)] : []),
     "",
-    "Si un point n'est pas clair, réponds simplement à cet e-mail.",
+    "Si un point n'est pas clair ou si une question vous vient, répondez simplement à cet e-mail : je reste à votre disposition.",
     "",
-    "Daniel",
-    "AVYORA",
+    "Bien cordialement,",
+    "",
+    ...SIGNATURE,
   ].join("\n");
 }
 

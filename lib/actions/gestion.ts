@@ -61,10 +61,13 @@ export async function changerCharge(id: string, action: "pause" | "reprendre" | 
 export async function ajouterRendezVous(_: Retour | null, f: FormData): Promise<Retour> {
   const admin = await garde("admin:planning");
   if (!admin) return { ok: false, message: "Réservé à l'admin." };
-  const debut = lireDebut(f.get("debut")), client = texte(f.get("client"), 80), sujet = texte(f.get("sujet"), 300);
+  // Le nom est gardé avec la civilité (« Monsieur Dupont ») : c'est ainsi que le compte rendu salue le client.
+  const civilite = f.get("civilite"), nom = texte(f.get("client"), 70), sujet = texte(f.get("sujet"), 300);
+  const debut = lireDebut(f.get("debut")), client = civilite === "Monsieur" || civilite === "Madame" ? `${civilite} ${nom}` : "";
   const type = f.get("type"), mode = f.get("mode"), duree = Number(f.get("duree") ?? 45), demande = String(f.get("demande") ?? "");
   if (!debut) return { ok: false, message: "Date et heure illisibles." };
-  if (!client) return { ok: false, message: "Indique le nom du client." };
+  if (!nom) return { ok: false, message: "Indique le nom du client." };
+  if (!client) return { ok: false, message: "Choisis Monsieur ou Madame." };
   if (!estTypeRdv(type) || !estModeRdv(mode)) return { ok: false, message: "Type ou mode inconnu." };
   if (!Number.isInteger(duree) || duree < 10 || duree > 240) return { ok: false, message: "Durée entre 10 et 240 minutes." };
   const email = String(f.get("email") ?? "").trim().toLowerCase();

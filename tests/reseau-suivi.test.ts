@@ -8,7 +8,7 @@ import fs from "node:fs";
 import path from "node:path";
 vi.mock("server-only", () => ({}));
 // L'Agent Agenda passe dans la même tournée (27/11/2026) : il a ses propres tests (agents-rappels, bureaux-donnees).
-vi.mock("@/lib/agents/travail", () => ({ tourneeAgenda: async () => ({ rappels: 0, fiches: 0, echecs: 0 }) }));
+vi.mock("@/lib/agents/travail", () => ({ tourneeAgenda: async () => ({ rappels: 0, echecs: 0 }) }));
 import { placesRestantes, lireAvis, estIssue, validerDemandeDevis } from "@/lib/reseau/demande";
 
 const lire = (f: string) => fs.readFileSync(path.join(process.cwd(), f), "utf8");
@@ -197,7 +197,7 @@ describe("la tournée quotidienne", () => {
     });
     const { GET, mails } = await route(b);
     const r = await GET(new Request("https://x/api/cron/reseau", { headers: { authorization: "Bearer s3cret" } }));
-    expect(await r.json()).toEqual({ ok: true, expirees: 2, relances: 1, avis: 1 , agenda: { rappels: 0, fiches: 0, echecs: 0 } });
+    expect(await r.json()).toEqual({ ok: true, expirees: 2, relances: 1, avis: 1 , agenda: { rappels: 0, echecs: 0 } });
     const majs = b.ops.filter((o) => o.op === "update");
     expect(majs[0].valeur).toMatchObject({ statut: "expiree" });
     expect(majs[0].filtres).toContainEqual(["eq", "statut", "envoyee"]);
@@ -217,7 +217,7 @@ describe("la tournée quotidienne", () => {
       "reseau_artisans:select": [{ ...ARTISAN, statut: "suspendu" }],
     });
     const { GET, mails } = await route(b);
-    expect(await (await GET(new Request("https://x/api/cron/reseau", { headers: { authorization: "Bearer s3cret" } }))).json()).toEqual({ ok: true, expirees: 1, relances: 0, avis: 0 , agenda: { rappels: 0, fiches: 0, echecs: 0 } });
+    expect(await (await GET(new Request("https://x/api/cron/reseau", { headers: { authorization: "Bearer s3cret" } }))).json()).toEqual({ ok: true, expirees: 1, relances: 0, avis: 0 , agenda: { rappels: 0, echecs: 0 } });
     expect(mails).toHaveLength(1);
     expect(mails[0].to).toBe("lea@x.fr");
     expect(mails[0].html).toContain("nombre maximum");
@@ -234,7 +234,7 @@ describe("la tournée quotidienne", () => {
       "reseau_artisans:select": [ARTISAN],
     });
     const { GET, mails } = await route(b);
-    expect(await (await GET(new Request("https://x/api/cron/reseau", { headers: { authorization: "Bearer s3cret" } }))).json()).toEqual({ ok: true, expirees: 0, relances: 0, avis: 0 , agenda: { rappels: 0, fiches: 0, echecs: 0 } });
+    expect(await (await GET(new Request("https://x/api/cron/reseau", { headers: { authorization: "Bearer s3cret" } }))).json()).toEqual({ ok: true, expirees: 0, relances: 0, avis: 0 , agenda: { rappels: 0, echecs: 0 } });
     expect(mails).toHaveLength(0);
   });
 });
