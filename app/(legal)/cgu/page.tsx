@@ -22,7 +22,7 @@ export default function CGU() {
     <article>
       <h1>Conditions Générales d&apos;Utilisation</h1>
       {/* L'article 3 (compte par lien e-mail, mot de passe facultatif) vaut avec ou sans la bêta : la date aussi. */}
-      <p className="maj">Dernière mise à jour : 12 novembre 2026</p>
+      <p className="maj">Dernière mise à jour : 27 novembre 2026</p>
 
       <h2>1. Objet</h2>
       <p>
@@ -96,9 +96,32 @@ export default function CGU() {
 
       <h2>7. Propriété intellectuelle</h2>
       <p>
-        Le Service, sa marque, son interface, son code et son référentiel de prix sont protégés. Aucune
-        licence n&apos;est accordée à l&apos;utilisateur au-delà du droit d&apos;utiliser le Service conformément
-        aux présentes. Les données saisies par l&apos;utilisateur restent sa propriété.
+        Le Service, sa marque, son interface, son code, ses textes, ses plans, sa méthodologie d&apos;estimation et son
+        référentiel de prix sont protégés par le droit d&apos;auteur. Le référentiel de prix (postes, unités, prix,
+        coefficients et règles de calcul) constitue en outre une base de données dont l&apos;éditeur est le producteur,
+        protégée à ce titre par les articles L.&nbsp;341-1 et suivants du Code de la propriété intellectuelle.
+      </p>
+      <p>Sont notamment interdits, sauf accord écrit préalable de l&apos;éditeur&nbsp;:</p>
+      <ul>
+        <li>
+          l&apos;extraction ou la réutilisation de tout ou partie substantielle du référentiel de prix, ainsi que
+          l&apos;extraction répétée et systématique de parties non substantielles (article L.&nbsp;342-1 et
+          L.&nbsp;342-2 du même code), quel que soit le moyen employé&nbsp;: copie des résultats, interrogation
+          automatisée, robots ou lecture du code transmis au navigateur&nbsp;;
+        </li>
+        <li>
+          la reproduction, l&apos;adaptation ou la décompilation du code du Service, hors des cas où la loi
+          l&apos;autorise expressément&nbsp;;
+        </li>
+        <li>
+          la reprise de l&apos;interface, des textes ou de la méthodologie pour proposer un service concurrent.
+        </li>
+      </ul>
+      <p>
+        Toute atteinte peut entraîner la suspension immédiate du compte, sans préjudice des poursuites
+        civiles et pénales. Aucune licence n&apos;est accordée à l&apos;utilisateur au-delà du droit
+        d&apos;utiliser le Service conformément aux présentes. Les données saisies par l&apos;utilisateur restent sa
+        propriété.
       </p>
 
       <h2>8. Données personnelles</h2>
