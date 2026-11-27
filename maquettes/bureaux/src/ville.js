@@ -711,10 +711,18 @@ const VILLE = (function () {
     // tout tient dans l'emprise de l'étage (x de -23,2 à 23,2 ; z de -16,2 à 17,2) et s'arrête à y = -0,6 : le vitrage est en retrait de 22 cm, les lames blanches affleurent le bord
     const X0 = -23.2, X1 = 23.2, Z0 = -16.2, Z1 = 17.2, e = 0.22, haut = -0.6;
     prisme("verre", rect(X0 + e, Z0 + e, X1 - e, Z1 - e), SOL, haut, { teinte: verre, sansToit: true, du: 3, dv: 5, ao: 0.7 });
-    for (let k = 0; k <= 8; k++) { const x = X0 + k * 5.8, xa = Math.max(X0, x - 0.3), xb = Math.min(X1, x + 0.3); caisse(PLAT, xa, SOL + 8.2, Z0, xb, haut, Z0 + e, BLANCS[0]); caisse(PLAT, xa, SOL + 8.2, Z1 - e, xb, haut, Z1, BLANCS[0]); }
+    // l'aile droite (27/11/2026) : de x = 8,4 au bord, la tour avance jusqu'à z = 20,4, sous les quatre pièces de l'aile (pieces.js, AILE)
+    const AX = 8.4, AZ = 20.4;
+    prisme("verre", rect(AX + e, Z1 - e, X1 - e, AZ - e), SOL, haut, { teinte: verre, sansToit: true, du: 3, dv: 5, ao: 0.7 });
+    for (let k = 0; k <= 8; k++) { const x = X0 + k * 5.8, xa = Math.max(X0, x - 0.3), xb = Math.min(X1, x + 0.3); caisse(PLAT, xa, SOL + 8.2, Z0, xb, haut, Z0 + e, BLANCS[0]);
+      if (xb <= AX + 0.3) caisse(PLAT, xa, SOL + 8.2, Z1 - e, xb, haut, Z1, BLANCS[0]); else if (xa >= AX - 0.3) caisse(PLAT, xa, SOL + 8.2, AZ - e, xb, haut, AZ, BLANCS[0]); }
+    caisse(PLAT, AX - 0.3, SOL + 8.2, Z1 - e, AX + 0.3, haut, AZ, BLANCS[0]);                                                              // l'angle rentrant, au pied de l'aile
     for (let k = 0; k <= 6; k++) { const z = Z0 + k * (Z1 - Z0) / 6, za = Math.max(Z0, z - 0.3), zb = Math.min(Z1, z + 0.3); caisse(PLAT, X0, SOL + 8.2, za, X0 + e, haut, zb, BLANCS[0]); caisse(PLAT, X1 - e, SOL + 8.2, za, X1, haut, zb, BLANCS[0]); }
-    for (const z of [Z0, Z1]) quad(PLAT, [X0, -2.6, z, X1, -2.6, z, X1, haut, z, X0, haut, z], [0, 0, z < 0 ? -1 : 1], null, BLANCS[0]);     // le bandeau blanc sous l'étage
-    for (const x of [X0, X1]) quad(PLAT, [x, -2.6, Z0, x, -2.6, Z1, x, haut, Z1, x, haut, Z0], [x < 0 ? -1 : 1, 0, 0], null, BLANCS[0]);
+    caisse(PLAT, X1 - e, SOL + 8.2, AZ - 0.6, X1, haut, AZ, BLANCS[0]);
+    quad(PLAT, [X0, -2.6, Z0, X1, -2.6, Z0, X1, haut, Z0, X0, haut, Z0], [0, 0, -1], null, BLANCS[0]);                                    // le bandeau blanc sous l'étage
+    quad(PLAT, [X0, -2.6, Z1, AX, -2.6, Z1, AX, haut, Z1, X0, haut, Z1], [0, 0, 1], null, BLANCS[0]); quad(PLAT, [AX, -2.6, AZ, X1, -2.6, AZ, X1, haut, AZ, AX, haut, AZ], [0, 0, 1], null, BLANCS[0]);
+    quad(PLAT, [AX, -2.6, Z1, AX, -2.6, AZ, AX, haut, AZ, AX, haut, Z1], [-1, 0, 0], null, BLANCS[0]);
+    quad(PLAT, [X0, -2.6, Z0, X0, -2.6, Z1, X0, haut, Z1, X0, haut, Z0], [-1, 0, 0], null, BLANCS[0]); quad(PLAT, [X1, -2.6, Z0, X1, -2.6, AZ, X1, haut, AZ, X1, haut, Z0], [1, 0, 0], null, BLANCS[0]);
     prisme("sombre", rect(-28, -21, 28, 22), SOL, SOL + 8, { teinte: BLANC, toit: PONTONS[2], rive: BLANCS[0], du: 2, dv: 9 });              // le hall, sur deux niveaux
     plaque(DALLE, -32, -32, 35, 35, SOL + 0.05, C(0xc8c2b6));                                                                              // le parvis
     bassin(-31, -29.5, 31, -25.5, SOL - 0.2, r); bassin(30, -14, 33.5, 16, SOL - 0.2, r);

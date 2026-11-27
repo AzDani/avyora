@@ -6,15 +6,19 @@ boiteM(decor, 47.6, 0.35, 34.6, 0xf3f1ec, 0, -0.95, 0.5, { sansOmbre: true });
 
 /* L'accueil avance de 4 m au-dessus du vide (porte-à-faux), tenu par deux bracons d'acier ; son nez de dalle porte le bandeau AVYORA.
    Le balcon du bureau de Dani fait pareil sur le côté : 5 m dans le vide, plancher bois, garde-corps en verre. */
-const PAF = { x0: -10.7, x1: 23.7, z0: 17.5, z1: 21.7 }, BALCON = { x0: 23.5, x1: 28.6, z0: -1.7, z1: 7.7 };
+const PAF = { x0: -10.7, x1: 8.4, z0: 17.5, z1: 21.7 }, AILE = { x0: 8.4, x1: 23.6, z0: 17.5, z1: 20.6 }, BALCON = { x0: 23.5, x1: 28.6, z0: -1.7, z1: 7.7 };
 (function porteAFaux() {
   const cx = (PAF.x0 + PAF.x1) / 2, cz = (PAF.z0 + PAF.z1) / 2, L = PAF.x1 - PAF.x0, P = PAF.z1 - PAF.z0;
   boiteM(decor, L, 0.6, P, 0xdedad2, cx, -0.52, cz, { mat: matDalle, sansOmbre: true, recoit: true });
   boiteM(decor, L + 0.3, 0.38, P + 0.15, 0xf3f1ec, cx, -0.98, cz + 0.07, { sansOmbre: true });
-  for (const x of [-7.2, 5.2, 12.6, 18.6, 22.4]) { const b = boiteM(decor, 0.42, 0.42, 7.2, NOIR, x, -4.1, 19.3, { fin: "metal", sansOmbre: true }); b.rotation.x = -Math.atan2(5.6, 4.4); boiteM(decor, 0.7, 0.5, 0.5, NOIR, x, -6.9, 17.35, { fin: "metal", sansOmbre: true }); }
+  for (const x of [-7.2, 5.2]) { const b = boiteM(decor, 0.42, 0.42, 7.2, NOIR, x, -4.1, 19.3, { fin: "metal", sansOmbre: true }); b.rotation.x = -Math.atan2(5.6, 4.4); boiteM(decor, 0.7, 0.5, 0.5, NOIR, x, -6.9, 17.35, { fin: "metal", sansOmbre: true }); }
   const bandeauX = -1;                                                        // le bandeau reste centré sur l'accueil, quelle que soit la longueur du porte-à-faux
   const band = image3d(decor, TEX_MARQUE.bandeau(), 17.6, 1.1, bandeauX, -0.72, PAF.z1 + 0.16, { lum: 0.75 }); band.renderOrder = 2;
   boiteM(decor, 17.9, 1.25, 0.12, 0x1e1b4b, bandeauX, -0.72, PAF.z1 + 0.09, { fin: "laque", sansOmbre: true });
+  // l'aile droite : le bâtiment se prolonge (pas un porte-à-faux, la tour descend dessous ; voir ville.js) un peu moins loin que l'accueil
+  { const ax = (AILE.x0 + AILE.x1) / 2, az = (AILE.z0 + AILE.z1) / 2;
+    boiteM(decor, AILE.x1 - AILE.x0, 0.6, AILE.z1 - AILE.z0, 0xdedad2, ax, -0.52, az, { mat: matDalle, sansOmbre: true, recoit: true });
+    boiteM(decor, AILE.x1 - AILE.x0, 0.38, AILE.z1 - AILE.z0 + 0.15, 0xf3f1ec, ax, -0.98, az + 0.07, { sansOmbre: true }); }
   // le balcon
   const bx = (BALCON.x0 + BALCON.x1) / 2, bz = (BALCON.z0 + BALCON.z1) / 2, bl = BALCON.x1 - BALCON.x0, bp = BALCON.z1 - BALCON.z0;
   const deck = texParquet(170, 124, 84, 71); deck.repeat.set(2, 4);
@@ -32,8 +36,8 @@ function garde(x0, z0, x1, z1, h) {
 (function murRideau() {                                                     // la façade vitrée : haute au fond et à gauche, garde-corps devant et à droite (interrompus par l'accueil et le balcon)
   const X0 = -23, X1 = 23, Z0 = -16, Z1 = 17;
   garde(X0, Z0, X1, Z0, 3.3); garde(X0, Z0, X0, Z1, 3.3);
-  garde(X0, Z1, -10, Z1, 1.25);                                            // (à droite, la salle Claude Code occupe le bord : plus de garde-corps)
-  garde(X1, Z0, X1, BALCON.z0, 1.25); garde(X1, BALCON.z1, X1, Z1, 1.25);
+  garde(X0, Z1, -10, Z1, 1.25); garde(AILE.x0 + 0.2, AILE.z1 - 0.05, X1, AILE.z1 - 0.05, 1.25);   // devant : à gauche de l'accueil, et au bout de l'aile droite
+  garde(X1, Z0, X1, BALCON.z0, 1.25); garde(X1, BALCON.z1, X1, AILE.z1 - 0.05, 1.25);
   garde(BALCON.x0, BALCON.z0, BALCON.x1, BALCON.z0, 1.2); garde(BALCON.x0, BALCON.z1, BALCON.x1, BALCON.z1, 1.2); garde(BALCON.x1, BALCON.z0, BALCON.x1, BALCON.z1, 1.2);
   for (const [x, z] of [[X0, Z0], [X1, Z0], [X0, Z1], [0, Z0], [X0, 0.5]]) cyl(decor, 0.42, 3.4, 0xf3f1ec, x + (x < 0 ? 0.6 : -0.6) * (x !== 0), 1.5, z + (z < 0 ? 0.6 : z > 10 ? -0.6 : 0), { rough: 0.6 });
 })();
@@ -65,7 +69,7 @@ function cloison(x0, z0, x1, z1, portes) {
 const PORTES = {
   marketing: { z1: [[-15]] }, projets: { z1: [[-1]] }, plan: { z1: [[10]] }, archives: { z1: [[18]] },
   attente: { z1: [[-18]] }, atelier: { z1: [[-8]] }, devis: { z1: [[3]] }, accompagnement: { z1: [[12]] }, bureau: { z1: [[19]], x1: [[3, 1.8]] },
-  accueil: { z0: "sans", x0: [[13.6, 4.6]], x1: [[13.2, 1.8], [17.7, 1.5]] }, caisse: { x0: "sans" }, reunion: { x0: "sans", z0: "sans" }, serveurs: { x0: "sans", z0: [[15.0, 1.4]], x1: [[19.6, 1.2]] }, claude: { x0: "sans" },   // (la salle de réunion s'ouvre par le mur de l'accueil et s'adosse à celui de la comptabilité)
+  accueil: { z0: "sans", x0: [[13.6, 4.6]], x1: [[13.2, 1.8], [17.7, 1.5]] }, caisse: { x0: "sans", x1: [[13.4, 1.2]] }, reunion: { x0: "sans", x1: [[18.2, 1.2]] }, serveurs: { x0: [[11.0, 1.2]] }, claude: { x0: [[16.6, 1.2]] },   // (les quatre pièces de l'aile droite donnent sur le couloir d'accès, entre x = 14 et 15,6)   // (la salle de réunion s'ouvre par le mur de l'accueil et s'adosse à celui de la comptabilité)
 };
 for (const p of PIECES) {
   const w = p.x1 - p.x0, d = p.z1 - p.z0, cx = (p.x0 + p.x1) / 2, cz = (p.z0 + p.z1) / 2;
@@ -82,7 +86,8 @@ for (const p of PIECES) {
 
 /* Les couloirs : des zones où l'on marche, comme les pièces, mais sans fiche ni étiquette (un peu plus larges que le sol
    visible, puisque leurs bords sont des cloisons fines). */
-const COULOIRS = [{ id: "couloir-fond", x0: -22, x1: 22, z0: -5.25, z1: -1.75 }, { id: "couloir-accueil", x0: -22, x1: 14.2, z0: 7.7, z1: 10.3 }];
+const COULOIRS = [{ id: "couloir-fond", x0: -22, x1: 22, z0: -5.25, z1: -1.75 }, { id: "couloir-accueil", x0: -22, x1: 22.9, z0: 7.7, z1: 10.3 },
+  { id: "couloir-aile", x0: 13.75, x1: 15.85, z0: 9.7, z1: 20.4 }];   // le couloir d'accès de l'aile droite (comptabilité, réunion, serveurs, Claude Code)
 
 /* Sur le site, chaque pièce montre autant de personnes qu'il y en a vraiment (p.foule, plafonné) : les places assises et les marcheurs
    prévus par le décor se remplissent dans l'ordre, puis des marcheurs s'ajoutent. Le personnel (accueil, bar, Dani, agents) n'est pas compté.
@@ -192,13 +197,13 @@ function dessinPlanning(c, W, H) {
     chaise(D, cx - 0.9, z0 + 1.15, PI, 0x2c2f45);
     emprise(p.x1 - 0.75, z0 + 0.75, 1.0, 0.9); boiteM(D, 0.9, 1.3, 0.8, 0x3b3f52, p.x1 - 0.75, 0.65, z0 + 0.75, { rough: 0.3, metal: 0.9 });                                            // le coffre
     cyl(D, 0.16, 0.05, 0xc9ccd6, p.x1 - 0.75, 0.75, z0 + 1.17, { fin: "metal" }).rotation.x = PI / 2; boiteM(D, 0.05, 0.24, 0.03, 0xc9ccd6, p.x1 - 1.05, 0.75, z0 + 1.16, { fin: "metal", sansOmbre: true });
-    emprise(cx, z0 + 4.6, 3.0, 0.2);                                                                                   // la file : trois poteaux et leur cordon
-    for (const dx of [-1.4, 0, 1.4]) { cyl(D, 0.16, 0.03, 0xc9a04a, cx + dx, 0.015, z0 + 4.6, { fin: "metal", seg: 16 }); cyl(D, 0.025, 0.95, 0xc9a04a, cx + dx, 0.5, z0 + 4.6, { fin: "metal", seg: 8 }); boule(D, 0.045, 0xc9a04a, cx + dx, 0.99, z0 + 4.6, { fin: "metal" }); }
-    for (const dx of [-0.7, 0.7]) boiteM(D, 1.36, 0.04, 0.04, 0x4f46e5, cx + dx, 0.84, z0 + 4.6, { fin: "tissu", sansOmbre: true });
+    emprise(cx, z0 + 4.2, 3.0, 0.2);                                                                                   // la file : trois poteaux et leur cordon
+    for (const dx of [-1.4, 0, 1.4]) { cyl(D, 0.16, 0.03, 0xc9a04a, cx + dx, 0.015, z0 + 4.2, { fin: "metal", seg: 16 }); cyl(D, 0.025, 0.95, 0xc9a04a, cx + dx, 0.5, z0 + 4.2, { fin: "metal", seg: 8 }); boule(D, 0.045, 0xc9a04a, cx + dx, 0.99, z0 + 4.2, { fin: "metal" }); }
+    for (const dx of [-0.7, 0.7]) boiteM(D, 1.36, 0.04, 0.04, 0x4f46e5, cx + dx, 0.84, z0 + 4.2, { fin: "tissu", sansOmbre: true });
     plante(D, p.x0 + 0.85, p.z1 - 0.95, 1.1, true); personne("particulier", p); personne("pro", p);
   }
 
-  p = parId.reunion;                                                       // ── Salle de réunion : la table, l'écran du planning, la vue (en porte-à-faux, à droite de l'accueil)
+  p = parId.reunion;                                                       // ── Salle de réunion : la table, l'écran du planning, la vue (au bout de l'aile droite, à côté de l'accueil)
   { const z0 = p.z0, tx = p.cx + 0.2, tz = z0 + 2.6;
     tapis(D, tx, tz, 3.8, 3.0, TAPIS.gris);
     cimaise(D, tx, z0 + 0.3, 3.4, 2.4, 0, NUIT); ecranMural(D, 2.9, 1.63, tx, 1.38, z0 + 0.39, 0, lumineux(1024, 576, dessinPlanning, 0.9));
@@ -210,7 +215,7 @@ function dessinPlanning(c, W, H) {
     plante(D, p.x1 - 0.8, p.z1 - 0.8, 1.0, true);
   }
 
-  p = parId.serveurs;                                                      // ── Salle des serveurs : les baies Supabase et Vercel, l'écran des jauges (en porte-à-faux, au bout)
+  p = parId.serveurs;                                                      // ── Salle des serveurs : les baies Supabase et Vercel, l'écran des jauges (aile droite, côté couloir)
   { const z0 = p.z0, x0 = p.x0, rz = z0 + 0.62;
     const baie = (x, nom, ton, encre) => {                                   // une baie : l'armoire noire, ses voyants, son nom au-dessus de la porte vitrée
       emprise(x, rz, 0.66, 0.96); boiteM(D, 0.62, 2.05, 0.92, 0x15161c, x, 1.025, rz, { fin: "metal" }); boiteM(D, 0.54, 1.7, 0.02, 0x23252f, x, 1.0, rz + 0.465, { rough: 0.25, metal: 0.6, sansOmbre: true });
@@ -223,12 +228,14 @@ function dessinPlanning(c, W, H) {
     tapis(D, x0 + 3.2, p.z1 - 1.3, 2.6, 1.2, TAPIS.gris); plante(D, p.x1 - 0.7, p.z1 - 0.7, 0.9, true);
   }
 
-  p = parId.claude;                                                        // ── Salle Claude Code : le poste de travail, l'écran des limites (au bout du porte-à-faux, après les serveurs)
-  { const x1 = p.x1, z0 = p.z0;
-    tapis(D, p.cx, p.cz + 0.3, 2.2, 2.6, TAPIS.gris);
-    bureauM(D, p.cx - 0.25, z0 + 0.75, 0, { double: true, large: 1.5, prof: 0.75, couleur: 0x1e1b4b });                                                      // le poste, dos à la terrasse
-    cimaise(D, x1 - 0.3, p.cz + 0.5, 2.4, 2.3, -PI / 2, NUIT); ecranMural(D, 2.0, 1.13, x1 - 0.39, 1.38, p.cz + 0.5, -PI / 2, lumineux(1024, 576, dessinClaude, 0.95));
-    panneauTexte(D, "CLAUDE CODE", 1.3, 0.2, x1 - 0.38, 2.14, p.cz + 0.5, -PI / 2, "#1a1a1a", "#d97757", 0.9);
+  p = parId.claude;                                                        // ── Salle Claude Code : l'écran des limites au mur du fond, le poste face à lui, le coin canapé (aile droite, au bout)
+  { const x1 = p.x1, cz = p.cz;
+    cimaise(D, x1 - 0.3, cz, 3.0, 2.4, -PI / 2, NUIT); ecranMural(D, 2.6, 1.46, x1 - 0.39, 1.4, cz, -PI / 2, lumineux(1024, 576, dessinClaude, 0.95));
+    panneauTexte(D, "CLAUDE CODE", 1.5, 0.22, x1 - 0.38, 2.28, cz, -PI / 2, "#1a1a1a", "#d97757", 0.9);
+    tapis(D, x1 - 2.6, cz, 2.6, 3.2, TAPIS.gris);
+    bureauM(D, x1 - 2.7, cz, -PI / 2, { double: true, couleur: 0x1e1b4b });                                                            // le poste, face à l'écran des limites
+    canape(D, p.x0 + 1.1, cz + 0.4, PI / 2, CUIR.cognac); tableBasse(D, p.x0 + 2.5, cz + 0.4, 0.8);
+    plante(D, p.x0 + 0.7, p.z1 - 0.7, 0.9, true);
   }
 
   p = parId.accompagnement;                                                // ── Accompagnement : le salon où les clients attendent leur rappel, le bureau du conseiller
@@ -400,20 +407,6 @@ function dessinPlanning(c, W, H) {
     { const x = p.x1 - 0.9, z = p.z1 - 1.0; emprise(x, z, 1.0, 0.9); carton(D, x, 0, z, 0.55, 0.36, 0.42, 0.2); carton(D, x + 0.1, 0.37, z - 0.02, 0.5, 0.32, 0.4, -0.15); carton(D, x - 0.5, 0, z + 0.25, 0.45, 0.3, 0.4, 0.5, BLANC); }
   }
 
-  // ── La terrasse : le deck, la piscine, les transats, le parasol (à droite de l'accueil)
-  { const deck = texParquet(170, 124, 84, 77); deck.repeat.set(2, 2);
-    boiteM(D, 7.6, 0.12, 7.6, 0, 18.2, 0.0, 12.2, { mat: new THREE.MeshStandardMaterial({ map: deck, roughness: 0.7 }), sansOmbre: true, recoit: true });
-    const px = 18.6, pz = 10.4;                                                                                        // la piscine : une margelle blanche, l'eau un peu plus bas
-    for (const s of [-1, 1]) { boiteM(D, 5.2, 0.3, 0.3, 0xf3f1ec, px, 0.21, pz + s * 1.45, { fin: "laque" }); boiteM(D, 0.3, 0.3, 2.6, 0xf3f1ec, px + s * 2.45, 0.21, pz, { fin: "laque" }); }
-    boiteM(D, 4.6, 0.2, 2.6, 0x25c9dc, px, 0.2, pz, { rough: 0.05, metal: 0.25, lum: 0.3, sansOmbre: true, recoit: true });
-    for (const x of [16.4, 18.0]) { const t = new THREE.Group(); t.position.set(x, 0, 14.1); D.add(t);                                                                              // les transats
-      boiteM(t, 0.7, 0.07, 1.35, 0xffffff, 0, 0.33, -0.25, { fin: "tissu" }); const d = boiteM(t, 0.7, 0.07, 0.75, 0xffffff, 0, 0.52, 0.72, { fin: "tissu" }); d.rotation.x = -0.6;
-      for (const sz of [-0.8, 0.3]) boiteM(t, 0.62, 0.28, 0.05, 0x8a6a48, 0, 0.15, sz, { fin: "mat" }); boiteM(t, 0.6, 0.02, 0.5, x < 17 ? 0x4f46e5 : 0xf59e0b, 0, 0.375, -0.5, { fin: "tissu", sansOmbre: true }); siege(x, 14.0, H_ASSISE.transat, PI, "transat"); }
-    cyl(D, 0.22, 0.03, 0xffffff, 17.2, 0.4, 13.7, { fin: "laque", seg: 18 }); cyl(D, 0.02, 0.36, NOIR, 17.2, 0.2, 13.7, { fin: "metal", seg: 6 }); cyl(D, 0.035, 0.12, 0xf59e0b, 17.25, 0.47, 13.72, { rough: 0.2, opacite: 0.8, seg: 8 });
-    cyl(D, 0.03, 2.4, 0xc9ccd6, 20.2, 1.2, 14.2, { fin: "metal", seg: 8 }); cone(D, 1.5, 0.5, 0xfdfbf5, 20.2, 2.45, 14.2, { fin: "tissu", seg: 8 }); cyl(D, 0.3, 0.08, 0xe9e6df, 20.2, 0.1, 14.2, { rough: 0.8, seg: 14 });                        // le parasol
-    tableRonde(D, 20.2, 14.2, 0.42); for (const a of [0.6, 2.7, 4.6]) { cyl(D, 0.2, 0.42, 0xe9e4da, 20.2 + Math.sin(a) * 0.85, 0.21, 14.2 + Math.cos(a) * 0.85, { fin: "tissu", seg: 16 }); }
-    palmierPot(D, 15.2, 9.1, 3.8); palmierPot(D, 21.3, 15.4, 3.4);
-  }
   // ── Le palier des ascenseurs (à gauche de l'accueil) : les portes donnent vers l'accueil
   { boiteM(D, 7, 3.2, 4.6, 0xe9e6df, -16.5, 1.6, 13.6, { mat: new THREE.MeshStandardMaterial({ map: (() => { const t = texBeton("#e6e2d9", 23); t.repeat.set(2, 1); return t; })(), roughness: 0.75 }) });
     boiteM(D, 0.1, 2.75, 4.2, 0, -12.96, 1.38, 13.6, { mat: matNoyer });
@@ -429,8 +422,10 @@ function dessinPlanning(c, W, H) {
     palmierPot(D, -21.6, 9.0, 3.0);
   }
   // ── Le couloir de l'accueil (entre la rangée du milieu et l'accueil) : un tapis, des jardinières
-  { tapis(D, -3.9, 9.0, 36.0, 1.3, TAPIS.nuit);
-    for (const [x, g] of [[-17, 5], [10.5, 6]]) jardiniere(D, x, 9.72, 2.0, 0, g * 17);
+  { tapis(D, 0.4, 9.0, 44.6, 1.3, TAPIS.nuit);
+    for (const [x, g] of [[-17, 5], [10.5, 6], [19.6, 7]]) jardiniere(D, x, 9.72, 2.0, 0, g * 17);
+    tapis(D, 14.8, 15.2, 1.1, 9.4, TAPIS.nuit);                                                                        // le couloir d'accès de l'aile droite
+    palmierPot(D, 14.8, 19.9, 2.6);
   }
   // ── Le balcon du bureau de Dani, en porte-à-faux : deux transats, une table, des palmiers
   { for (const z of [1.6, 3.4]) { const t = new THREE.Group(); t.position.set(26.6, 0, z); t.rotation.y = PI / 2; D.add(t); emprise(26.6, z, 2.1, 0.8);
