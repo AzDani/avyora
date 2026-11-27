@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { nomPage } from "@/lib/admin/outils";
 
 /**
  * Visiteurs en ligne en ce moment (22/11/2026), comme le compteur de Vercel : lu toutes les 15 s
@@ -62,27 +63,6 @@ export function lieu(v: { ville?: string; pays?: string }): string {
 function depuis(ms: number, maintenant: number): string {
   const s = Math.max(0, Math.round((maintenant - ms) / 1000));
   return s < 5 ? "à l'instant" : `il y a ${s} s`;
-}
-
-const NOMS: Record<string, string> = {
-  "/": "Accueil",
-  "/plan": "Éditeur de plan",
-  "/tarifs": "Tarifs",
-  "/inscription": "Inscription",
-  "/connexion": "Connexion",
-  "/projets": "Mes projets",
-  "/projets/nouveau": "Estimation rapide",
-  "/projets/nouveau/detaille": "Estimation détaillée",
-  "/projets/nouveau/construction": "Construction neuve",
-  "/estimation-travaux": "Estimation travaux",
-  "/estimation-construction-maison": "Estimation construction",
-  "/logiciel-plan-maison": "Logiciel plan maison",
-  "/mon-espace/compte": "Mon compte",
-  "/accompagnement-travaux": "Accompagnement",
-};
-
-export function nomPage(chemin: string): string {
-  return NOMS[chemin] ?? chemin;
 }
 
 export default function EnLigne() {

@@ -118,3 +118,25 @@ export const messageWhatsApp = {
   demande: (prenom: string) => `Bonjour ${prenom}, c'est Daniel d'AVYORA. Je reviens vers toi suite à ta demande sur le site.`,
   inscrit: () => "Bonjour, c'est Daniel d'AVYORA. Merci pour ton inscription ! As-tu un projet de travaux en cours ?",
 };
+
+const NOMS: Record<string, string> = {
+  "/": "Accueil",
+  "/plan": "Éditeur de plan",
+  "/tarifs": "Tarifs",
+  "/inscription": "Inscription",
+  "/connexion": "Connexion",
+  "/projets": "Mes projets",
+  "/projets/nouveau": "Estimation rapide",
+  "/projets/nouveau/detaille": "Estimation détaillée",
+  "/projets/nouveau/construction": "Construction neuve",
+  "/estimation-travaux": "Estimation travaux",
+  "/estimation-construction-maison": "Estimation construction",
+  "/logiciel-plan-maison": "Logiciel plan maison",
+  "/mon-espace/compte": "Mon compte",
+  "/accompagnement-travaux": "Accompagnement",
+};
+
+/** Le nom lisible d'une page du site (compteur en ligne, bureaux) ; à défaut, son chemin. */
+export function nomPage(chemin: string): string {
+  return NOMS[chemin] ?? chemin;
+}

@@ -1,0 +1,28 @@
+<div class="app">
+  <header class="barre">
+    <span class="logo"><i><svg width="17" height="17" viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M17 45 32 15l15 30" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="39" r="4.5" fill="#c4b5fd"/></svg></i><span>AVY<b>ORA</b></span></span>
+    <h1>Les bureaux · 25e étage, Miami</h1>
+    <span class="exemple" id="exemple">Maquette · données d'exemple</span>
+    <span class="pousse"></span>
+    <a class="retour" id="retour" href="/admin" hidden>Retour à l'admin</a>
+    <button type="button" id="miami">Vue sur Miami</button>
+    <button type="button" id="ensemble">Vue d'ensemble</button>
+  </header>
+  <div class="corps">
+    <nav class="rail" id="rail" aria-label="Les pièces"></nav>
+    <main class="scene" id="scene">
+      <canvas id="c" aria-label="L'étage des bureaux AVYORA en 3D, dans une tour à Miami. Clique une pièce pour la voir de près."></canvas>
+      <div id="etiquettes"></div>
+      <div class="chargement" id="chargement" role="status"><p>Ouverture des bureaux…</p><div class="jauge"><i id="avance"></i></div><small id="erreur"></small></div>
+      <p class="aide" id="aide">Glisse pour déplacer · clic droit (ou Maj) pour tourner · molette pour zoomer</p>
+      <aside class="panneau" id="panneau" hidden aria-live="polite"></aside>
+      <section class="priorites" id="priorites" aria-label="Où mettre ton énergie aujourd'hui"></section>
+    </main>
+  </div>
+  <section class="telephone" id="telephone" hidden>
+    <h2>Les bureaux s'ouvrent sur ordinateur</h2>
+    <p>L'étage en 3D est trop lourd pour un téléphone : il n'est pas chargé ici. Ouvre ce lien sur ton ordinateur pour entrer dans les bureaux.</p>
+    <h3>Où mettre ton énergie aujourd'hui</h3>
+    <ol id="tel-priorites"></ol>
+  </section>
+</div>

@@ -13,7 +13,8 @@ import { IconeAccompagnement } from "@/components/accompagnement/OngletAccompagn
  */
 export type BadgesAdmin = { accompagnement?: number | null; artisans?: number | null; devis?: number | null; avis?: number | null };
 
-type Item = { href: string; label: string; icone: React.ReactNode; badge?: keyof BadgesAdmin };
+/** `pleinePage` : la cible est une page à part, hors du layout de l'admin (les bureaux virtuels, faits pour l'ordinateur) : un vrai lien, et pas d'onglet sur mobile. */
+type Item = { href: string; label: string; icone: React.ReactNode; badge?: keyof BadgesAdmin; pleinePage?: boolean };
 type Groupe = { titre?: string; items: Item[] };
 
 const ic = (d: React.ReactNode) => (
@@ -26,6 +27,7 @@ const GROUPES: Groupe[] = [
   {
     items: [
       { href: "/admin", label: "Tableau de bord", icone: ic(<><rect x="2" y="2" width="5" height="6" rx="1.2" /><rect x="9" y="2" width="5" height="3.5" rx="1.2" /><rect x="9" y="7.5" width="5" height="6.5" rx="1.2" /><rect x="2" y="10" width="5" height="4" rx="1.2" /></>) },
+      { href: "/admin/bureaux", label: "Bureaux 3D", pleinePage: true, icone: ic(<><path d="M2.5 13.5V5.2L8 2.5l5.5 2.7v8.3" /><path d="M2.5 13.5h11M6 13.5V9.2h4v4.3M5.4 6.6h.01M8 6.6h.01M10.6 6.6h.01" /></>) },
     ],
   },
   {
@@ -86,7 +88,7 @@ function Recherche() {
 
 export default function AdminNav({ email, badges }: { email: string; badges: BadgesAdmin }) {
   const p = usePathname();
-  const items = GROUPES.flatMap((g) => g.items);
+  const items = GROUPES.flatMap((g) => g.items).filter((it) => !it.pleinePage);
 
   return (
     <>
@@ -109,9 +111,10 @@ export default function AdminNav({ email, badges }: { email: string; badges: Bad
                 <ul className="space-y-0.5">
                   {g.items.map((it) => {
                     const on = actif(p, it.href);
+                    const Lien: React.ElementType = it.pleinePage ? "a" : Link;
                     return (
                       <li key={it.href}>
-                        <Link
+                        <Lien
                           href={it.href}
                           aria-current={on ? "page" : undefined}
                           className={
@@ -122,7 +125,7 @@ export default function AdminNav({ email, badges }: { email: string; badges: Bad
                           {it.icone}
                           {it.label}
                           {it.badge && <Pastille n={badges[it.badge]} />}
-                        </Link>
+                        </Lien>
                       </li>
                     );
                   })}

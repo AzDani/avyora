@@ -128,6 +128,17 @@ const nextConfig: NextConfig = {
         source: "/vendor/:path*",
         headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
       },
+      /* Les bureaux virtuels (/admin/bureaux) : Three.js r128 est couvert par /vendor ci-dessus. La scène et sa feuille
+         portent leur version dans l'adresse (?v=…, lib/bureaux/coquille.ts) : immuables. Les modèles 3D (20 Mo) gardent leur
+         nom : une semaine, puis revérifiés en arrière-plan. Rien de tout cela n'a à être indexé. */
+      ...["/bureaux/scene.js", "/bureaux/scene.css"].map((source) => ({
+        source,
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }, { key: "X-Robots-Tag", value: "noindex" }],
+      })),
+      {
+        source: "/bureaux/paquets/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" }, { key: "X-Robots-Tag", value: "noindex" }],
+      },
       {
         source: "/fonts/:path*",
         headers: [{ key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" }],
