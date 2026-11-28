@@ -8,6 +8,7 @@ import { labelMetier } from "@/lib/reseau/metiers";
 import { LIMITES_SUPABASE, LIMITES_VERCEL, SEUIL_ATTENTION, SEUIL_CRITIQUE, poids } from "@/lib/bureaux/limites";
 import type { MesureServeurs } from "@/lib/bureaux/serveurs";
 import { dateExpiration, dollars, jaugesClaude, joursAvantExpiration, releveVieux, type AppelsMois, type ReleveClaude } from "@/lib/bureaux/claude";
+import { NOMS_STATUTS, nomLot, type ResumeProspection } from "@/lib/prospection/statuts";
 import { MODES_RDV, TYPES_RDV, heureParis, jourDepuisLundi, libelle, lundiParis, montant, parMois, totalMensuel, totalTexte, type Charge, type EntreesStripe, type RendezVous } from "@/lib/admin/gestion";
 
 /**
@@ -83,6 +84,10 @@ export type SourcesBureaux = {
   appelsClaude?: AppelsMois | null;
   /** La migration 0018 n'est pas appliquée (les deux lectures ont échoué). */
   sansTablesClaude?: boolean;
+  /** Agent Prospection (migration 0019) : le résumé des prospects ; null = illisible ; absent = pas encore lu. */
+  prospection?: ResumeProspection | null;
+  /** La migration 0019 n'est pas appliquée (la table des prospects n'existe pas). */
+  sansTableProspection?: boolean;
   maintenant: Date;
 };
 
@@ -105,7 +110,7 @@ const illisible = (quoi: string, kpis: [string, string][], lien: string | null):
   piece({ etat: "vide", kpis, titre: "Lecture impossible", liste: [[quoi, "La lecture a échoué, la page réessaie dans une minute", "vide", "erreur"]], conseil: "Cette pièce reviendra toute seule dès que la lecture repasse.", lien });
 
 export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
-  const { inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs = null, charges = null, entrees = null, rendezVous = null, cleClaude = false, releveClaude = null, appelsClaude = null, sansTablesClaude = false, maintenant } = src;
+  const { inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs = null, charges = null, entrees = null, rendezVous = null, cleClaude = false, releveClaude = null, appelsClaude = null, sansTablesClaude = false, prospection = null, sansTableProspection = false, maintenant } = src;
   const jour = aujourdhuiParis(maintenant);
   const projets = inscrits.flatMap((i) => i.projets);
   const projets7 = projets.filter((p) => depuis([p.createdAt], 7, maintenant) === 1);
@@ -296,6 +301,7 @@ export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
     { piece: "accompagnement" as const, n: aRappeler.length, texte: `Rappeler ${aRappeler.length} demande${s(aRappeler.length)} d'accompagnement`, ou: "Bureau Accompagnement", gain: "ce qui rapporte", retard: rappelsEnRetard },
     { piece: "reunion" as const, n: aConfirmer.length, texte: `Confirmer ${aConfirmer.length} rendez-vous`, ou: "Salle de réunion", gain: "ce qui rapporte", retard: 0 },
     { piece: "reunion" as const, n: aRelire.length, texte: `Relire ${aRelire.length} compte${s(aRelire.length)} rendu${s(aRelire.length)} d'appel`, ou: "Salle de réunion", gain: "ce qui rapporte", retard: 0 },
+    { piece: "marketing" as const, n: prospection?.aTraiter ?? 0, texte: `Rappeler ${prospection?.aTraiter ?? 0} prospect${s(prospection?.aTraiter ?? 0)} intéressé${s(prospection?.aTraiter ?? 0)}`, ou: "Marketing · Agent Prospection", gain: "réseau", retard: 0 },
     { piece: "attente" as const, n: enAttente.length, texte: `Examiner ${enAttente.length} candidature${s(enAttente.length)} d'artisan${s(enAttente.length)}`, ou: "Salle d'attente artisans", gain: "réseau", retard: candidaturesEnRetard },
     { piece: "devis" as const, n: nbAvis, texte: `Modérer ${nbAvis} avis en attente`, ou: "Salle des devis", gain: "confiance", retard: 0 },
     { piece: "atelier" as const, n: decennales.length, texte: `Relancer ${decennales.length} décennale${s(decennales.length)}`, ou: "Atelier du réseau", gain: "réseau", retard: expirees },
@@ -335,13 +341,8 @@ export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
         gens: Math.min(4, rdvsActifs.filter((x) => x.j === jourDepuisLundi(maintenant, lundi)).length),
         lien: "/admin/planning",
       });
-  const marketing = piece({
-    etat: "vide",
-    kpis: [["Agents actifs", "0"], ["E-mails envoyés", "0"], ["Réponses", "0"]],
-    titre: "Une cabine par agent",
-    liste: [["Agent Prospection", "E-mails aux pros du bâtiment", "vide", "à créer"], ["Agent SEO", "Pages et positions Google", "vide", "à créer"], ["Agent Réseaux", "Reels et publications", "vide", "à créer"]],
-    conseil: "Les trois cabines sont prêtes : chaque agent y affichera ce qu'il fait.",
-  });
+  const marketing = salleMarketing(prospection, sansTableProspection);
+  const agentProspection = agentMarketing(prospection);
   const reno = projets.filter((p) => p.nature === "reno").length, traitees = (demandes ?? []).filter((d) => d.traiteeLe).length;
   const dossiers = projets.length + (devis?.length ?? 0) + (plans?.length ?? 0);
   const archives = piece({
@@ -369,7 +370,7 @@ export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
     pieces: { accueil, accompagnement, reunion, projets: salleProjets, plan: studio, attente, atelier, devis: salleDevis, bureau, marketing, caisse: comptabilite, archives, serveurs: salle, claude: salleIa },
     priorites,
     rdvs,
-    agents: agentsBureaux(rendezVous, cleClaude, maintenant),
+    agents: { ...agentsBureaux(rendezVous, cleClaude, maintenant), ...(agentProspection ? { marketing: agentProspection } : {}) },
   };
 }
 
@@ -508,4 +509,61 @@ export function salleClaude(releve: ReleveClaude | null, appels: AppelsMois | nu
     jauges,
     lien: null,
   });
+}
+
+/* ─── Marketing : l'Agent Prospection (migration 0019) ──────────────────────── */
+
+const AGENTS_A_CREER: Ligne[] = [["Agent SEO", "Pages et positions Google", "vide", "à créer"], ["Agent Réseaux", "Reels et publications", "vide", "à créer"]];
+
+/**
+ * La salle Marketing : une cabine par agent. L'Agent Prospection est réel (les e-mails partent du Mac de Daniel, le site
+ * ne fait que lire) ; SEO et Réseaux restent « à créer ». Sans la migration 0019, la pièce le dit sans planter.
+ */
+export function salleMarketing(p: ResumeProspection | null, sansTable: boolean): PieceBureaux {
+  if (!p)
+    return piece({
+      etat: "vide",
+      kpis: [["Agents actifs", "—"], ["E-mails envoyés", "—"], ["Réponses", "—"]],
+      titre: "Une cabine par agent",
+      liste: [["Agent Prospection", sansTable ? "Migration 0019 à appliquer" : "La lecture a échoué, la page réessaie dans une minute", "vide", sansTable ? "à brancher" : "erreur"], ...AGENTS_A_CREER],
+      conseil: sansTable ? "Applique la migration 0019 dans Supabase : l'Agent Prospection affichera ici ses envois et les réponses." : "Cette pièce reviendra toute seule dès que la lecture repasse.",
+      lien: "/admin/marketing",
+    });
+  const { envoyes, envoyes7, reponses, aTraiter } = p;
+  return piece({
+    etat: aTraiter ? "attention" : envoyes7 ? "bon" : "vide",
+    nb: aTraiter || envoyes7,
+    kpis: [["Agents actifs", envoyes ? "1" : "0"], ["E-mails envoyés", String(envoyes)], ["Réponses", String(reponses)]],
+    titre: "Une cabine par agent",
+    liste: [
+      ["Agent Prospection", `${envoyes} e-mail${s(envoyes)} envoyé${s(envoyes)} · ${reponses} réponse${s(reponses)}`, aTraiter ? "attention" : envoyes7 ? "bon" : "vide", aTraiter ? "à traiter" : envoyes7 ? "au travail" : envoyes ? "au repos" : "prêt"],
+      ...AGENTS_A_CREER,
+    ],
+    conseil: aTraiter
+      ? `${aTraiter} prospect${s(aTraiter)} ${aTraiter > 1 ? "ont" : "a"} répondu : rappelle-${aTraiter > 1 ? "les" : "le"} tant que c'est chaud.`
+      : envoyes
+        ? "Une relance part 5 jours ouvrés après le premier e-mail. Un STOP, et plus jamais d'e-mail à cette personne."
+        : "L'agent prépare les e-mails chaque matin ; rien ne part sans ton go.",
+    gens: envoyes7 ? 1 : 0,
+    lien: "/admin/marketing",
+  });
+}
+
+/** L'état réel de l'Agent Prospection ; null tant que sa table ne se lit pas (il reste alors « à créer » dans la scène). */
+export function agentMarketing(p: ResumeProspection | null): AgentBureaux | null {
+  if (!p) return null;
+  const aTraiter = p.prospects.filter((x) => x.statut === "repondu" || x.statut === "interesse");
+  const stops = p.parStatut.stop;
+  return {
+    etat: aTraiter.length ? "attend" : p.envoyes7 ? "travail" : "repos",
+    fait: aTraiter.length
+      ? `${aTraiter.length} réponse${s(aTraiter.length)} à traiter`
+      : p.envoyes7 ? `${p.envoyes7} e-mail${s(p.envoyes7)} envoyé${s(p.envoyes7)} en 7 jours` : "Aucun envoi ces 7 derniers jours",
+    taches: [
+      ...aTraiter.slice(0, 3).map((x): Ligne => [x.entreprise, [x.contact, NOMS_STATUTS[x.statut], x.commune || x.ville].filter(Boolean).join(" · "), "attention", "t'attend"]),
+      ...(p.aRelancer ? [[`${p.aRelancer} relance${s(p.aRelancer)} due${s(p.aRelancer)}`, "Sans réponse depuis 5 jours ouvrés", "attention", "à relancer"] as Ligne] : []),
+      ...(stops ? [[`${stops} STOP à respecter`, "Plus jamais d'e-mail à ces adresses", "vide", "respecté"] as Ligne] : []),
+      ...(p.dernierLot ? [[`Dernier lot · ${nomLot(p.dernierLot.lot)}`, `${p.dernierLot.nb} prospect${s(p.dernierLot.nb)} dans ce lot`, "vide", "fait"] as Ligne] : []),
+    ],
+  };
 }

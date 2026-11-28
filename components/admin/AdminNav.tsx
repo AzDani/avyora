@@ -47,6 +47,7 @@ const GROUPES: Groupe[] = [
     items: [
       { href: "/admin/planning", label: "Planning", icone: ic(<><rect x="2.5" y="3.5" width="11" height="10" rx="1.5" /><path d="M2.5 6.8h11M5.5 2v3M10.5 2v3M5.4 9.6h1.4M8.6 9.6h1.4" /></>) },
       { href: "/admin/compta", label: "Compta", icone: ic(<><rect x="2" y="3.5" width="12" height="9" rx="1.5" /><path d="M2 6.5h12M4.8 10h2.4" /></>) },
+      { href: "/admin/marketing", label: "Marketing", icone: ic(<path d="M3 10V6l7-3v10l-7-3ZM10 6.2c1.6.3 2.6 1 2.6 1.8s-1 1.5-2.6 1.8M5 10.5V13" />) },
     ],
   },
   {

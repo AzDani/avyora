@@ -8,6 +8,7 @@ import { construireBureaux } from "@/lib/bureaux/donnees";
 import { mesurerServeurs } from "@/lib/bureaux/serveurs";
 import { entreesStripe, listCharges, listRendezVous } from "@/lib/data/gestion";
 import { appelsDuMois, dernierReleve } from "@/lib/data/claude";
+import { ErreurProspection, lireProspection } from "@/lib/data/prospection";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,7 +25,8 @@ export async function GET() {
     const maintenant = new Date();
     let echecsClaude = 0;
     const pasLu = () => { echecsClaude++; return null; };
-    const [inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs, charges, entrees, rendezVous, releveClaude, appelsClaude] = await Promise.all([
+    let sansTableProspection = false;
+    const [inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs, charges, entrees, rendezVous, releveClaude, appelsClaude, prospection] = await Promise.all([
       listInscrits(),
       listPlansAdmin().catch(() => null),
       listDemandesAccompagnement().catch(() => null),
@@ -39,8 +41,9 @@ export async function GET() {
       listRendezVous(0, 2).catch(() => null),
       dernierReleve().catch(pasLu),
       appelsDuMois(maintenant).catch(pasLu),
+      lireProspection(maintenant).catch((e) => { sansTableProspection = e instanceof ErreurProspection && e.migrationAbsente; return null; }),
     ]);
-    const donnees = construireBureaux({ inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs, charges, entrees, rendezVous, cleClaude: !!process.env.ANTHROPIC_API_KEY, releveClaude, appelsClaude, sansTablesClaude: echecsClaude === 2, maintenant });
+    const donnees = construireBureaux({ inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs, charges, entrees, rendezVous, cleClaude: !!process.env.ANTHROPIC_API_KEY, releveClaude, appelsClaude, sansTablesClaude: echecsClaude === 2, prospection, sansTableProspection, maintenant });
     return NextResponse.json(donnees, { headers: { "Cache-Control": "no-store" } });
   } catch (e) {
     console.error("[admin/bureaux] lecture impossible :", e);
