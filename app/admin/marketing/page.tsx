@@ -53,7 +53,7 @@ function Contenu({ r, statut, cible }: { r: ResumeProspection; statut: string | 
         <Tuile titre="Intéressés" valeur={r.parStatut.interesse} detail={`${r.parStatut.repondu} autre${r.parStatut.repondu > 1 ? "s" : ""} à lire`} ton={r.aTraiter ? "attention" : undefined} />
         <Tuile titre="Rendez-vous" valeur={r.parStatut.rdv} detail={`${r.parStatut.inscrit} inscrit${r.parStatut.inscrit > 1 ? "s" : ""}`} />
         <Tuile titre="STOP" valeur={r.parStatut.stop} detail="Plus jamais d'e-mail" />
-        <Tuile titre="À relancer" valeur={r.aRelancer} detail="Après 5 jours ouvrés" ton={r.aRelancer ? "attention" : undefined} />
+        <Tuile titre="À relancer" valeur={r.aRelancer} detail="Après 7 jours, une seule fois" ton={r.aRelancer ? "attention" : undefined} />
       </section>
       {r.dernierLot && <p className="mb-4 text-[13px] text-muted">Dernier lot : {nomLot(r.dernierLot.lot)} · {r.dernierLot.nb} prospect{r.dernierLot.nb > 1 ? "s" : ""}.</p>}
 

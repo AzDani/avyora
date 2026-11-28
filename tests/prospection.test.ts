@@ -2,11 +2,11 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 import { readFileSync } from "node:fs";
 import * as Ts from "@/lib/prospection/statuts";
-import { STATUTS, datesAPoser, estARelancer, joursOuvres, nomLot, normaliserEmail, resumerProspection, transition, type Prospect } from "@/lib/prospection/statuts";
+import { STATUTS, datesAPoser, estARelancer, joursEcoules, nomLot, normaliserEmail, resumerProspection, transition, type Prospect } from "@/lib/prospection/statuts";
 import { agentMarketing, construireBureaux, salleMarketing, type SourcesBureaux } from "@/lib/bureaux/donnees";
 import * as Script from "../scripts/prospection.mjs";
 
-/** L'Agent Prospection (28/11/2026) : statuts, STOP, relances en jours ouvrés, salle Marketing, script du Mac. */
+/** L'Agent Prospection (28/11/2026) : statuts, STOP, une seule relance à 7 jours, salle Marketing, script du Mac. */
 const MAINTENANT = new Date("2026-11-28T10:00:00Z"); // samedi 28 novembre 2026
 const sources = (s: Partial<SourcesBureaux> = {}): SourcesBureaux => ({ inscrits: [], plans: [], demandes: [], artisans: [], devis: [], avisAModerer: 0, enLigne: null, journee: null, maintenant: MAINTENANT, ...s });
 let n = 0;
@@ -39,20 +39,25 @@ describe("les règles des statuts", () => {
     expect(datesAPoser("interesse", { reponse_le: "2026-11-20T00:00:00Z" }, MAINTENANT)).toEqual({});
     expect(datesAPoser("erreur", {}, MAINTENANT)).toEqual({});
   });
-  it("les jours ouvrés : lundi à vendredi, heure de Paris", () => {
+  it("les jours écoulés : tous les jours comptent, week-end compris, heure de Paris", () => {
     const lundi = new Date("2026-11-23T09:00:00Z");
-    expect(joursOuvres(lundi, new Date("2026-11-27T09:00:00Z"))).toBe(4);  // vendredi
-    expect(joursOuvres(lundi, new Date("2026-11-29T09:00:00Z"))).toBe(4);  // le week-end ne compte pas
-    expect(joursOuvres(lundi, new Date("2026-11-30T09:00:00Z"))).toBe(5);  // lundi suivant
-    // vendredi 23 h 30 à Paris (22 h 30 UTC) puis lundi : 1 jour ouvré
-    expect(joursOuvres(new Date("2026-11-27T22:30:00Z"), new Date("2026-11-30T08:00:00Z"))).toBe(1);
+    expect(joursEcoules(lundi, new Date("2026-11-27T09:00:00Z"))).toBe(4);  // vendredi
+    expect(joursEcoules(lundi, new Date("2026-11-29T09:00:00Z"))).toBe(6);  // le week-end compte
+    expect(joursEcoules(lundi, new Date("2026-11-30T09:00:00Z"))).toBe(7);  // lundi suivant
+    // vendredi 23 h 30 à Paris (22 h 30 UTC) puis lundi : 3 jours
+    expect(joursEcoules(new Date("2026-11-27T22:30:00Z"), new Date("2026-11-30T08:00:00Z"))).toBe(3);
     // 23 h 30 UTC le jeudi = déjà vendredi à Paris
-    expect(joursOuvres(new Date("2026-11-26T23:30:00Z"), new Date("2026-11-30T08:00:00Z"))).toBe(1);
+    expect(joursEcoules(new Date("2026-11-26T23:30:00Z"), new Date("2026-11-30T08:00:00Z"))).toBe(3);
+    // passage à l'heure d'hiver (25 octobre 2026) : toujours des jours entiers
+    expect(joursEcoules(new Date("2026-10-24T10:00:00Z"), new Date("2026-10-31T10:00:00Z"))).toBe(7);
   });
-  it("à relancer : envoyé, jamais relancé, depuis au moins 5 jours ouvrés", () => {
+  it("à relancer : envoyé, jamais relancé, depuis au moins 7 jours ; une seule relance, ensuite plus rien", () => {
     const lundi = new Date("2026-11-30T09:00:00Z");
     expect(estARelancer({ statut: "envoye", envoyeLe: "2026-11-23T08:00:00Z", relanceLe: null }, lundi)).toBe(true);
     expect(estARelancer({ statut: "envoye", envoyeLe: "2026-11-24T08:00:00Z", relanceLe: null }, lundi)).toBe(false);
+    // envoyé un samedi, relancé le samedi suivant (le week-end compte)
+    expect(estARelancer({ statut: "envoye", envoyeLe: "2026-11-28T09:00:00Z", relanceLe: null }, new Date("2026-12-05T07:00:00Z"))).toBe(true);
+    expect(estARelancer({ statut: "envoye", envoyeLe: "2026-11-28T09:00:00Z", relanceLe: null }, new Date("2026-12-04T07:00:00Z"))).toBe(false);
     expect(estARelancer({ statut: "relance", envoyeLe: "2026-11-02T08:00:00Z", relanceLe: "2026-11-09T08:00:00Z" }, lundi)).toBe(false);
     expect(estARelancer({ statut: "stop", envoyeLe: "2026-11-02T08:00:00Z", relanceLe: null }, lundi)).toBe(false);
   });
@@ -68,7 +73,8 @@ describe("le script du Mac reprend exactement les mêmes règles", () => {
     expect(Script.CIBLES).toEqual([...Ts.CIBLES]);
     expect(Script.STATUTS_REPONSE).toEqual([...Ts.STATUTS_REPONSE]);
     expect(Script.INTERDITS_APRES_STOP).toEqual([...Ts.INTERDITS_APRES_STOP]);
-    expect(Script.RELANCE_JOURS_OUVRES).toBe(Ts.RELANCE_JOURS_OUVRES);
+    expect(Script.RELANCE_JOURS).toBe(Ts.RELANCE_JOURS);
+    expect(Ts.RELANCE_JOURS).toBe(7);
   });
   it("même table de transitions, mêmes dates posées", () => {
     for (const de of [...STATUTS, "inconnu"]) for (const vers of [...STATUTS, "inconnu"]) {
@@ -76,11 +82,11 @@ describe("le script du Mac reprend exactement les mêmes règles", () => {
       if (Ts.estStatut(vers)) expect(Script.datesAPoser(vers, {}, MAINTENANT)).toEqual(datesAPoser(vers, {}, MAINTENANT));
     }
   });
-  it("même e-mail normalisé, mêmes jours ouvrés", () => {
+  it("même e-mail normalisé, mêmes jours écoulés", () => {
     for (const e of ["  A@B.FR", "x@y", "a b@c.fr", "ok.pro@artisan-bordeaux.fr", null]) expect(Script.normaliserEmail(e)).toBe(normaliserEmail(e));
     for (let j = 0; j < 20; j++) {
       const a = new Date(Date.UTC(2026, 9, 20 + j, 21, 45)), b = new Date(Date.UTC(2026, 10, 3 + j, 6));
-      expect(Script.joursOuvres(a, b)).toBe(joursOuvres(a, b));
+      expect(Script.joursEcoules(a, b)).toBe(joursEcoules(a, b));
     }
   });
 });
@@ -170,7 +176,7 @@ describe("la salle Marketing des bureaux", () => {
     expect(a.taches).toEqual([
       ["Plomberie Garonne", "Paul · Intéressé · Mérignac", "attention", "t'attend"],
       ["Agence Les Chartrons", "A répondu · Bordeaux", "attention", "t'attend"],
-      ["1 relance due", "Sans réponse depuis 5 jours ouvrés", "attention", "à relancer"],
+      ["1 relance due", "Sans réponse depuis 7 jours", "attention", "à relancer"],
       ["1 STOP à respecter", "Plus jamais d'e-mail à ces adresses", "vide", "respecté"],
       ["Dernier lot · 28 novembre", "1 prospect dans ce lot", "vide", "fait"],
     ]);

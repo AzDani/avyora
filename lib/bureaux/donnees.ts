@@ -542,7 +542,7 @@ export function salleMarketing(p: ResumeProspection | null, sansTable: boolean):
     conseil: aTraiter
       ? `${aTraiter} prospect${s(aTraiter)} ${aTraiter > 1 ? "ont" : "a"} répondu : rappelle-${aTraiter > 1 ? "les" : "le"} tant que c'est chaud.`
       : envoyes
-        ? "Une relance part 5 jours ouvrés après le premier e-mail. Un STOP, et plus jamais d'e-mail à cette personne."
+        ? "Une seule relance, 7 jours après le premier e-mail ; ensuite plus rien. Un STOP, et plus jamais d'e-mail à cette personne."
         : "L'agent prépare les e-mails chaque matin ; rien ne part sans ton go.",
     gens: envoyes7 ? 1 : 0,
     lien: "/admin/marketing",
@@ -561,7 +561,7 @@ export function agentMarketing(p: ResumeProspection | null): AgentBureaux | null
       : p.envoyes7 ? `${p.envoyes7} e-mail${s(p.envoyes7)} envoyé${s(p.envoyes7)} en 7 jours` : "Aucun envoi ces 7 derniers jours",
     taches: [
       ...aTraiter.slice(0, 3).map((x): Ligne => [x.entreprise, [x.contact, NOMS_STATUTS[x.statut], x.commune || x.ville].filter(Boolean).join(" · "), "attention", "t'attend"]),
-      ...(p.aRelancer ? [[`${p.aRelancer} relance${s(p.aRelancer)} due${s(p.aRelancer)}`, "Sans réponse depuis 5 jours ouvrés", "attention", "à relancer"] as Ligne] : []),
+      ...(p.aRelancer ? [[`${p.aRelancer} relance${s(p.aRelancer)} due${s(p.aRelancer)}`, "Sans réponse depuis 7 jours", "attention", "à relancer"] as Ligne] : []),
       ...(stops ? [[`${stops} STOP à respecter`, "Plus jamais d'e-mail à ces adresses", "vide", "respecté"] as Ligne] : []),
       ...(p.dernierLot ? [[`Dernier lot · ${nomLot(p.dernierLot.lot)}`, `${p.dernierLot.nb} prospect${s(p.dernierLot.nb)} dans ce lot`, "vide", "fait"] as Ligne] : []),
     ],

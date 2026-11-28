@@ -3,7 +3,7 @@
  * bureaux 3D, action qui change un statut). Rien ici ne lit la base. Les e-mails partent du Mac de Daniel
  * (scripts/prospection.mjs), jamais du site.
  *
- * scripts/prospection.mjs recopie les petites règles (statuts, transitions, e-mail, jours ouvrés) car Node ne peut pas
+ * scripts/prospection.mjs recopie les petites règles (statuts, transitions, e-mail, délai de relance) car Node ne peut pas
  * importer ce fichier TypeScript : tests/prospection.test.ts vérifie que les deux copies restent identiques.
  */
 
@@ -25,8 +25,8 @@ export const STATUTS_REPONSE: readonly Statut[] = ["repondu", "interesse", "rdv"
 export const STATUTS_A_TRAITER: readonly Statut[] = ["repondu", "interesse"];
 /** Après un STOP, plus jamais d'e-mail : ces statuts (qui mènent à un envoi) sont interdits. */
 export const INTERDITS_APRES_STOP: readonly Statut[] = ["a_envoyer", "envoye", "relance"];
-/** Délai avant la relance, en jours ouvrés (lundi à vendredi, heure de Paris). */
-export const RELANCE_JOURS_OUVRES = 5;
+/** Délai avant l'UNIQUE relance : 7 jours, week-end compris (heure de Paris). Sans réponse après elle, plus rien. */
+export const RELANCE_JOURS = 7;
 
 export const estStatut = (v: unknown): v is Statut => typeof v === "string" && (STATUTS as readonly string[]).includes(v);
 export const estCible = (v: unknown): v is Cible => typeof v === "string" && (CIBLES as readonly string[]).includes(v);
@@ -63,15 +63,10 @@ function jourParis(t: Date): number {
   return Date.UTC(y, m - 1, d);
 }
 
-/** Combien de jours ouvrés (lundi à vendredi, heure de Paris) après le jour de `debut`, jusqu'au jour de `fin` compris. */
-export function joursOuvres(debut: Date, fin: Date): number {
-  const a = jourParis(debut), b = jourParis(fin);
-  let n = 0;
-  for (let t = a + 864e5; t <= b; t += 864e5) {
-    const j = new Date(t).getUTCDay();
-    if (j !== 0 && j !== 6) n++;
-  }
-  return n;
+/** Combien de jours (heure de Paris) après le jour de `debut`, jusqu'au jour de `fin` compris : tous les jours comptent,
+ *  week-end compris (décision de Dani du 28/11/2026 : des pros lisent leurs e-mails le dimanche). */
+export function joursEcoules(debut: Date, fin: Date): number {
+  return Math.max(0, Math.round((jourParis(fin) - jourParis(debut)) / 864e5));
 }
 
 /** Un prospect tel que l'admin le lit. */
@@ -80,9 +75,10 @@ export type Prospect = {
   lot: string | null; envoyeLe: string | null; relanceLe: string | null; reponseLe: string | null; statut: Statut; note: string | null; majLe: string;
 };
 
-/** Faut-il le relancer ? Envoyé, jamais relancé, et le premier e-mail date d'au moins 5 jours ouvrés. */
+/** Faut-il le relancer ? Envoyé, jamais relancé, et le premier e-mail date d'au moins 7 jours. Une seule relance :
+ *  relancé et toujours sans réponse, on n'écrit plus (« faut pas harceler », Dani, 28/11/2026). */
 export const estARelancer = (p: Pick<Prospect, "statut" | "envoyeLe" | "relanceLe">, maintenant: Date) =>
-  p.statut === "envoye" && !p.relanceLe && !!p.envoyeLe && joursOuvres(new Date(p.envoyeLe), maintenant) >= RELANCE_JOURS_OUVRES;
+  p.statut === "envoye" && !p.relanceLe && !!p.envoyeLe && joursEcoules(new Date(p.envoyeLe), maintenant) >= RELANCE_JOURS;
 
 export type ResumeProspection = {
   total: number;

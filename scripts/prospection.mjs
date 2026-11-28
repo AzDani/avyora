@@ -8,13 +8,13 @@
  *   node scripts/prospection.mjs importer <fichier.json>   ajoute les NOUVEAUX prospects (un e-mail connu n'est jamais écrasé)
  *   node scripts/prospection.mjs connus                    [{ email, statut }] de tous les prospects (doublons, STOP)
  *   node scripts/prospection.mjs marquer <email> <statut> [note]
- *   node scripts/prospection.mjs a-relancer                envoyés sans réponse depuis au moins 5 jours ouvrés
+ *   node scripts/prospection.mjs a-relancer                envoyés sans réponse depuis au moins 7 jours (une seule relance)
  *   node scripts/prospection.mjs stats                     comptes par statut, par cible, envois du jour et de la semaine
  *
  * Les sorties sont du JSON sur stdout. « stop » = la personne a répondu STOP : on ne lui écrit PLUS JAMAIS (obligation
  * légale) ; marquer refuse de la repasser en « envoye » ou « relance ».
  *
- * Les petites règles (statuts, transitions, e-mail, jours ouvrés) sont la copie de lib/prospection/statuts.ts : Node ne
+ * Les petites règles (statuts, transitions, e-mail, délai de relance) sont la copie de lib/prospection/statuts.ts : Node ne
  * peut pas importer ce fichier TypeScript. tests/prospection.test.ts vérifie que les deux copies restent identiques.
  */
 import { readFileSync } from "node:fs";
@@ -28,7 +28,7 @@ export const STATUTS = ["a_envoyer", "envoye", "relance", "repondu", "interesse"
 export const CIBLES = ["artisan", "agence", "architecte", "societe"];
 export const STATUTS_REPONSE = ["repondu", "interesse", "rdv", "inscrit", "refus", "stop"];
 export const INTERDITS_APRES_STOP = ["a_envoyer", "envoye", "relance"];
-export const RELANCE_JOURS_OUVRES = 5;
+export const RELANCE_JOURS = 7;
 
 /** « Jean.Dupont@Exemple.FR  » → « jean.dupont@exemple.fr » ; null si ce n'est pas une adresse e-mail. */
 export function normaliserEmail(brut) {
@@ -61,20 +61,14 @@ function jourParis(t) {
   return Date.UTC(y, m - 1, d);
 }
 
-/** Combien de jours ouvrés (lundi à vendredi, heure de Paris) après le jour de `debut`, jusqu'au jour de `fin` compris. */
-export function joursOuvres(debut, fin) {
-  const a = jourParis(debut), b = jourParis(fin);
-  let n = 0;
-  for (let t = a + 864e5; t <= b; t += 864e5) {
-    const j = new Date(t).getUTCDay();
-    if (j !== 0 && j !== 6) n++;
-  }
-  return n;
+/** Combien de jours (heure de Paris) après le jour de `debut`, jusqu'au jour de `fin` compris, week-end compris. */
+export function joursEcoules(debut, fin) {
+  return Math.max(0, Math.round((jourParis(fin) - jourParis(debut)) / 864e5));
 }
 
-/** Les prospects (lignes de la base) à relancer : envoyés, jamais relancés, depuis au moins 5 jours ouvrés. */
+/** Les prospects (lignes de la base) à relancer : envoyés, jamais relancés, depuis au moins 7 jours (week-end compris). */
 export function aRelancer(lignes, maintenant) {
-  return lignes.filter((l) => l.statut === "envoye" && !l.relance_le && l.envoye_le && joursOuvres(new Date(l.envoye_le), maintenant) >= RELANCE_JOURS_OUVRES);
+  return lignes.filter((l) => l.statut === "envoye" && !l.relance_le && l.envoye_le && joursEcoules(new Date(l.envoye_le), maintenant) >= RELANCE_JOURS);
 }
 
 const LONGUEURS = { contact: 120, metier: 80, commune: 80, ville: 80, source: 120, objet: 250, lot: 20 };
