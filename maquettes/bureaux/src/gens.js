@@ -278,7 +278,8 @@ function geste(p, nom, tours) {
   const a = p.mixer.clipAction(c); a.reset(); a.setEffectiveWeight(0); a.play(); p.gesteA = a; p.gt = c.duration * (tours || 1); return p.gt;
 }
 
-/* Un robot : un agent IA « pas encore créé », montré comme un hologramme à la couleur de sa cabine */
+/* Un robot : l'agent IA d'une cabine du Marketing. « Pas encore créé » : un hologramme à la couleur de sa cabine ; construit et en
+   service : plein (majRobots). */
 const voileRobot = new THREE.MeshBasicMaterial({ colorWrite: false, transparent: true, skinning: true });
 function robot(g, x, z, couleur) {
   const r = new THREE.Group(); r.position.set(x, 0, z); g.add(r);
@@ -297,12 +298,27 @@ function robot(g, x, z, couleur) {
   peau.material = new THREE.MeshStandardMaterial({ vertexColors: true, transparent: true, opacity: GENS.voile, depthWrite: false, roughness: 0.3, metalness: 0.35, emissive: couleur, emissiveIntensity: 0.4, skinning: true });
   peau.castShadow = false; peau.receiveShadow = false; peau.renderOrder = 6;
   const fond = new THREE.SkinnedMesh(peau.geometry, voileRobot); fond.frustumCulled = false; fond.renderOrder = 5; corps.add(fond); fond.bind(peau.skeleton, peau.bindMatrix);
-  corps.scale.setScalar(k); corps.position.y = -G.sol * k; r.add(corps);
+  corps.scale.setScalar(k); corps.position.y = -G.sol * k; r.add(corps); r.userData.peau = peau; r.userData.fond = fond;
   const socle = new THREE.Mesh(new THREE.RingGeometry(0.4, 0.46, 40), new THREE.MeshBasicMaterial({ color: couleur, transparent: true, opacity: 0.8, depthWrite: false })); socle.rotation.x = -Math.PI / 2; socle.position.y = 0.035; r.add(socle);
   const R = { g: r, G, mixer: new THREE.AnimationMixer(corps), A: {}, gesteA: null, gt: 0, pg: 0, prochain: 6 + Math.random() * 25 };
   if (G.clips.repos) { R.A.repos = R.mixer.clipAction(G.clips.repos); R.A.repos.play(); R.A.repos.time = Math.random() * G.clips.repos.duration; R.A.repos.setEffectiveTimeScale(0.5); }
   R.mixer.update(0); robots.push(R); return r;
 }
+
+/* Les cabines du Marketing ({ id, robot, creer, service }) : un agent en service a un robot PLEIN (opaque, ombre portée, plus de
+   lueur d'hologramme) et « EN SERVICE » au sol ; sinon l'hologramme et « À CRÉER ». Rejouée à chaque relecture des données. */
+const CABINES = [];
+function majRobots(actifs) {
+  for (const c of CABINES) {
+    const on = !!(actifs && actifs[c.id]), u = c.robot.userData;
+    if (u.peau) {
+      const m = u.peau.material; m.transparent = !on; m.opacity = on ? 1 : GENS.voile; m.depthWrite = on; m.emissiveIntensity = on ? 0.1 : 0.4; m.needsUpdate = true;
+      u.peau.castShadow = on; u.peau.renderOrder = on ? 0 : 6; u.fond.visible = !on;
+    }
+    c.creer.visible = !on; c.service.visible = on;
+  }
+}
+majCabines = majRobots;
 
 /* Poser chaque personne assise à la bonne hauteur : celle que le mobilier a notée pour ce siège ; à défaut (siège inconnu),
    un rayon tiré vers le bas trouve le dessus du meuble. */

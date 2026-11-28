@@ -376,7 +376,7 @@ function dessinPlanning(c, W, H) {
     plante(D, p.x1 - 0.85, p.z1 - 0.9, 0.85); plante(D, p.x1 - 0.8, z0 + 0.85, 1.15, true);
   }
 
-  p = parId.marketing;                                                     // ── Marketing : une cabine par agent IA (les trois sont « à créer »), le coin tournage
+  p = parId.marketing;                                                     // ── Marketing : une cabine par agent IA (robot plein s'il est en service, hologramme sinon), le coin tournage
   { const z0 = p.z0, tons = [0x4f46e5, 0x30a46c, 0xd9486e], feutre = [0x34307a, 0x245c44, 0x7a2c44], noms = ["PROSPECTION", "SEO", "RÉSEAUX"];
     for (let i = 0; i < 3; i++) { const x = p.x0 + 2.6 + i * 4.4, hex = "#" + tons[i].toString(16).padStart(6, "0");
       cimaise(D, x, z0 + 0.4, 3.6, 2.75, 0, 0x15172b); boiteM(D, 3.6, 0.07, 0.14, tons[i], x, 2.78, z0 + 0.4, { lum: 1.2, sansOmbre: true });
@@ -385,8 +385,11 @@ function dessinPlanning(c, W, H) {
       emprise(x, z0 + 1.15, 1.9, 0.8); boiteM(D, 1.8, 0.05, 0.75, 0, x, 0.76, z0 + 1.15, { mat: matPlateau }); for (const sx of [-0.82, 0.82]) boiteM(D, 0.05, 0.74, 0.65, NOIR, x + sx, 0.37, z0 + 1.15, { fin: "metal" });
       boiteM(D, 0.42, 0.015, 0.15, 0xe9e7e2, x, 0.79, z0 + 1.25, { fin: "laque", sansOmbre: true }); portable(D, x + 0.55, 0.785, z0 + 1.15, -0.3);
       boiteM(D, 3.4, 0.02, 3.4, tons[i], x, 0.012, z0 + 2.5, { opacite: 0.22, sansOmbre: true }); boiteM(D, 3.4, 0.03, 0.06, tons[i], x, 0.02, z0 + 4.25, { lum: 1.4, sansOmbre: true });
-      const e = panneauTexte(D, "À CRÉER", 1.5, 0.3, x, 0.03, z0 + 3.85, 0, "#232640", "#c9cbe0", 0.5); e.rotation.x = -PI / 2;
-      emprise(x, z0 + 2.6, 0.8, 0.7); robot(scene, x, z0 + 2.6, tons[i]); }
+      // les deux étiquettes au sol hors du décor fusionné : l'une ou l'autre s'affiche selon l'état de l'agent (majRobots)
+      const e = panneauTexte(scene, "À CRÉER", 1.5, 0.3, x, 0.03, z0 + 3.85, 0, "#232640", "#c9cbe0", 0.5); e.rotation.x = -PI / 2;
+      const s = panneauTexte(scene, "EN SERVICE", 1.5, 0.3, x, 0.03, z0 + 3.85, 0, "#232640", hex, 0.9); s.rotation.x = -PI / 2; s.visible = false;
+      emprise(x, z0 + 2.6, 0.8, 0.7); CABINES.push({ id: ["prospection", "seo", "reseaux"][i], robot: robot(scene, x, z0 + 2.6, tons[i]), creer: e, service: s }); }
+    majRobots(ACTIFS_CABINES);
     { const x = p.x1 - 2.2, z = p.z1 - 2.3;                                                                              // le coin tournage : le fond, l'anneau de lumière, le trépied
       emprise(x - 1.1, z - 1.3, 2.3, 0.2); boiteM(D, 2.2, 2.0, 0.04, 0xf2b8c6, x - 1.1, 1.05, z - 1.3, { fin: "mat" }); for (const sx of [-1.12, 1.12]) cyl(D, 0.025, 2.2, NOIR, x - 1.1 + sx, 1.1, z - 1.3, { fin: "metal", seg: 6 });
       emprise(x - 1.1, z + 0.9, 0.6, 0.6); for (let i = 0; i < 3; i++) { const j = cyl(D, 0.015, 1.3, NOIR, x - 1.1 + Math.sin(i * 2.1) * 0.2, 0.6, z + 0.9 + Math.cos(i * 2.1) * 0.2, { fin: "metal", seg: 5, sansOmbre: true }); j.rotation.z = -Math.sin(i * 2.1) * 0.32; j.rotation.x = Math.cos(i * 2.1) * 0.32; }

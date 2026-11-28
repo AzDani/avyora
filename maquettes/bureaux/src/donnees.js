@@ -6,6 +6,10 @@ const TELEPHONE = !/[?&]force=1/.test(location.search) && (/[?&]tel=1/.test(loca
    vraies données (data-source) : elles remplacent les exemples AVANT que l'étage se construise, et se relisent chaque minute.
    Si la lecture échoue à l'ouverture, les bureaux ne s'ouvrent pas : jamais d'exemple présenté comme du vrai. */
 const APP = document.querySelector(".app"), SOURCE = APP.dataset.source || "";
+/* Les cabines de la salle Marketing (prospection, seo, reseaux) : true = l'agent est construit et en service, son robot devient
+   plein ; sinon un hologramme « à créer ». Lu dans les données du site (`cabines`) ; la maquette montre la prospection en service.
+   `majCabines` est posé par gens.js (le robot), une fois la scène construite. */
+let ACTIFS_CABINES = SOURCE ? {} : { prospection: true }, majCabines = null;
 const net = (t) => String(t == null ? "" : t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));   // tout ce qui vient du site est du texte, jamais du HTML
 /* ───────────────────────── Les pièces et leurs données d'EXEMPLE ───────────────────────── */
 const ETATS = { critique: "À traiter maintenant", attention: "À surveiller", bon: "Tout est à jour", vide: "Pas encore en service" };
@@ -191,6 +195,7 @@ function appliquerDonnees(d) {
     const p = parId[id], v = d.agents[id]; if (!p || !p.agent || !v || !ETATS_AGENT[v.etat]) continue;
     p.agent.etat = v.etat; p.agent.fait = net(v.fait); p.agent.taches = (Array.isArray(v.taches) ? v.taches : []).map((l) => [net(l[0]), net(l[1]), ETATS[l[2]] ? l[2] : "vide", net(l[3])]);
   }
+  if (d && d.cabines && typeof d.cabines === "object") { ACTIFS_CABINES = { prospection: d.cabines.prospection === true, seo: d.cabines.seo === true, reseaux: d.cabines.reseaux === true }; if (majCabines) majCabines(ACTIFS_CABINES); }
   if (d && Array.isArray(d.priorites)) { PRIORITES.length = 0; for (const r of d.priorites) if (parId[r[0]]) PRIORITES.push([r[0], net(r[1]), net(r[2])]); }
 }
 async function lireDonnees() {

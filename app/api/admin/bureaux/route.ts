@@ -9,6 +9,7 @@ import { mesurerServeurs } from "@/lib/bureaux/serveurs";
 import { entreesStripe, listCharges, listRendezVous } from "@/lib/data/gestion";
 import { appelsDuMois, dernierReleve } from "@/lib/data/claude";
 import { ErreurProspection, lireProspection } from "@/lib/data/prospection";
+import { ErreurSeo, lireSeo } from "@/lib/data/seo";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,8 +26,8 @@ export async function GET() {
     const maintenant = new Date();
     let echecsClaude = 0;
     const pasLu = () => { echecsClaude++; return null; };
-    let sansTableProspection = false;
-    const [inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs, charges, entrees, rendezVous, releveClaude, appelsClaude, prospection] = await Promise.all([
+    let sansTableProspection = false, sansTableSeo = false;
+    const [inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs, charges, entrees, rendezVous, releveClaude, appelsClaude, prospection, seo] = await Promise.all([
       listInscrits(),
       listPlansAdmin().catch(() => null),
       listDemandesAccompagnement().catch(() => null),
@@ -42,8 +43,9 @@ export async function GET() {
       dernierReleve().catch(pasLu),
       appelsDuMois(maintenant).catch(pasLu),
       lireProspection(maintenant).catch((e) => { sansTableProspection = e instanceof ErreurProspection && e.migrationAbsente; return null; }),
+      lireSeo().catch((e) => { sansTableSeo = e instanceof ErreurSeo && e.migrationAbsente; return null; }),
     ]);
-    const donnees = construireBureaux({ inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs, charges, entrees, rendezVous, cleClaude: !!process.env.ANTHROPIC_API_KEY, releveClaude, appelsClaude, sansTablesClaude: echecsClaude === 2, prospection, sansTableProspection, maintenant });
+    const donnees = construireBureaux({ inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs, charges, entrees, rendezVous, cleClaude: !!process.env.ANTHROPIC_API_KEY, releveClaude, appelsClaude, sansTablesClaude: echecsClaude === 2, prospection, sansTableProspection, seo, sansTableSeo, maintenant });
     return NextResponse.json(donnees, { headers: { "Cache-Control": "no-store" } });
   } catch (e) {
     console.error("[admin/bureaux] lecture impossible :", e);

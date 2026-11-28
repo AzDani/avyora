@@ -9,6 +9,7 @@ import { LIMITES_SUPABASE, LIMITES_VERCEL, SEUIL_ATTENTION, SEUIL_CRITIQUE, poid
 import type { MesureServeurs } from "@/lib/bureaux/serveurs";
 import { dateExpiration, dollars, jaugesClaude, joursAvantExpiration, releveVieux, type AppelsMois, type ReleveClaude } from "@/lib/bureaux/claude";
 import { NOMS_STATUTS, nomLot, type ResumeProspection } from "@/lib/prospection/statuts";
+import { position, seoEnService, type ResumeSeo } from "@/lib/seo/resume";
 import { MODES_RDV, TYPES_RDV, heureParis, jourDepuisLundi, libelle, lundiParis, montant, parMois, totalMensuel, totalTexte, type Charge, type EntreesStripe, type RendezVous } from "@/lib/admin/gestion";
 
 /**
@@ -58,6 +59,8 @@ export type DonneesBureaux = {
   rdvs: RdvBureaux[];
   /** Les agents qui travaillent déjà pour de vrai : leur état et leurs tâches (les autres restent « à créer »). */
   agents: Partial<Record<IdPiece, AgentBureaux>>;
+  /** Les cabines de la salle Marketing : true = l'agent est construit et en service (son robot est plein, plus un hologramme). */
+  cabines: { prospection: boolean; seo: boolean; reseaux: boolean };
 };
 export type AgentBureaux = { etat: "travail" | "attend" | "repos" | "creer"; fait: string; taches: Ligne[] };
 export type RdvBureaux = { j: number; h: string; qui: string; quoi: string; mode: string; sujet: string; confirme: boolean; cr: "envoye" | "a_relire" | null };
@@ -88,6 +91,10 @@ export type SourcesBureaux = {
   prospection?: ResumeProspection | null;
   /** La migration 0019 n'est pas appliquée (la table des prospects n'existe pas). */
   sansTableProspection?: boolean;
+  /** Agent SEO (migration 0020) : le dernier relevé et le dernier rapport ; null = illisible ; absent = pas encore lu. */
+  seo?: ResumeSeo | null;
+  /** La migration 0020 n'est pas appliquée. */
+  sansTableSeo?: boolean;
   maintenant: Date;
 };
 
@@ -110,7 +117,7 @@ const illisible = (quoi: string, kpis: [string, string][], lien: string | null):
   piece({ etat: "vide", kpis, titre: "Lecture impossible", liste: [[quoi, "La lecture a échoué, la page réessaie dans une minute", "vide", "erreur"]], conseil: "Cette pièce reviendra toute seule dès que la lecture repasse.", lien });
 
 export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
-  const { inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs = null, charges = null, entrees = null, rendezVous = null, cleClaude = false, releveClaude = null, appelsClaude = null, sansTablesClaude = false, prospection = null, sansTableProspection = false, maintenant } = src;
+  const { inscrits, plans, demandes, artisans, devis, avisAModerer, enLigne, journee, serveurs = null, charges = null, entrees = null, rendezVous = null, cleClaude = false, releveClaude = null, appelsClaude = null, sansTablesClaude = false, prospection = null, sansTableProspection = false, seo = null, sansTableSeo = false, maintenant } = src;
   const jour = aujourdhuiParis(maintenant);
   const projets = inscrits.flatMap((i) => i.projets);
   const projets7 = projets.filter((p) => depuis([p.createdAt], 7, maintenant) === 1);
@@ -302,6 +309,8 @@ export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
     { piece: "reunion" as const, n: aConfirmer.length, texte: `Confirmer ${aConfirmer.length} rendez-vous`, ou: "Salle de réunion", gain: "ce qui rapporte", retard: 0 },
     { piece: "reunion" as const, n: aRelire.length, texte: `Relire ${aRelire.length} compte${s(aRelire.length)} rendu${s(aRelire.length)} d'appel`, ou: "Salle de réunion", gain: "ce qui rapporte", retard: 0 },
     { piece: "marketing" as const, n: prospection?.aTraiter ?? 0, texte: `Rappeler ${prospection?.aTraiter ?? 0} prospect${s(prospection?.aTraiter ?? 0)} intéressé${s(prospection?.aTraiter ?? 0)}`, ou: "Marketing · Agent Prospection", gain: "réseau", retard: 0 },
+    { piece: "marketing" as const, n: seo?.sante?.graves ?? 0, texte: `Corriger ${seo?.sante?.graves ?? 0} page${s(seo?.sante?.graves ?? 0)} qui sor${(seo?.sante?.graves ?? 0) > 1 ? "tent" : "t"} de Google`, ou: "Marketing · Agent SEO", gain: "visibilité", retard: 0 },
+    { piece: "marketing" as const, n: seo?.rapport?.statut === "nouveau" ? 1 : 0, texte: "Lire le rapport SEO et dire go", ou: "Marketing · Agent SEO", gain: "visibilité", retard: 0 },
     { piece: "attente" as const, n: enAttente.length, texte: `Examiner ${enAttente.length} candidature${s(enAttente.length)} d'artisan${s(enAttente.length)}`, ou: "Salle d'attente artisans", gain: "réseau", retard: candidaturesEnRetard },
     { piece: "devis" as const, n: nbAvis, texte: `Modérer ${nbAvis} avis en attente`, ou: "Salle des devis", gain: "confiance", retard: 0 },
     { piece: "atelier" as const, n: decennales.length, texte: `Relancer ${decennales.length} décennale${s(decennales.length)}`, ou: "Atelier du réseau", gain: "réseau", retard: expirees },
@@ -341,7 +350,7 @@ export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
         gens: Math.min(4, rdvsActifs.filter((x) => x.j === jourDepuisLundi(maintenant, lundi)).length),
         lien: "/admin/planning",
       });
-  const marketing = salleMarketing(prospection, sansTableProspection);
+  const marketing = salleMarketing(prospection, sansTableProspection, seo, sansTableSeo);
   const agentProspection = agentMarketing(prospection);
   const reno = projets.filter((p) => p.nature === "reno").length, traitees = (demandes ?? []).filter((d) => d.traiteeLe).length;
   const dossiers = projets.length + (devis?.length ?? 0) + (plans?.length ?? 0);
@@ -371,6 +380,7 @@ export function construireBureaux(src: SourcesBureaux): DonneesBureaux {
     priorites,
     rdvs,
     agents: { ...agentsBureaux(rendezVous, cleClaude, maintenant), ...(agentProspection ? { marketing: agentProspection } : {}) },
+    cabines: { prospection: !!agentProspection, seo: seoEnService(seo), reseaux: false },
   };
 }
 
@@ -513,17 +523,29 @@ export function salleClaude(releve: ReleveClaude | null, appels: AppelsMois | nu
 
 /* ─── Marketing : l'Agent Prospection (migration 0019) ──────────────────────── */
 
-const AGENTS_A_CREER: Ligne[] = [["Agent SEO", "Pages et positions Google", "vide", "à créer"], ["Agent Réseaux", "Reels et publications", "vide", "à créer"]];
+const AGENT_RESEAUX: Ligne = ["Agent Réseaux", "Reels et publications", "vide", "à créer"];
+
+/** La ligne de l'Agent SEO dans la salle Marketing : ce qu'il a relevé, ce qui t'attend. */
+export function ligneSeo(r: ResumeSeo | null, sansTable: boolean): Ligne {
+  if (!seoEnService(r)) return ["Agent SEO", sansTable ? "Migration 0020 à appliquer" : "Branche Search Console (mode d'emploi sur le Mac)", "vide", "à brancher"];
+  const g = r!.gsc, graves = r!.sante?.graves ?? 0;
+  const texte = g ? `${g.actuelle.clics} clic${s(g.actuelle.clics)} en 28 jours · position ${position(g.actuelle.position)}` : `${r!.sante!.verifiees} pages vérifiées`;
+  if (graves) return ["Agent SEO", `${texte} · ${graves} page${s(graves)} hors de Google`, "attention", "à corriger"];
+  if (r!.rapport?.statut === "nouveau") return ["Agent SEO", `${texte} · rapport à lire`, "attention", "t'attend"];
+  return ["Agent SEO", texte, "bon", "au travail"];
+}
 
 /**
  * La salle Marketing : une cabine par agent. L'Agent Prospection est réel (les e-mails partent du Mac de Daniel, le site
  * ne fait que lire) ; SEO et Réseaux restent « à créer ». Sans la migration 0019, la pièce le dit sans planter.
  */
-export function salleMarketing(p: ResumeProspection | null, sansTable: boolean): PieceBureaux {
+export function salleMarketing(p: ResumeProspection | null, sansTable: boolean, seo: ResumeSeo | null = null, sansTableSeo = false): PieceBureaux {
+  const AGENTS_A_CREER: Ligne[] = [ligneSeo(seo, sansTableSeo), AGENT_RESEAUX];
+  const seoActif = seoEnService(seo) ? 1 : 0;
   if (!p)
     return piece({
       etat: "vide",
-      kpis: [["Agents actifs", "—"], ["E-mails envoyés", "—"], ["Réponses", "—"]],
+      kpis: [["Agents actifs", seoActif ? "1" : "—"], ["E-mails envoyés", "—"], ["Réponses", "—"]],
       titre: "Une cabine par agent",
       liste: [["Agent Prospection", sansTable ? "Migration 0019 à appliquer" : "La lecture a échoué, la page réessaie dans une minute", "vide", sansTable ? "à brancher" : "erreur"], ...AGENTS_A_CREER],
       conseil: sansTable ? "Applique la migration 0019 dans Supabase : l'Agent Prospection affichera ici ses envois et les réponses." : "Cette pièce reviendra toute seule dès que la lecture repasse.",
@@ -533,7 +555,7 @@ export function salleMarketing(p: ResumeProspection | null, sansTable: boolean):
   return piece({
     etat: aTraiter ? "attention" : envoyes7 ? "bon" : "vide",
     nb: aTraiter || envoyes7,
-    kpis: [["Agents actifs", envoyes ? "1" : "0"], ["E-mails envoyés", String(envoyes)], ["Réponses", String(reponses)]],
+    kpis: [["Agents actifs", String((envoyes ? 1 : 0) + seoActif)], ["E-mails envoyés", String(envoyes)], ["Réponses", String(reponses)]],
     titre: "Une cabine par agent",
     liste: [
       ["Agent Prospection", `${envoyes} e-mail${s(envoyes)} envoyé${s(envoyes)} · ${reponses} réponse${s(reponses)}`, aTraiter ? "attention" : envoyes7 ? "bon" : "vide", aTraiter ? "à traiter" : envoyes7 ? "au travail" : envoyes ? "au repos" : "prêt"],

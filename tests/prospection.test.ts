@@ -147,13 +147,13 @@ describe("la salle Marketing des bureaux", () => {
     expect(d.agents.marketing).toBeUndefined();
     expect(salleMarketing(null, false).liste[0][3]).toBe("erreur");
   });
-  it("20 e-mails, aucune réponse : la ligne réelle, puis SEO et Réseaux à créer", () => {
+  it("20 e-mails, aucune réponse : la ligne réelle, puis SEO (construit, Search Console à brancher) et Réseaux à créer", () => {
     const r = resumerProspection(Array.from({ length: 20 }, () => prospect()), MAINTENANT);
     const p = salleMarketing(r, false);
     expect(p.kpis).toEqual([["Agents actifs", "1"], ["E-mails envoyés", "20"], ["Réponses", "0"]]);
     expect(p.liste).toEqual([
       ["Agent Prospection", "20 e-mails envoyés · 0 réponse", "bon", "au travail"],
-      ["Agent SEO", "Pages et positions Google", "vide", "à créer"],
+      ["Agent SEO", "Branche Search Console (mode d'emploi sur le Mac)", "vide", "à brancher"],
       ["Agent Réseaux", "Reels et publications", "vide", "à créer"],
     ]);
     expect(p.etat).toBe("bon");

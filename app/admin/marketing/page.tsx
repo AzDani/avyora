@@ -2,6 +2,9 @@ import Link from "next/link";
 import EnTeteAdmin from "@/components/admin/EnTeteAdmin";
 import ChangerStatut from "@/components/admin/marketing/ChangerStatut";
 import { ErreurProspection, lireProspection } from "@/lib/data/prospection";
+import { ErreurSeo, lireSeo } from "@/lib/data/seo";
+import SectionSeo from "@/components/admin/marketing/SectionSeo";
+import type { ResumeSeo } from "@/lib/seo/resume";
 import { CIBLES, NOMS_CIBLES, NOMS_STATUTS, STATUTS, estCible, estStatut, nomLot, type Prospect, type ResumeProspection } from "@/lib/prospection/statuts";
 
 export const dynamic = "force-dynamic";
@@ -16,15 +19,15 @@ export default async function AdminMarketing({ searchParams }: { searchParams: P
   const q = await searchParams;
   const statut = estStatut(q.statut) ? q.statut : null, cible = estCible(q.cible) ? q.cible : null;
   let resume: ResumeProspection | null = null, migrationAbsente = false;
-  try {
-    resume = await lireProspection();
-  } catch (e) {
-    migrationAbsente = e instanceof ErreurProspection && e.migrationAbsente;
-  }
+  let seo: ResumeSeo | null = null, seoSansTable = false;
+  await Promise.all([
+    lireProspection().then((x) => { resume = x; }).catch((e) => { migrationAbsente = e instanceof ErreurProspection && e.migrationAbsente; }),
+    lireSeo().then((x) => { seo = x; }).catch((e) => { seoSansTable = e instanceof ErreurSeo && e.migrationAbsente; }),
+  ]);
 
   return (
     <>
-      <EnTeteAdmin titre="Marketing" texte="L'Agent Prospection écrit aux pros du bâtiment depuis contact@getavyora.fr. Ici, tu suis les envois et les réponses, et tu notes où en est chaque prospect. Rien ne part d'ici." />
+      <EnTeteAdmin titre="Marketing" texte="L'Agent Prospection écrit aux pros du bâtiment depuis contact@getavyora.fr ; l'Agent SEO suit le classement Google et les points d'amélioration. Ici, tu suis leur travail. Rien ne part d'ici et rien ne change sur le site sans ton go." />
       {!resume ? (
         <p className="mb-6 rounded-2xl border border-line bg-surface p-4 text-[14px] text-muted">
           {migrationAbsente ? "La table des prospects n'existe pas encore : applique la migration 0019 dans Supabase." : "La lecture des prospects a échoué. Recharge la page dans une minute."}
@@ -32,6 +35,7 @@ export default async function AdminMarketing({ searchParams }: { searchParams: P
       ) : (
         <Contenu r={resume} statut={statut} cible={cible} />
       )}
+      <SectionSeo r={seo} migrationAbsente={seoSansTable} />
     </>
   );
 }
